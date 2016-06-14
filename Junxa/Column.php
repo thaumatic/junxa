@@ -27,9 +27,9 @@ class Column
         $this->dynalias = $dynalias;
         $this->type = $info->type;
         $this->length = ($info->max_length === null) ? null : intval($info->max_length);
-        $this->flags = array();
+        $this->flags = [];
         $this->flags['null'] = !$info->not_null;
-        foreach(array('numeric', 'unsigned', 'zerofill', 'blob') as $flag)
+        foreach(['numeric', 'unsigned', 'zerofill', 'blob'] as $flag)
             if($info->$flag)
                 $this->flags[$flag] = true;
         foreach(preg_split('/\s+/', $flags) as $flag) {
