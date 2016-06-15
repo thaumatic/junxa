@@ -3,12 +3,12 @@
 namespace Thaumatic\Junxa\Query;
 
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
-use Thaumatic\Junxa\Query;
-use Thaumatic\Junxa\QueryBuilder as QB;
+use Thaumatic\Junxa\Query as Q;
+use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Query\Element;
 
 /**
- * Used internally by part of the fluent interface to Thaumatic\Junxa\Query to provide contextualized interaction.
+ * Used internally by part of the fluent interface to Thaumatic\Junxa\Query\Builder to provide contextualized interaction.
  */
 class Part
 {
@@ -19,20 +19,20 @@ class Part
 	/**
 	 * Static factory method.
 	 *
-	 * @param Thaumatic\Junxa\Query the query the generated QueryPart is to be attached to
+	 * @param Thaumatic\Junxa\Query\Builder the query builder the generated Part is to be attached to
 	 * @param string the name of the query part we are modeling
 	 * @return self
 	 */
-	public static function generate(Query $query, $part)
+	public static function generate(QueryBuilder $query, $part)
 	{
 		return new self($query, $part);
 	}
 
 	/**
-	 * @param Thaumatic\Junxa\Query the query we are to be attached to
+	 * @param Thaumatic\Junxa\Query\Builder the query we are to be attached to
 	 * @param string the name of the query part we are modeling
 	 */
-	public function __construct(Query $query, $part)
+	public function __construct(QueryBuilder $query, $part)
 	{
 		$this->query = $query;
 		$this->part = $part;
@@ -41,7 +41,7 @@ class Part
 	/**
 	 * Retrieves the parent query.
 	 *
-	 * @return Thaumatic\Junxa\Query
+	 * @return Thaumatic\Junxa\Query\Builder
 	 */
 	public function query()
 	{
@@ -64,7 +64,7 @@ class Part
 			$this->query->{$this->part}($a, $b);
 			break;
 		default         :
-			$this->query->{$this->part}(QB::set($a, $b));
+			$this->query->{$this->part}(Q::set($a, $b));
 			break;
 		}
 		return $this;
@@ -81,7 +81,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::eq($a, $b));
+		$this->query->{$this->part}(Q::eq($a, $b));
 		return $this;
 	}
 
@@ -96,7 +96,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::eq($a, $b));
+		$this->query->{$this->part}(Q::eq($a, $b));
 		return $this;
 	}
 
@@ -111,7 +111,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::ne($a, $b));
+		$this->query->{$this->part}(Q::ne($a, $b));
 		return $this;
 	}
 
@@ -126,7 +126,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::ne($a, $b));
+		$this->query->{$this->part}(Q::ne($a, $b));
 		return $this;
 	}
 
@@ -141,7 +141,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::gt($a, $b));
+		$this->query->{$this->part}(Q::gt($a, $b));
 		return $this;
 	}
 
@@ -156,7 +156,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::gt($a, $b));
+		$this->query->{$this->part}(Q::gt($a, $b));
 		return $this;
 	}
 
@@ -171,7 +171,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::lt($a, $b));
+		$this->query->{$this->part}(Q::lt($a, $b));
 		return $this;
 	}
 
@@ -186,7 +186,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::lt($a, $b));
+		$this->query->{$this->part}(Q::lt($a, $b));
 		return $this;
 	}
 
@@ -201,7 +201,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::ge($a, $b));
+		$this->query->{$this->part}(Q::ge($a, $b));
 		return $this;
 	}
 
@@ -216,7 +216,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::ge($a, $b));
+		$this->query->{$this->part}(Q::ge($a, $b));
 		return $this;
 	}
 
@@ -231,7 +231,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::le($a, $b));
+		$this->query->{$this->part}(Q::le($a, $b));
 		return $this;
 	}
 
@@ -246,7 +246,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::le($a, $b));
+		$this->query->{$this->part}(Q::le($a, $b));
 		return $this;
 	}
 
@@ -261,7 +261,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::like($a, $b));
+		$this->query->{$this->part}(Q::like($a, $b));
 		return $this;
 	}
 
@@ -276,7 +276,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::notLike($a, $b));
+		$this->query->{$this->part}(Q::notLike($a, $b));
 		return $this;
 	}
 
@@ -291,7 +291,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::rlike($a, $b));
+		$this->query->{$this->part}(Q::rlike($a, $b));
 		return $this;
 	}
 
@@ -306,7 +306,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::regexp($a, $b));
+		$this->query->{$this->part}(Q::regexp($a, $b));
 		return $this;
 	}
 
@@ -320,7 +320,7 @@ class Part
 	{
 		if(is_string($what) && $this->query->table())
 			$what = $this->query->table()->$what;
-		$this->query->{$this->part}(QB::eq($what, true));
+		$this->query->{$this->part}(Q::eq($what, true));
 		return $this;
 	}
 
@@ -334,7 +334,7 @@ class Part
 	{
 		if(is_string($what) && $this->query->table())
 			$what = $this->query->table()->$what;
-		$this->query->{$this->part}(QB::eq($what, false));
+		$this->query->{$this->part}(Q::eq($what, false));
 		return $this;
 	}
 
@@ -349,7 +349,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::in($a, $b));
+		$this->query->{$this->part}(Q::in($a, $b));
 		return $this;
 	}
 
@@ -364,7 +364,7 @@ class Part
 	{
 		if(is_string($a) && $this->query->table())
 			$a = $this->query->table()->$a;
-		$this->query->{$this->part}(QB::not_in($a, $b));
+		$this->query->{$this->part}(Q::not_in($a, $b));
 		return $this;
 	}
 
@@ -388,7 +388,7 @@ class Part
 	 */
 	public function value($what)
 	{
-		$this->query->{$this->part}(QB::paren($what));
+		$this->query->{$this->part}(Q::paren($what));
 		return $this;
 	}
 
@@ -448,7 +448,7 @@ class Part
 	public function orClause()
 	{
 		$args = func_get_args();
-		$this->query->{$this->part}(QB::orClause($args));
+		$this->query->{$this->part}(Q::orClause($args));
 		return $this;
 	}
 
