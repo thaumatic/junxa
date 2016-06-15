@@ -4,6 +4,7 @@ namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Query;
 use Thaumatic\Junxa\Table;
 
@@ -30,10 +31,10 @@ class QueryElement
         case 'interleave'   :
             if($this->type === '') {
                 if(count($this->content) < 1)
-                    throw new \Exception("at least one argument required for unitary $this->style element");
+                    throw new JunxaInvalidQueryException("at least one argument required for unitary $this->style element");
             } else {
                 if(count($this->content) < 2)
-                    throw new \Exception("at least two arguments required for $this->style $this->type element");
+                    throw new JunxaInvalidQueryException("at least two arguments required for $this->style $this->type element");
             }
             break;
         case 'equality'     :
@@ -41,7 +42,7 @@ class QueryElement
         case 'comparison'   :
         case 'container'    :
             if(count($this->content) != 2)
-                throw new \Exception("two arguments required for $this->style $this->type element");
+                throw new JunxaInvalidQueryException("two arguments required for $this->style $this->type element");
             break;
         case 'head'         :
         case 'tail'         :
@@ -49,11 +50,11 @@ class QueryElement
         case 'interval'     :
         case 'cast'         :
             if(count($this->content) != 1)
-                throw new \Exception("one argument required for $this->style $this->type element");
+                throw new JunxaInvalidQueryException("one argument required for $this->style $this->type element");
             break;
         case 'literal'      :
             if(count($this->content) != 0)
-                throw new \Exception("zero arguments required for $this->style element");
+                throw new JunxaInvalidQueryException("zero arguments required for $this->style element");
             break;
         case 'alias'        :
             $this->id = 'alias' . ++$aliasCount;
@@ -63,7 +64,7 @@ class QueryElement
         case 'joincond'     :
             break;
         default             :
-            throw new \Exception("unknown QueryElement style '$this->style'");
+            throw new JunxaInvalidQueryException("unknown QueryElement style '$this->style'");
         }
     }
 
@@ -202,7 +203,7 @@ class QueryElement
             $out = 'INTERVAL ' . $values[0] . ' ' . $type;
             break;
         default             :
-            throw new \Exception("unknown element, style '$this->style' type '$this->type'");
+            throw new JunxaInvalidQueryException("unknown element, style '$this->style' type '$this->type'");
         }
         return $out;
     }
