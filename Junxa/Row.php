@@ -4,7 +4,7 @@ namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
-use Thaumatic\Junxa\QueryBuilder as QB;
+use Thaumatic\Junxa\Query as Q;
 
 /**
  * Models a database row.
@@ -161,7 +161,7 @@ class Row
         foreach($key as $column) {
             if(empty($this->$column))
                 return 0;
-            $what[] = QB::eq($this->table->$column, $this->$column);
+            $what[] = Q::eq($this->table->$column, $this->$column);
         }
         return $what;
     }
@@ -176,7 +176,7 @@ class Row
         foreach($this->table->columns as $column) {
             if(empty($this->$column))
                 continue;
-            $cond[] = QB::eq($this->table->$column, $this->$column);
+            $cond[] = Q::eq($this->table->$column, $this->$column);
         }
         if(count($cond))
             $query['where'] = $cond;
@@ -256,7 +256,7 @@ class Row
             foreach($demandOnlyColumns as $column) {
                 $value = $this->backendValue($column);
                 if($this->$column !== $value && (!is_numeric($value) || !is_numeric($this->$column) || $this->$column != $value))
-                    $fields[] = QB::set($this->table->$column, $this->$column);
+                    $fields[] = Q::set($this->table->$column, $this->$column);
             }
         } else {
             $columns = $this->table->getStaticColumns();
@@ -265,7 +265,7 @@ class Row
             $column = $columns[$i];
             $value = $this->data[$i];
             if($this->$column !== $value && (!is_numeric($value) || !is_numeric($this->$column) || $this->$column != $value))
-                $fields[] = QB::set($this->table->$column, $this->$column);
+                $fields[] = Q::set($this->table->$column, $this->$column);
         }
         if(!count($fields))
             return Junxa::RESULT_UPDATE_NOOP;
@@ -291,7 +291,7 @@ class Row
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
             if(property_exists($this, $column))
-                $fields[] = QB::set($this->table->$column, $this->$column);
+                $fields[] = Q::set($this->table->$column, $this->$column);
         if(!count($fields))
             return Junxa::RESULT_INSERT_NOOP;
         if($queryDef)
@@ -314,7 +314,7 @@ class Row
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
             if(property_exists($this, $column))
-                $fields[] = QB::set($this->table->$column, $this->$column);
+                $fields[] = Q::set($this->table->$column, $this->$column);
         if(!count($fields))
             return Junxa::RESULT_REPLACE_NOOP;
         if($queryDef)
