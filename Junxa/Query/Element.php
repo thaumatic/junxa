@@ -1,6 +1,6 @@
 <?php
 
-namespace Thaumatic\Junxa;
+namespace Thaumatic\Junxa\Query;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
@@ -13,7 +13,7 @@ use Thaumatic\Junxa\Table;
  * everything in a query that isn't a Column, an Assignment, or string/numeric data.  Mostly for internal use;
  * application developers should not normally need to interact with it explicitly.
  */
-class QueryElement
+class Element
 {
 
     private $style;
@@ -64,7 +64,7 @@ class QueryElement
         case 'joincond'     :
             break;
         default             :
-            throw new JunxaInvalidQueryException("unknown QueryElement style '$this->style'");
+            throw new JunxaInvalidQueryException("unknown style '$this->style'");
         }
     }
 
@@ -93,7 +93,7 @@ class QueryElement
                 $this->nullCheck($what[$i], $null);
         } elseif($what instanceof Table) {
             $null[$what->name()] = true;
-        } elseif($what instanceof QueryElement && $what->getStyle() === 'join') {
+        } elseif($what instanceof Element && $what->getStyle() === 'join') {
             $what->nullAllTables($null);
         }
     }
