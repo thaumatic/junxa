@@ -23,7 +23,7 @@ class Part
 	 * @param string the name of the query part we are modeling
 	 * @return self
 	 */
-	public static function generate(QueryBuilder $query, $part)
+	public static function make(QueryBuilder $query, $part)
 	{
 		return new self($query, $part);
 	}
