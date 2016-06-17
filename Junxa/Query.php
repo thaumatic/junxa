@@ -3,17 +3,48 @@
 namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Query\Assignment;
 use Thaumatic\Junxa\Query\Element;
+use Thaumatic\Junxa\Row;
 
 /**
  * This class essentially functions as a switchboard for generating
  * query element models, as an alternative or supplement to the
  * fluent interface methods supported by the query builder.  All
- * methods are static factory methods.
+ * methods but quote() are static factory methods.
  */
 class Query
 {
+
+    /**
+     * Escapes data for presentation to the database engine.
+     *
+     * @param mixed the data to escape
+     * @return string|numeric
+     */
+    public static function quote($data)
+    {
+        if(!isset($data))
+            return 'NULL';
+        if(is_object($data))
+            if($data instanceof Row && isset($data->id))
+                $data = $data->id;
+            else
+                throw new JunxaInvalidQueryException(
+                    'cannot use ' . get_class($data) . ' as raw data'
+                );
+        if(is_numeric($data))
+            return $data;
+        if(is_bool($data))
+            return $data ? 1 : 0;
+        if(!is_string($data))
+            throw new JunxaInvalidQueryException(
+                'cannot use ' . gettype($data) . ' as raw data'
+            );
+        $data = mysql_real_escape_string($data, $this->link);
+        return "'" . $data . "'";
+    }
 
     public static function set(Column $column, $value)
     {
