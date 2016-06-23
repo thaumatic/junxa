@@ -1037,8 +1037,37 @@ class Junxa
         } elseif($column) {
             return $column->represent($item, $query, $context, $parent);
         } else {
-            return Q::quote($item);
+            return $this->quote($item);
         }
+    }
+
+    /**
+     * Escapes data for presentation to the database engine.
+     *
+     * @param mixed the data to escape
+     * @return string|numeric
+     */
+    public static function quote($data)
+    {
+        if(!isset($data))
+            return 'NULL';
+        if(is_object($data))
+            if($data instanceof Row && isset($data->id))
+                $data = $data->id;
+            else
+                throw new JunxaInvalidQueryException(
+                    'cannot use ' . get_class($data) . ' as raw data'
+                );
+        if(is_numeric($data))
+            return $data;
+        if(is_bool($data))
+            return $data ? 1 : 0;
+        if(!is_string($data))
+            throw new JunxaInvalidQueryException(
+                'cannot use ' . gettype($data) . ' as raw data'
+            );
+        $data = mysql_real_escape_string($data, $this->link);
+        return "'" . $data . "'";
     }
 
     /**
