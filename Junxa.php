@@ -14,12 +14,12 @@ use Thaumatic\Junxa\Table;
  *
  *      use Thaumatic\Junxa;
  *
- *      $db = new Junxa(array(
+ *      $db = new Junxa([
  *          'hostname'  => 'db.example.com',
  *          'database'  => 'userdb',
  *          'username'  => 'admin',
  *          'password'  => 'somepassword',
- *      ));
+ *      ]);
  *      $table = $db->user;
  *      $column = $table->first_name;
  *
