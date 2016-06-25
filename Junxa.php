@@ -74,44 +74,49 @@ class Junxa
     const QUERY_ARRAYS                  = 4;
 
     /**
+     * @const int query output type: return results in associative and numerically-indexed arrays
+     */
+    const QUERY_DUAL_ARRAYS             = 5;
+
+    /**
      * @const int query output type: return results in stdClass objects
      */
-    const QUERY_OBJECTS                 = 5;
+    const QUERY_OBJECTS                 = 6;
 
     /**
      * @const int query output type: return results in a single associative array
      */
-    const QUERY_SINGLE_ASSOC            = 6;
+    const QUERY_SINGLE_ASSOC            = 7;
 
     /**
      * @const int query output type: return results in a single numerically-indexed array
      */
-    const QUERY_SINGLE_ARRAY            = 7;
+    const QUERY_SINGLE_ARRAY            = 8;
 
     /**
      * @const int query output type: return results in a single stdClass object
      */
-    const QUERY_SINGLE_OBJECT           = 8;
+    const QUERY_SINGLE_OBJECT           = 9;
 
     /**
      * @const int query output type: return results in a single scalar value
      */
-    const QUERY_SINGLE_CELL             = 9;
+    const QUERY_SINGLE_CELL             = 10;
 
     /**
      * @const int query output type: return results in an associative array mapping results of a two-column query
      */
-    const QUERY_COLUMN_ASSOC            = 10;
+    const QUERY_COLUMN_ASSOC            = 11;
 
     /**
      * @const int query output type: return results in a numerically-indexed array containing results of a single-column query
      */
-    const QUERY_COLUMN_ARRAY            = 11;
+    const QUERY_COLUMN_ARRAY            = 12;
 
     /**
      * @const int query output type: return results in a stdClass object mapping results of a two-column query
      */
-    const QUERY_COLUMN_OBJECT           = 12;
+    const QUERY_COLUMN_OBJECT           = 13;
 
     /**
      * @const int query result code: absolutely everything went perfectly with the query
@@ -272,7 +277,7 @@ class Junxa
     private $defaultTableClass;
 
     /**
-     * @var resource the database handle
+     * @var mysql the mysqli connection object
      */
     private $link;
 
@@ -292,7 +297,7 @@ class Junxa
     private $insertId;
 
     /**
-     * @var string the last result from mysql_error() on a query
+     * @var string the last mysqli error result on a query
      */
     private $queryMessage;
 
@@ -476,9 +481,9 @@ class Junxa
     public function connect()
     {
         if($this->options & self::DB_DROP_CONNECTION)
-            $this->link = mysql_connect($this->hostname, $this->username, $this->password);
+            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
         else
-            $this->link = mysql_pconnect($this->hostname, $this->username, $this->password);
+            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
         return $this;
     }
 
@@ -594,13 +599,13 @@ class Junxa
             $tableIndices[$tables[$index]] = $index;
         }
         $res = $this->query("SELECT *\n\tFROM " . join(', ', $tables) . "\n\tLIMIT 0", self::QUERY_RAW);
-        for($i = 0, $j = mysql_num_fields($res); $i < $j; $i++) {
-            $info = mysql_fetch_field($res, $i);
+        for($i = 0, $j = $res->field_count; $i < $j; $i++) {
+            $info = $res->fetch_field($i);
             $tableIndex = $tableIndices[$info->table];
             $infolist[$tableIndex][] = $info;
-            $flagslist[$tableIndex][] = mysql_field_flags($res, $i);
+            $flagslist[$tableIndex][] = $res->fetch_field_direct($i);
         }
-        mysql_free_result($res);
+        $res->free();
         for($index = 0; $index < count($tables); $index++) {
             $table = $tables[$index];
             $class = $this->tableClass($table);
@@ -653,11 +658,11 @@ class Junxa
             } else {
                 $handler = $this->changeHandler();
                 if($handler) {
-                    $res = $handler->query($query, $mode, $echo, $emptyOkay);
+                    $result = $handler->query($query, $mode, $echo, $emptyOkay);
                     $this->queryStatus = $handler->getQueryStatus();
                     $this->queryMessage = $handler->getQueryMessage();
                     $this->insertId = $handler->getInsertId();
-                    return $res;
+                    return $result;
                 } else {
                     if(preg_match('/^\s*UPDATE\s+/is', $query))
                         $update = true;
@@ -677,11 +682,11 @@ class Junxa
             } else {
                 $handler = $this->changeHandler();
                 if($handler) {
-                    $res = $handler->query($query, $mode, $echo, $emptyOkay);
+                    $result = $handler->query($query, $mode, $echo, $emptyOkay);
                     $this->queryStatus = $handler->queryStatus;
                     $this->queryMessage = $handler->queryMessage;
                     $this->insertId = $handler->insertId;
-                    return $res;
+                    return $result;
                 }
             }
             if($query->options) {
@@ -703,7 +708,6 @@ class Junxa
         default         :
             throw new JunxaInvalidQueryException('invalid argument to query()');
         }
-        mysql_select_db($this->database, $this->link);
         if($this->options & self::DB_COLLECT_QUERY_STATISTICS) {
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
@@ -714,7 +718,7 @@ class Junxa
         }
         if($echo)
             echo("SQL (echoed because of $whyEcho): $query <br />\n");
-        $res = mysql_query($query, $this->link);
+        $res = $this->link->query($query);
         if($res) {
             if($insertIgnore && $this->affectedRows() <= 0)
                 $this->queryStatus = self::RESULT_INSERT_FAIL;
@@ -723,8 +727,8 @@ class Junxa
             else
                 $this->queryStatus = self::RESULT_SUCCESS;
         } else {
-            $this->queryMessage = mysql_error();
-            $errno = mysql_errno($this->link);
+            $this->queryMessage = $this->link->error;
+            $errno = $this->link->errno;
             if($errno == 2006 || $errno == 2013) {
                 usleep(1000);
                 $this->connect();
@@ -737,7 +741,7 @@ class Junxa
                     $this->queryStatus = self::RESULT_FAILURE;
         }
         if(!$isResult && preg_match('/^\s*(INSERT|REPLACE)\b/i', $query))
-            $this->insertId = mysql_insert_id($this->link);
+            $this->insertId = $this->link->insert_id;
         if(!$mode)
             $mode = $isResult ? self::QUERY_OBJECTS : self::QUERY_FORGET;
         if(!$res || !$isResult) {
@@ -763,55 +767,56 @@ class Junxa
             break;
         case self::QUERY_ASSOCS                 :
             $out = [];
-            while($row = mysql_fetch_assoc($res))
+            while($row = $res->fetch_array(MYSQLI_ASSOC))
                 $out[] = $row;
             break;
         case self::QUERY_ARRAYS                 :
             $out = [];
-            while($row = mysql_fetch_row($res))
+            while($row = $res->fetch_array(MYSQLI_NUM))
+                $out[] = $row;
+            break;
+        case self::QUERY_DUAL_ARRAYS            :
+            $out = [];
+            while($row = $res->fetch_array(MYSQLI_BOTH))
                 $out[] = $row;
             break;
         case self::QUERY_OBJECTS                :
             $out = [];
-            while($row = mysql_fetch_object($res))
+            while($row = $res->fetch_object())
                 $out[] = $row;
             break;
         case self::QUERY_SINGLE_ASSOC           :
-            $numRows = mysql_num_rows($res);
-            if($numRows != 1 && (!$emptyOkay || $numRows != 0))
+            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
                 throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_ASSOC had ' . $numRows . ' rows'
+                    'QUERY_SINGLE_ASSOC had ' . $res->num_rows . ' rows'
                 );
-            if($numRows > 0)
-                $out = mysql_fetch_assoc($res);
+            if($res->num_rows > 0)
+                $out = $res->fetch_array(MYSQLI_ASSOC);
             break;
         case self::QUERY_SINGLE_ARRAY           :
-            $numRows = mysql_num_rows($res);
-            if($numRows != 1 && (!$emptyOkay || $numRows != 0))
+            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
                 throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_ARRAY had ' . $numRows . ' rows'
+                    'QUERY_SINGLE_ARRAY had ' . $res->num_rows . ' rows'
                 );
-            if($numRows > 0)
-                $out = mysql_fetch_row($res);
+            if($res->num_rows > 0)
+                $out = $res->fetch_array(MYSQLI_NUM);
             break;
         case self::QUERY_SINGLE_OBJECT          :
-            $numRows = mysql_num_rows($res);
-            if($numRows != 1 && (!$emptyOkay || $numRows != 0))
+            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
                 throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_OBJECT had ' . $numRows . ' rows'
+                    'QUERY_SINGLE_OBJECT had ' . $res->num_rows . ' rows'
                 );
-            if($numRows > 0)
-                $out = mysql_fetch_object($res);
+            if($res->num_rows > 0)
+                $out = $res->fetch_object();
             break;
         case self::QUERY_SINGLE_CELL            :
-            $numRows = mysql_num_rows($res);
-            if($numRows != 1 && (!$emptyOkay || $numRows != 0))
+            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
                 throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_CELL had ' . $numRows . ' rows'
+                    'QUERY_SINGLE_CELL had ' . $res->num_rows . ' rows'
                 );
-            if($numRows > 0) {
-                $row = mysql_fetch_row($res);
-                if(count($row) != 1)
+            if($res->num_rows > 0) {
+                $row = $res->fetch_array(MYSQLI_NUM);
+                if(count($row) !== 1)
                     throw new JunxaInvalidQueryException(
                         'QUERY_SINGLE_CELL had row with '
                         . count($row)
@@ -822,8 +827,8 @@ class Junxa
             break;
         case self::QUERY_COLUMN_ASSOC           :
             $out = [];
-            if(mysql_num_rows($res) > 0) {
-                $row = mysql_fetch_row($res);
+            if($res->num_rows > 0) {
+                $row = $res->fetch_array(MYSQLI_NUM);
                 if(count($row) != 2)
                     throw new JunxaInvalidQueryException(
                         'QUERY_COLUMN_ASSOC had row with '
@@ -832,13 +837,13 @@ class Junxa
                     );
                 do
                     $out[$row[0]] = $row[1];
-                while($row = mysql_fetch_row($res));
+                while($row = $res->fetch_array(MYSQLI_NUM));
             }
             break;
         case self::QUERY_COLUMN_ARRAY           :
             $out = [];
-            if(mysql_num_rows($res) > 0) {
-                $row = mysql_fetch_row($res);
+            if($res->num_rows > 0) {
+                $row = $res->fetch_array(MYSQLI_NUM);
                 if(count($row) != 1)
                     throw new JunxaInvalidQueryException(
                         'QUERY_COLUMN_ARRAY had row with '
@@ -847,13 +852,13 @@ class Junxa
                     );
                 do
                     $out[] = $row[0];
-                while($row = mysql_fetch_row($res));
+                while($row = $res->fetch_array(MYSQLI_NUM));
             }
             break;
         case self::QUERY_COLUMN_OBJECT          :
             $out = new stdClass;
-            if(mysql_num_rows($res) > 0) {
-                $row = mysql_fetch_row($res);
+            if($res->num_rows > 0) {
+                $row = $res->fetch_array(MYSQLI_NUM);
                 if(count($row) != 2)
                     throw new JunxaInvalidQueryException(
                         'QUERY_COLUMN_OBJECT had row with '
@@ -862,7 +867,7 @@ class Junxa
                     );
                 do
                     $out->{$row[0]} = $row[1];
-                while($row = mysql_fetch_row($res));
+                while($row = $res->fetch_array(MYSQLI_NUM));
             }
             break;
         default                             :
@@ -871,15 +876,15 @@ class Junxa
                 . (is_scalar($mode) ? $mode : gettype($mode))
             );
         }
-        mysql_free_result($res);
+        $res->free();
         return $out;
     }
 
     public function determineTables()
     {
         $this->tables = [];
-        $res = mysql_query('SHOW TABLES FROM `' . $this->database . '`', $this->link);
-        while($row = mysql_fetch_array($res)) {
+        $res = $this->link->query('SHOW TABLES');
+        while($row = $res->fetch_array(MYSQLI_NUM)) {
             $table = $row[0];
             $this->tables[] = $table;
         }
@@ -887,7 +892,7 @@ class Junxa
 
     public function getAffectedRows()
     {
-        return mysql_affected_rows($this->link);
+        return $this->link->affected_rows;
     }
 
     /**
@@ -913,7 +918,7 @@ class Junxa
     }
 
     /**
-     * Retrieves the result from mysql_error() for the last query performed.
+     * Retrieves the error result for the last query performed.
      *
      * @var string
      */
@@ -1066,7 +1071,7 @@ class Junxa
             throw new JunxaInvalidQueryException(
                 'cannot use ' . gettype($data) . ' as raw data'
             );
-        $data = mysql_real_escape_string($data, $this->link);
+        $data = $link->real_escape_string($data);
         return "'" . $data . "'";
     }
 
