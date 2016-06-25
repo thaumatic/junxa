@@ -5,7 +5,7 @@
         "php",
         "mysql",
         "DB",
-        "orm",
+        "orm"
     ],
     "type":"library",
     "license":"MIT",
