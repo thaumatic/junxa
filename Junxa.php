@@ -487,6 +487,12 @@ class Junxa
         return $this;
     }
 
+    /**
+     * Retrieves the class to use as the table model for a given table.
+     *
+     * @param string the table name
+     * @return string
+     */
     public function tableClass($table)
     {
         if(!empty($this->tableClasses[$table]))
@@ -504,6 +510,12 @@ class Junxa
         return 'Thaumatic\Junxa\Table';
     }
 
+    /**
+     * Retrieves the class to use as the column model for a given table.
+     *
+     * @param string the table name
+     * @return string
+     */
     public function columnClass($table)
     {
         if(!empty($this->columnClasses[$table]))
@@ -521,6 +533,12 @@ class Junxa
         return 'Thaumatic\Junxa\Column';
     }
 
+    /**
+     * Retrieves the class to use as the row model for a given table.
+     *
+     * @param string the table name
+     * @return string
+     */
     public function rowClass($table)
     {
         if(!empty($this->rowClasses[$table]))
