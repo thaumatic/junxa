@@ -1,14 +1,32 @@
 {
-	"require": {
-        "php": "^5.4 || ^7.0"
-	},
-	"require-dev": {
-		"phpunit\/phpunit": "*"
-	},
-	"autoload": {
+    "name":"thaumatic/junxa",
+    "description":"Simple schema-accomodating PHP-MySQL ORM",
+    "keywords":[
+        "php",
+        "mysql",
+        "DB",
+        "orm",
+    ],
+    "type":"library",
+    "license":"MIT",
+    "authors":[
+        {
+            "name":"Matthew Sheahan",
+            "email":"ms@matthewrsheahan.com",
+            "role":"Developer"
+        }
+    ],
+    "require": {
+        "php": "^5.4 || ^7.0",
+        "ext-mysqli": "^0.1"
+    },
+    "require-dev": {
+        "phpunit\/phpunit": "*"
+    },
+    "autoload": {
         "classmap": ["Junxa.php"],
-		"psr-4": {
-			"Thaumatic\\Junxa\\": "Junxa"
-		}
-	}
+        "psr-4": {
+            "Thaumatic\\Junxa\\": "Junxa"
+        }
+    }
 }
