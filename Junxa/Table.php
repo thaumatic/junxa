@@ -98,7 +98,7 @@ class Table
             $colinfo[$index++] = $row;
         if($columnCount === null) {
             $res = $this->db->query("SELECT *\n\tFROM " . $this->name() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
-            $columnCount = $res->num_fields;
+            $columnCount = $res->field_count;
             for($i = 0; $i < $columnCount; $i++) {
                 $infolist[$i] = $res->fetch_field($i);
                 $flagslist[$i] = $res->fetch_field_direct($i);
