@@ -5,6 +5,7 @@ abstract class DatabaseTest
 {
 
     const TEST_DATABASE_NAME = 'test_junxa';
+    const TEST_DATABASE_SETUP_FILE_NAME = 'test.sql';
 
     private static $db;
 
@@ -18,7 +19,16 @@ abstract class DatabaseTest
                 . 'run database-based tests'
             );
         }
-        self::$db->query('CREATE DATABASE `' . self::TEST_DATABASE_NAME . '`');
+        $filename = __DIR__ . DIRECTORY_SEPARATOR . self::TEST_DATABASE_SETUP_FILE_NAME;
+        if (!is_readable($filename)) {
+            throw new Exception($filename . ' missing');
+        }
+        $res = self::$db->query('CREATE DATABASE `' . self::TEST_DATABASE_NAME . '`');
+        self::$db->select_db(self::TEST_DATABASE_NAME);
+        $res = self::$db->multi_query(file_get_contents($filename));
+        self::$db->store_result();
+        while(self::$db->more_results())
+            self::$db->next_result();
     }
 
     public static function tearDownAfterClass()
