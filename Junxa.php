@@ -54,6 +54,11 @@ class Junxa
     const DB_COLLECT_QUERY_STATISTICS   = 0x00000008;
 
     /**
+     * @const int database-level behavioral option: use a persistent connection
+     */
+    const DB_PERSISTENT_CONNECTION      = 0x00000008;
+
+    /**
      * @const int query output type: raw result from database interface module
      */
     const QUERY_RAW                     = 1;
@@ -480,8 +485,8 @@ class Junxa
      */
     public function connect()
     {
-        if($this->options & self::DB_DROP_CONNECTION)
-            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
+        if($this->options & self::DB_PERSISTENT_CONNECTION)
+            $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->database);
         else
             $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
         return $this;
