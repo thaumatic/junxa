@@ -21,11 +21,11 @@ class Builder
     private $database;
     private $table;
     private $select = [];
-    private $join = [];
     private $insert = [];
     private $replace = [];
     private $update = [];
     private $delete = [];
+    private $join = [];
     private $where = [];
     private $group = [];
     private $having = [];
@@ -207,6 +207,17 @@ class Builder
         return $this;
     }
 
+    /**
+     * Clears the update clause.
+     *
+     * @return $this
+     */
+    public function clearUpdate()
+    {
+        $this->update = [];
+        return $this;
+    }
+
     public function insert()
     {
         $args = func_get_args();
@@ -229,6 +240,17 @@ class Builder
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
+        return $this;
+    }
+
+    /**
+     * Clears the update clause.
+     *
+     * @return $this
+     */
+    public function clearInsert()
+    {
+        $this->insert = [];
         return $this;
     }
 
@@ -257,12 +279,50 @@ class Builder
         return $this;
     }
 
+    /**
+     * Clears the replace clause.
+     *
+     * @return $this
+     */
+    public function clearReplace()
+    {
+        $this->replace = [];
+        return $this;
+    }
+
     public function delete($what = null)
     {
         if($what === null && $this->table)
             $what = $this->table;
         $this->delete[] = $what;
         return $this;
+    }
+
+    /**
+     * Clears the delete clause.
+     *
+     * @return $this
+     */
+    public function clearDelete()
+    {
+        $this->replace = [];
+        return $this;
+    }
+
+    /**
+     * Clears all operation clauses.
+     *
+     * @return $this
+     */
+    public function clearOperations()
+    {
+        return $this
+            ->clearSelect()
+            ->clearUpdate()
+            ->clearInsert()
+            ->clearReplace()
+            ->clearDelete()
+        ;
     }
 
     public function join($what)
@@ -676,7 +736,7 @@ class Builder
     public function row()
     {
         if(!$this->table)
-            throw new JunxaInvalidQueryException('cannot call rows() on a query that was not generated from a table');
+            throw new JunxaInvalidQueryException('cannot call row() on a query that was not generated from a table');
         return $this->table->row($this);
     }
 
@@ -684,7 +744,7 @@ class Builder
     {
         if(!$this->table)
             throw new JunxaInvalidQueryException('cannot call count() on a query that was not generated from a table');
-        return $this->table->countRows($this);
+        return $this->table->rowCount($this);
     }
 
 }
