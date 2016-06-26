@@ -489,6 +489,53 @@ class Junxa
     }
 
     /**
+     * Sets the options bitmask for the database.
+     *
+     * @param int bitmask of Thaumatic\Junxa::DB_* values
+     * @return $this
+     */
+    public function setOptions($val)
+    {
+        $this->options = $val;
+    }
+
+    /**
+     * Retrieves the options bitmask for the database.
+     *
+     * @return int bitmask of Thaumatic\Junxa::DB_* values
+     */
+    public function getOptions($val)
+    {
+        return $this->options;
+    }
+
+    /**
+     * Enables or disables a database option.
+     *
+     * @param Thaumatic\Junxa::DB_* option to manipulate
+     * @param bool whether we want the option on or off
+     * @return $this
+     */
+    public function setOption($option, $flag)
+    {
+        if($flag)
+            $this->options |= $option;
+        else
+            $this->options &= ~$option;
+    }
+
+    /**
+     * Retrieves whether a database option is enabled.
+     *
+     * @param Thaumatic_Junxa::DB_* option to check
+     * @return bool
+     */
+    public function getOption($option)
+    {
+        return (bool) ($this->options & $option);
+    }
+
+    /**
      * Connect to the database.
      *
      * @return $this
