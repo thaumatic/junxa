@@ -100,7 +100,7 @@ class Table
             $res = $this->db->query("SELECT *\n\tFROM " . $this->name() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
             $columnCount = $res->field_count;
             for($i = 0; $i < $columnCount; $i++) {
-                $infolist[$i] = $res->fetch_field($i);
+                $infolist[$i] = $res->fetch_field();
                 $flagslist[$i] = $res->fetch_field_direct($i);
             }
             $res->free();
@@ -144,7 +144,7 @@ class Table
         $this->dynamicColumns[] = $alias;
         $res = $this->db->query(['select' => $alias, 'limit' => 0], Junxa::QUERY_RAW);
         $class = $this->db->columnClass($this->name);
-        $columnModel = new $class($this, $name, $res->fetch_field(0), $res->fetch_field_direct(0), null, $alias);
+        $columnModel = new $class($this, $name, $res->fetch_field(), $res->fetch_field_direct(0), null, $alias);
         $this->columnModels[$name] = $columnModel;
         $res->free();
     }
