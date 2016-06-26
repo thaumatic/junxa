@@ -327,6 +327,11 @@ class Junxa
      */
     private static $echo = false;
 
+    /**
+     * Constructor.
+     *
+     * @param array<string:mixed> array of configuration parameters; see set functions for each for details
+     */
     public function __construct(array $def = null)
     {
         if($def !== null) {
@@ -569,11 +574,22 @@ class Junxa
         return 'Thaumatic\Junxa\Row';
     }
 
+    /**
+     * Retrieves the names of the tables attached to this database.
+     *
+     * @return array<string>
+     */
     public function tables()
     {
         return $this->tables;
     }
 
+    /**
+     * Retrieves whether a table with the specified name is attached to this database.
+     *
+     * @param string the table name
+     * @return bool
+     */
     public function tableExists($table)
     {
         return in_array($table, $this->tables);
