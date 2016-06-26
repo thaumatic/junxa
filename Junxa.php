@@ -630,17 +630,16 @@ class Junxa
             $tableIndices[$tables[$index]] = $index;
         }
         $res = $this->query("SELECT *\n\tFROM " . join(', ', $tables) . "\n\tLIMIT 0", self::QUERY_RAW);
+        $fieldSets = [];
         for($i = 0, $j = $res->field_count; $i < $j; $i++) {
-            $info = $res->fetch_field($i);
-            $tableIndex = $tableIndices[$info->table];
-            $infolist[$tableIndex][] = $info;
-            $flagslist[$tableIndex][] = $res->fetch_field_direct($i);
+            $tableIndex = $tableIndices[$field->table];
+            $fieldSets[$tableIndex][] = $res->fetch_field();
         }
         $res->free();
         for($index = 0; $index < count($tables); $index++) {
             $table = $tables[$index];
             $class = $this->tableClass($table);
-            $this->tableModels[$table] = new $class($this, $table, count($infolist[$index]), $infolist[$index], $flagslist[$index]);
+            $this->tableModels[$table] = new $class($this, $table, count($fieldSets[$index]), $fieldSets[$index]);
         }
     }
 

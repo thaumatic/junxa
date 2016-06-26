@@ -2,11 +2,28 @@
 
 namespace Thaumatic\Junxa;
 
+use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
+
 /**
  * Models a database column.
  */
 class Column
 {
+
+    const MYSQL_FLAG_NOT_NULL       = 0x00000001;
+    const MYSQL_FLAG_PRI_KEY        = 0x00000002;
+    const MYSQL_FLAG_UNIQUE_KEY     = 0x00000004;
+    const MYSQL_FLAG_BLOB           = 0x00000010;
+    const MYSQL_FLAG_UNSIGNED       = 0x00000020;
+    const MYSQL_FLAG_ZEROFILL       = 0x00000040;
+    const MYSQL_FLAG_BINARY         = 0x00000080;
+    const MYSQL_FLAG_ENUM           = 0x00000100;
+    const MYSQL_FLAG_AUTO_INCREMENT = 0x00000200;
+    const MYSQL_FLAG_TIMESTAMP      = 0x00000400;
+    const MYSQL_FLAG_SET            = 0x00000800;
+    const MYSQL_FLAG_PART_KEY       = 0x00004000;
+    const MYSQL_FLAG_NUM            = 0x00008000;
+    const MYSQL_FLAG_UNIQUE         = 0x00010000;
 
     private $default;
     private $dynalias;
@@ -20,72 +37,40 @@ class Column
     private $typeClass;
     private $values;
 
-    public function __construct($table, $name, $info, $flags, $colinfo, $dynalias)
+    public function __construct($table, $name, $info, $colinfo, $dynalias)
     {
         $this->table = $table;
         $this->name = $name;
         $this->dynalias = $dynalias;
-        $this->type = $info->type;
-        $this->length = ($info->max_length === null) ? null : intval($info->max_length);
-        $this->flags = [];
-        $this->flags['null'] = !$info->not_null;
-        foreach(['numeric', 'unsigned', 'zerofill', 'blob'] as $flag)
-            if($info->$flag)
-                $this->flags[$flag] = true;
-        foreach(preg_split('/\s+/', $flags) as $flag) {
-            switch($flag) {
-            case 'primary_key'      :
-                $this->flags['primary'] = true;
-                $this->flags['unique'] = true;
-                $this->flags['key'] = true;
-                break;
-            case 'unique_key'       :
-                $this->flags['unique'] = true;
-                $this->flags['key'] = true;
-                break;
-            case 'multiple_key'     :
-                $this->flags['key'] = true;
-                break;
-            case 'auto_increment'   :
-                $this->flags['auto_increment'] = true;
-                break;
-            case 'enum'             :
-                $this->flags['enum'] = true;
-                break;
-            case 'set'              :
-                $this->flags['set'] = true;
-                break;
-            case 'timestamp'        :
-                $this->flags['timestamp'] = true;
-                break;
-            case 'binary'           :
-                $this->flags['binary'] = true;
-                break;
-            }
+        $this->flags = $info->flags;
+        $this->default = $colinfo->Default;
+        $this->fullType = $colinfo->Type;
+        if($colinfo->Null === 'YES') {
+            if($this->flag(self::MYSQL_FLAG_NOT_NULL))
+                throw new JunxaDatabaseModelingException('nullability mismatch');
+        } else {
+            if(!$this->flag(self::MYSQL_FLAG_NOT_NULL))
+                throw new JunxaDatabaseModelingException('nullability mismatch');
         }
-        $this->default = $info->def;
-        if($colinfo) {
-            $this->default = $colinfo->Default;
-            $this->fullType = $colinfo->Type;
-            if($colinfo->Null == 'YES')
-                $this->flags['null'] = true;
-            if(preg_match('/^([^\s\(]+)/', $this->fullType, $match))
-                $this->type = $match[1];
-            if(!empty($this->flags['enum']) || !empty($this->flags['set'])) {
-                preg_match('/\(.*\)$/', $this->fullType, $match);
-                $list = substr($match[0], 2, strlen($match[0]) - 4);
-                $this->values = preg_split("/','/", $list);
-                for($i = 0; $i < count($this->values); $i++)
-                    $this->values[$i] = preg_replace("/''/", "'", $this->values[$i]);
-                if(!empty($this->flags['null']) && !empty($this->flags['enum']))
-                    array_unshift($this->values, null);
-            } else {
-                if(preg_match("/\((\d+),(\d+)\)$/", $this->fullType, $match)) {
-                    $this->length = intval($match[1]);
-                    $this->precision = intval($match[2]);
-                } elseif(preg_match("/\((\d+)\)$/", $this->fullType, $match)) {
-                    $this->length = intval($match[1]);
-                }
+        if(preg_match('/^([^\s\(]+)/', $this->fullType, $match))
+            $this->type = $match[1];
+        else
+            $this->type = $this->fullType;
+        if($this->flag(self::MYSQL_FLAG_ENUM) || $this->flag(self::MYSQL_FLAG_SET)) {
+            if(!preg_match('/\(.*\)$/', $this->fullType, $match))
+                throw new JunxaDatabaseModelingException('unparseable enum/set');
+            $list = substr($match[0], 2, strlen($match[0]) - 4);
+            $this->values = preg_split("/','/", $list);
+            for($i = 0; $i < count($this->values); $i++)
+                $this->values[$i] = preg_replace("/''/", "'", $this->values[$i]);
+            if(!$this->flag(self::MYSQL_FLAG_NOT_NULL) && $this->flag(self::MYSQL_FLAG_ENUM))
+                array_unshift($this->values, null);
+        } else {
+            if(preg_match("/\((\d+),(\d+)\)$/", $this->fullType, $match)) {
+                $this->length = intval($match[1]);
+                $this->precision = intval($match[2]);
+            } elseif(preg_match("/\((\d+)\)$/", $this->fullType, $match)) {
+                $this->length = intval($match[1]);
             }
         }
         switch($this->type) {
@@ -120,8 +105,11 @@ class Column
             $this->typeClass = 'text';
             break;
         }
-        if(method_exists($this, 'init'))
-            $this->init();
+        $this->init();
+    }
+
+    public function init()
+    {
     }
 
     public function db()
@@ -149,9 +137,13 @@ class Column
         return $this->dynalias;
     }
 
+    public function flag($flag) {
+        return (bool) ($this->flags & $flag);
+    }
+
     public function contextNull($query, $context)
     {
-        if(!empty($this->flags['null']))
+        if(!$this->flag(self::MYSQL_FLAG_NOT_NULL))
             return true;
         if($context !== 'join' && $query && !empty($query->isNullTable($this->table->getName())))
             return true;
@@ -175,17 +167,17 @@ class Column
             case 'bigint'   :
                 return preg_replace('/[^0-9-]+/', '', $value);
             case 'int'      :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     return preg_replace('/[^0-9-]+/', '', $value);
-                if(!empty($this->flags['unsigned']))
+                if($this->flag(self::MYSQL_FLAG_UNSIGNED))
                     return preg_replace('/\D+/', '', $value);
                 return intval($value);
             case 'tinyint'  :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     return preg_replace('/[^0-9-]+/', '', $value);
                 return intval($value);
             default         :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     return preg_replace('/[^0-9-]+/', '', $value);
                 return intval($value);
             }
@@ -193,36 +185,45 @@ class Column
         case 'float'    :
             return doubleval($value);
         default         :
-            throw new \Exception('unknown type class ' . $this->typeClass);
+            throw new JunxaDatabaseModelingException('unknown type class ' . $this->typeClass);
         }
     }
 
     public function import($value)
     {
-        if(($value === null) && !empty($this->flags['null']))
+        if(($value === null) && !$this->flag(self::MYSQL_FLAG_NOT_NULL))
             return null;
         switch($this->typeClass) {
         case 'int'          :
             switch($this->type) {
             case 'bigint'   :
-                break;
+                if($this->flag(self::MYSQL_FLAG_UNSIGNED)) {
+                    // bizarre that this works but it does
+                    if(PHP_INT_MAX < 18446744073709551615)
+                        break;
+                } else {
+                    if(PHP_INT_MAX < 9223372036854775807)
+                        break;
+                }
+                return intval($value);
             case 'int'      :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     break;
-                if(!empty($this->flags['unsigned']))
+                if($this->flag(self::MYSQL_FLAG_UNSIGNED))
                     break;
                 return intval($value);
             case 'tinyint'  :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     break;
-                if($this->length === 1 && empty($this->flags['unsigned']))
-                    if($value == '1')
+                if($this->length === 1 && $this->flag(self::MYSQL_FLAG_UNSIGNED))
+                    // interpret as bool
+                    if($value === '1')
                         return true;
-                    elseif($value == '0')
+                    elseif($value === '0')
                         return false;
                 return intval($value);
             default         :
-                if(!empty($this->flags['zerofill']))
+                if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     break;
                 return intval($value);
             }
@@ -238,10 +239,8 @@ class Column
         $out = $this->type;
         if(isset($this->length))
             $out .= ', length ' . $this->length;
-        if(count($this->flags)) {
-            $out .= ', flags';
-            foreach($this->flags as $flag => $set)
-                $out .= ' ' . $flag;
+        if($this->flags) {
+            $out .= ', flags ' . $this->flags;
         }
         if(isset($this->values)) {
             $out .= ', values ';
@@ -262,7 +261,7 @@ class Column
     {
         if($this->dynalias)
             return $this->dynalias->express($query, $context, $column, $parent);
-        elseif(!empty($query->flags['multitable']))
+        elseif($query->getIsMultitable())
             return '`' . $this->table->name() . '`.`' . $this->name() . '`';
         else
             return '`' . $this->name() . '`';

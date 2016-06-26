@@ -67,11 +67,11 @@ class Table
      */
     private $cache = [];
 
-    public function __construct(Junxa $db, $name, $columnCount = null, $infolist = [], $flagslist = [])
+    public function __construct(Junxa $db, $name, $columnCount = null, $fields = [])
     {
         $this->db = $db;
         $this->name = $name;
-        $this->determineColumns($columnCount, $infolist, $flagslist);
+        $this->determineColumns($columnCount, $fields);
         $this->init();
     }
 
@@ -89,33 +89,33 @@ class Table
      *
      * @param int the number of columns in the table
      * @param array field information on the table's columns
-     * @param array flag information on the table's columns
      */
-    private function determineColumns($columnCount = null, $infolist = [], $flagslist = [])
+    private function determineColumns($columnCount = null, $fields = [])
     {
         $index = 0;
         foreach($this->db->query('SHOW COLUMNS FROM ' . $this->name()) as $row)
             $colinfo[$index++] = $row;
         if($columnCount === null) {
+            $fields = [];
             $res = $this->db->query("SELECT *\n\tFROM " . $this->name() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
             $columnCount = $res->field_count;
             for($i = 0; $i < $columnCount; $i++) {
-                $infolist[$i] = $res->fetch_field();
-                $flagslist[$i] = $res->fetch_field_direct($i);
+                $fields[] = $res->fetch_field();
             }
             $res->free();
         }
         $autoIncPrimary = false;
         for($i = 0; $i < $columnCount; $i++) {
-            $column = $infolist[$i]->name;
+            $field = $fields[$i];
+            $column = $field->name;
             $this->columns[] = $column;
             $this->staticColumns[] = $column;
             $class = $this->db->columnClass($this->name);
-            $columnModel = new $class($this, $column, $infolist[$i], $flagslist[$i], $colinfo[$i], null);
+            $columnModel = new $class($this, $column, $field, $colinfo[$i], null);
             $this->columnModels[$column] = $columnModel;
-            if($infolist[$i]->primaryKey) {
+            if($columnModel->flag(Column::MYSQL_FLAG_PRI_KEY)) {
                 $this->primary[] = $column;
-                if(!empty($columnModel->flags['auto_increment']))
+                if($columnModel->flag(Column::MYSQL_FLAG_AUTO_INCREMENT))
                     $autoIncPrimary = true;
             }
         }
@@ -550,9 +550,9 @@ class Table
 
     public function express($query, $context, $column, $parent)
     {
-        if($context == 'join')
+        if($context === 'join')
             return '`' . $this->name . '`';
-        if(!empty($query->flags['multitable']) && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')) {
+        if($query->getIsMultitable() && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')) {
             if($this->demandOnlyColumns && $context !== 'function') {
                 $items = [];
                 foreach($this->columns as $column)

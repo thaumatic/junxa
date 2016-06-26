@@ -32,11 +32,11 @@ class Builder
     private $order = [];
     private $limit;
     private $options = [];
-    private $flags = [];
     private $outputCache = '';
     private $expressed;
     private $tables = [];
     private $nullTables = [];
+    private $isMultitable = false;
 
     /**
      * Static factory method used by database and table models to generate attached queries.
@@ -624,7 +624,7 @@ class Builder
         $this->tables = array_keys($tables);
         $this->nullTables = $null;
         if(count($this->tables) > 1)
-            $this->flags['multitable'] = true;
+            $this->isMultitable = true;
     }
 
     public function express()
@@ -745,6 +745,14 @@ class Builder
         if(!$this->table)
             throw new JunxaInvalidQueryException('cannot call count() on a query that was not generated from a table');
         return $this->table->rowCount($this);
+    }
+
+    /**
+     * Retrieves whether this query spans multiple tables.
+     */
+    public function getIsMultitable()
+    {
+        return $this->isMultitable;
     }
 
 }
