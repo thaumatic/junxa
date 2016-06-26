@@ -3,6 +3,7 @@
 namespace Thaumatic;
 
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
@@ -326,7 +327,7 @@ class Junxa
      */
     private static $echo = false;
 
-    public function __construct($def = null)
+    public function __construct(array $def = null)
     {
         if($def !== null) {
             if(!empty($def['hostname']))
@@ -376,14 +377,16 @@ class Junxa
     }
 
     /**
-     * 
+     * To be called when the object is fully configured.  Called automatically
+     * from the constructor when configuring via an array specification; needs
+     * to be called explicitly when configuring in fluent mode.
+     *
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
      */
     public function ready()
     {
         $this->connect();
         $this->determineTables();
-        if(method_exists($this, 'init'))
-            $this->init();
     }
 
     /**
@@ -472,6 +475,8 @@ class Junxa
 
     /**
      * Standard magic method: when a Junxa object is deserialized, reconnect it to its database.
+     *
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
      */
     public function __wakeup()
     {
@@ -482,9 +487,12 @@ class Junxa
      * Connect to the database.
      *
      * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
      */
     public function connect()
     {
+        if(!$this->database)
+            throw new JunxaConfigurationException('database to connect to has not been specified');
         if($this->options & self::DB_PERSISTENT_CONNECTION)
             $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->database);
         else
@@ -907,6 +915,7 @@ class Junxa
     {
         $this->tables = [];
         $res = $this->link->query('SHOW TABLES');
+        echo $this->link->errno, ' ', $this->link->error, "\n";
         while($row = $res->fetch_array(MYSQLI_NUM)) {
             $table = $row[0];
             $this->tables[] = $table;
