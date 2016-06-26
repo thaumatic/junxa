@@ -915,7 +915,6 @@ class Junxa
     {
         $this->tables = [];
         $res = $this->link->query('SHOW TABLES');
-        echo $this->link->errno, ' ', $this->link->error, "\n";
         while($row = $res->fetch_array(MYSQLI_NUM)) {
             $table = $row[0];
             $this->tables[] = $table;
