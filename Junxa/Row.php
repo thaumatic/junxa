@@ -3,6 +3,7 @@
 namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa;
+use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
@@ -336,7 +337,7 @@ class Row
             )
                 $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         }
-        if(!count($fields))
+        if(!$fields)
             return Junxa::RESULT_UPDATE_NOOP;
         $cond = $this->getMatchCondition();
         if(!$cond)
@@ -361,7 +362,7 @@ class Row
         foreach($this->table->getStaticColumns() as $column)
             if(array_key_exists($column, $this->fields))
                 $fields[] = Q::set($this->table->$column, $this->fields[$column]);
-        if(!count($fields))
+        if(!$fields)
             return Junxa::RESULT_INSERT_NOOP;
         if($queryDef)
             foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
@@ -378,13 +379,50 @@ class Row
         return $this->refresh();
     }
 
+    public function merge($queryDef = [])
+    {
+        $insertFields = [];
+        $updateFields = [];
+        $foundUniqueKeyMember = false;
+        foreach($this->table->getStaticColumns() as $column) {
+            if(array_key_exists($column, $this->fields)) {
+                $columnModel = $this->table->$column;
+                if(!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE))
+                    $foundUniqueKeyMember = true;
+                $operation = Q::set($columnModel, $this->fields[$column]);
+                $insertFields[] = $operation;
+                if(!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE))
+                    $updateFields[] = $operation;
+            }
+        }
+        if(!$fields)
+            return Junxa::RESULT_MERGE_NOOP;
+        if(!$foundUniqueKeyMember)
+            return Junxa::RESULT_MERGE_NOKEY;
+        if($queryDef)
+            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
+                if(isset($queryDef[$item]))
+                    throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $item);
+        $queryDef['insert'] = $insertFields;
+        $queryDef['update'] = $updateFields;
+        $query = $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->db()->queryStatus();
+        if(!Junxa::OK($res))
+            return $res;
+        if($res === Junxa::RESULT_SUCCESS)
+            if($field = $this->table->autoIncrementPrimary())
+                if($id = $this->table->db()->insertId())
+                    $this->fields[$field] = $id;
+        return $this->refresh();
+    }
+
     public function replace($queryDef = [])
     {
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
             if(array_key_exists($column, $this->fields))
                 $fields[] = Q::set($this->table->$column, $this->fields[$column]);
-        if(!count($fields))
+        if(!$fields)
             return Junxa::RESULT_REPLACE_NOOP;
         if($queryDef)
             foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
