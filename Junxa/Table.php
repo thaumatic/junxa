@@ -591,11 +591,12 @@ class Table
      * parent table and this table's database as its parent database and
      * otherwise empty.
      * 
+     * @param array query definition to provide to the query builder constructor
      * @return Thaumatic\Junxa\Query\Builder
      */
-    public function query()
+    public function query(array $def = null)
     {
-        return QueryBuilder::make($this->db, $this);
+        return QueryBuilder::make($this->db, $this, $def);
     }
 
     /**
