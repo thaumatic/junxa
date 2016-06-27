@@ -177,9 +177,9 @@ class Junxa
 
     /**
      * @const int query result code: a table row merge was called for but the row had a value or values set
-     * for the table's primary key
+     * for an auto_increment part of the table's primary key
      */
-    const RESULT_MERGE_PK               = -6;
+    const RESULT_MERGE_AI_PK            = -6;
 
     /**
      * @const int query result code: a table row merge was called for but the table did not have any non-primary
