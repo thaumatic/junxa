@@ -867,10 +867,12 @@ class Junxa
     }
 
     /**
-     * Retrieves the alternate Junxa instance to send database changes to, if any.
+     * Retrieves the alternate Junxa instance to send database changes to, if
+     * any.
      *
      * @return Thaumatic\Junxa|false
-     * @throws Thaumatic\Junxa\JunxaConfigurationException if the change handler configuration is invalid
+     * @throws Thaumatic\Junxa\Exception\JunxaConfigurationException if the
+     * change handler configuration is invalid
      */
     private function getChangeHandlerObject()
     {
