@@ -44,10 +44,11 @@ class Builder
      * @param Thaumatic\Junxa the database the generated query is to be attached to
      * @param Thaumatic\Junxa\Table the table the generated query is to be attached to, if any
      * @return self
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
      */
-    public static function make(Junxa $database, $table = null)
+    public static function make(Junxa $database, $table = null, $def = null)
     {
-        $out = new self;
+        $out = new self($def);
         $out->database = $database;
         $out->table = $table;
         return $out;
@@ -56,6 +57,7 @@ class Builder
     /**
      * @param array the query definition
      * @param bool whether to skip validation of the query configuration
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
      */
     public function __construct($def = [], $skipValidate = false)
     {
