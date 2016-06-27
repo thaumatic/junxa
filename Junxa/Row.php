@@ -305,7 +305,7 @@ class Row
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
             if($field = $this->table->auto_increment_primary())
-                $this->$field = $this->table->db()->insert_id;
+                $this->$field = $this->table->db()->insertId();
         return $this->refresh();
     }
 
@@ -328,7 +328,7 @@ class Row
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
             if($field = $this->table->auto_increment_primary())
-                $this->$field = $this->table->db()->insert_id;
+                $this->$field = $this->table->db()->insertId();
         return $this->refresh();
     }
 
