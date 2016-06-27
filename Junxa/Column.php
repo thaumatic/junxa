@@ -10,7 +10,7 @@ use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 class Column
 {
 
-    const OPTION_NON_MERGING        = 0x00000001;
+    const OPTION_MERGE_NO_UPDATE    = 0x00000001;
 
     const MYSQL_FLAG_NOT_NULL       = 0x00000001;
     const MYSQL_FLAG_PRI_KEY        = 0x00000002;
