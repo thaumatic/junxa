@@ -95,10 +95,10 @@ class Row
             throw new JunxaConfigurationException('cannot generate cache key without primary key');
         case 1  :
             $key = $this->table->primary[0];
-            return strval($this->$key);
+            return strval($this->fields[$key]);
         default :
             foreach($this->table->primary as $key)
-                $elem[] = $this->$key;
+                $elem[] = $this->fields[$key];
             return join("\0", $args) . '|' . join('', array_map('md5', $args));
         }
     }
@@ -181,12 +181,12 @@ class Row
 
     public function value($column)
     {
-        if(empty($this->$column)) {
+        if(empty($this->fields[$column])) {
             $table = $this->table();
             if($table->queryColumnDemandOnly($column) && !$this->primaryKeyUnset())
-                $this->$column = $this->backendValue($column);
+                $this->fields[$column] = $this->backendValue($column);
         }
-        return isset($this->$column) ? $this->$column : null;
+        return isset($this->fields[$column]) ? $this->fields[$column] : null;
     }
 
     public function demandAll()
@@ -215,9 +215,9 @@ class Row
             return 0;
         $what = [];
         foreach($key as $column) {
-            if(empty($this->$column))
+            if(empty($this->fields[$column]))
                 return 0;
-            $what[] = Q::eq($this->table->$column, $this->$column);
+            $what[] = Q::eq($this->table->$column, $this->fields[$column]);
         }
         return $what;
     }
@@ -230,9 +230,9 @@ class Row
             'limit'     => 2,
         ];
         foreach($this->table->columns as $column) {
-            if(empty($this->$column))
+            if(empty($this->fields[$column]))
                 continue;
-            $cond[] = Q::eq($this->table->$column, $this->$column);
+            $cond[] = Q::eq($this->table->$column, $this->fields[$column]);
         }
         if(count($cond))
             $query['where'] = $cond;
@@ -260,7 +260,7 @@ class Row
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->$column = $data[$i];
+            $this->fields[$column] = $data[$i];
         }
         $this->checkCaching();
         return $out;
@@ -292,7 +292,7 @@ class Row
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->$column = $row[$i];
+            $this->fields[$column] = $row[$i];
         }
         $this->init();
         $this->checkCaching();
@@ -310,8 +310,15 @@ class Row
                     $columns[] = $column;
             foreach($demandOnlyColumns as $column) {
                 $value = $this->backendValue($column);
-                if($this->$column !== $value && (!is_numeric($value) || !is_numeric($this->$column) || $this->$column != $value))
-                    $fields[] = Q::set($this->table->$column, $this->$column);
+                if(
+                    $this->fields[$column] !== $value
+                    && (
+                        !is_numeric($value)
+                        || !is_numeric($this->fields[$column])
+                        || $this->fields[$column] != $value
+                    )
+                )
+                    $fields[] = Q::set($this->table->$column, $this->fields[$column]);
             }
         } else {
             $columns = $this->table->getStaticColumns();
@@ -319,8 +326,15 @@ class Row
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
             $value = $this->data[$i];
-            if($this->$column !== $value && (!is_numeric($value) || !is_numeric($this->$column) || $this->$column != $value))
-                $fields[] = Q::set($this->table->$column, $this->$column);
+            if(
+                $this->fields[$column] !== $value
+                && (
+                    !is_numeric($value)
+                    || !is_numeric($this->fields[$column])
+                    || $this->fields[$column] != $value
+                )
+            )
+                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         }
         if(!count($fields))
             return Junxa::RESULT_UPDATE_NOOP;
@@ -346,7 +360,7 @@ class Row
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
             if(property_exists($this, $column))
-                $fields[] = Q::set($this->table->$column, $this->$column);
+                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         if(!count($fields))
             return Junxa::RESULT_INSERT_NOOP;
         if($queryDef)
@@ -360,7 +374,7 @@ class Row
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
             if($field = $this->table->autoIncrementPrimary())
-                $this->$field = $this->table->db()->insertId();
+                $this->fields[$field] = $this->table->db()->insertId();
         return $this->refresh();
     }
 
@@ -369,7 +383,7 @@ class Row
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
             if(property_exists($this, $column))
-                $fields[] = Q::set($this->table->$column, $this->$column);
+                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         if(!count($fields))
             return Junxa::RESULT_REPLACE_NOOP;
         if($queryDef)
@@ -383,7 +397,7 @@ class Row
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
             if($field = $this->table->autoIncrementPrimary())
-                $this->$field = $this->table->db()->insertId();
+                $this->fields[$field] = $this->table->db()->insertId();
         return $this->refresh();
     }
 
@@ -399,7 +413,7 @@ class Row
         $demandOnlyColumns = $table->getDemandOnlyColumns();
         if($demandOnlyColumns) {
             foreach($demandOnlyColumns as $column)
-                if($this->$column !== $this->backendValue($column))
+                if($this->fields[$column] !== $this->backendValue($column))
                     return true;
             $columns = [];
             foreach($this->table->getStaticColumns() as $column)
@@ -410,7 +424,7 @@ class Row
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            if($this->$column !== $this->data[$i])
+            if($this->fields[$column] !== $this->data[$i])
                 return true;
         }
         return false;
@@ -453,7 +467,7 @@ class Row
     {
         $table = $this->table();
         foreach($table->primaryKey() as $column)
-            if(empty($this->$column))
+            if(empty($this->fields[$column]))
                 return true;
         return false;
     }
