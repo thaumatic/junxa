@@ -383,7 +383,7 @@ class Row
         return $res;
     }
 
-    public function deleted()
+    public function getDeleted()
     {
         return $this->deleted;
     }
