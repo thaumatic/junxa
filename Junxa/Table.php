@@ -333,14 +333,15 @@ class Table
     }
 
     /**
-     * Retrieves a row model via either of two modes of operation.  The first
-     * mode is retrieval by primary key, in which case the function takes the
-     * same number of arguments as the number of columns in the primary key and
-     * returns the row, if any, which matches those values.  The second mode is
-     * retrieval by query, where only a single argument is provided, which must
-     * be a Junxa query builder, a Junxa query element, or an array, which will
-     * be used as a query builder configuration specification.  The query
-     * provided will automatically have a limit of 1 applied to it.
+     * Retrieves a row model, either an empty one (when no arguments are
+     * passed) or a populated one via either of two modes of operation.  The
+     * first mode is retrieval by primary key, in which case the function takes
+     * the same number of arguments as the number of columns in the primary key
+     * and returns the row, if any, which matches those values.  The second
+     * mode is retrieval by query, where only a single argument is provided,
+     * which must be a Junxa query builder, a Junxa query element, or an array,
+     * which will be used as a query builder configuration specification.  The
+     * query provided will automatically have a limit of 1 applied to it.
      *
      * It is not safe to send Web user input directly to this function because
      * it accepts an array argument; PHP's [] request data syntax means that a
