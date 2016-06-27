@@ -333,6 +333,16 @@ class Junxa
     private static $echo = false;
 
     /**
+     * Static factory method.
+     *
+     * @param array<string:mixed> array of configuration parameters; see set functions for each for details
+     */
+    public static function make(array $def = null)
+    {
+        return new self($def);
+    }
+
+    /**
      * Constructor.
      *
      * @param array<string:mixed> array of configuration parameters; see set functions for each for details
