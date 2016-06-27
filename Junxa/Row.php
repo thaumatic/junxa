@@ -23,7 +23,7 @@ class Row
     {
         $this->table = $table;
         $this->data = $data;
-        if(count($data)) {
+        if($data) {
             $demandOnlyColumns = $table->getDemandOnlyColumns();
             if($demandOnlyColumns) {
                 $columns = [];
@@ -359,7 +359,7 @@ class Row
     {
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
-            if(property_exists($this, $column))
+            if(array_key_exists($column, $this->fields))
                 $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         if(!count($fields))
             return Junxa::RESULT_INSERT_NOOP;
@@ -382,7 +382,7 @@ class Row
     {
         $fields = [];
         foreach($this->table->getStaticColumns() as $column)
-            if(property_exists($this, $column))
+            if(array_key_exists($column, $this->fields))
                 $fields[] = Q::set($this->table->$column, $this->fields[$column]);
         if(!count($fields))
             return Junxa::RESULT_REPLACE_NOOP;
