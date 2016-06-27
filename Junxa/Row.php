@@ -336,8 +336,9 @@ class Row
                         || !is_numeric($this->fields[$column])
                         || $this->fields[$column] != $value
                     )
-                )
+                ) {
                     $queryDef->update($column, $this->fields[$column]);
+                }
             }
         } else {
             $columns = $this->table->getStaticColumns();
@@ -352,8 +353,9 @@ class Row
                     || !is_numeric($this->fields[$column])
                     || $this->fields[$column] != $value
                 )
-            )
+            ) {
                 $queryDef->update($column, $this->fields[$column]);
+            }
         }
         if(!$queryDef->getUpdate())
             return Junxa::RESULT_UPDATE_NOOP;
