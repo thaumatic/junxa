@@ -895,4 +895,19 @@ class Builder
         return $this->isMultitable;
     }
 
+    /**
+     * Retrieves the first clause out of the provided list of clauses that
+     * has a definition on this query builder, if any.
+     *
+     * @param array<string> list of clauses
+     * @return string|null
+     */
+    public function checkClauses($clauses)
+    {
+        foreach($clauses as $clause)
+            if(isset($this->$clause) && $this->$clause)
+                return $clause;
+        return null;
+    }
+
 }
