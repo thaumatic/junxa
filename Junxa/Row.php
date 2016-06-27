@@ -310,7 +310,6 @@ class Row
             'update',
             'delete',
             'group',
-            'order',
             'having',
         ];
         if($queryDef) {
@@ -448,7 +447,7 @@ class Row
         if(!$foundUniqueKeyMember)
             return Junxa::RESULT_MERGE_NOKEY;
         if($queryDef)
-            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
+            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'having', 'limit'] as $item)
                 if(isset($queryDef[$item]))
                     throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $item);
         $queryDef['insert'] = $insertFields;
@@ -549,7 +548,6 @@ class Row
             'update',
             'delete',
             'group',
-            'order',
             'having',
         ];
         if($queryDef) {
