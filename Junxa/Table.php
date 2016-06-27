@@ -79,7 +79,7 @@ class Table
      * Initialization function to be called upon the table model being set up.
      * Intended to be overridden by child classes.
      */
-    public function init()
+    protected function init()
     {
     }
 
