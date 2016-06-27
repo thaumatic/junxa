@@ -58,7 +58,7 @@ class Row
         default :
             foreach($this->table->primary as $key)
                 $elem[] = $this->$key;
-            return join('----', $elem);
+            return join("\0", $args) . '|' . join('', array_map('md5', $args));
         }
     }
 
