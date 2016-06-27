@@ -5,6 +5,7 @@ namespace Thaumatic\Junxa;
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
+use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
 
 /**
@@ -13,8 +14,8 @@ use Thaumatic\Junxa\Query as Q;
 class Row
 {
 
-    private $columns = [];
     private $data;
+    private $fields = [];
     private $deleted;
     private $table;
 
@@ -34,7 +35,7 @@ class Row
             }
             for($i = 0; $i < count($columns); $i++) {
                 $column = $columns[$i];
-                $this->columns[$column] = $table->$column->import($data[$i]);
+                $this->fields[$column] = $table->$column->import($data[$i]);
             }
         }
         $this->init();
@@ -46,6 +47,37 @@ class Row
      */
     protected function init()
     {
+    }
+
+    /**
+     * Property-mode accessor for field values.
+     *
+     * @param string field name
+     * @return mixed
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified field does not exist
+     */
+    public function __get($name)
+    {
+        if(array_key_exists($name, $this->fields))
+            return $this->fields[$name];
+        throw new JunxaNoSuchColumnException($name);
+    }
+
+    /**
+     * Property-mode mutator for field values.
+     *
+     * @param string field name
+     * @param mixed value to assign
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified field does not exist
+     */
+    public function __set($name, $value)
+    {
+        if(array_key_exists($name, $this->fields))
+            $this->fields[$name] = $value;
+        else
+            throw new JunxaNoSuchColumnException($name);
     }
 
     /**
@@ -81,10 +113,18 @@ class Row
         return $this->table;
     }
 
+    /**
+     * Retrieves the column model for the specified column.
+     *
+     * @param string column name
+     * @return Thaumatic\Junxa\Column result column, actual class will be as
+     * defined by Junxa::columnClass()
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException
+     */
     public function column($column)
     {
         if(!in_array($column, $this->table->columns))
-            throw new \Exception("no such column '$column' in row");
+            throw new JunxaNoSuchColumnException($column);
         return $this->table->$column;
     }
 
