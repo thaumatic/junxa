@@ -303,12 +303,22 @@ class Row
 
     public function update($queryDef = [])
     {
-        static $badClauses = ['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having'];
+        static $badClauses = [
+            'select',
+            'insert',
+            'replace',
+            'update',
+            'delete',
+            'group',
+            'order',
+            'having',
+        ];
         if($queryDef) {
             if(is_array($queryDef)) {
                 foreach($badClauses as $clause)
                     if(isset($queryDef[$clause]))
                         throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
+                $queryDef = $this->table->query($queryDef);
             } elseif($queryDef instanceof QueryBuilder) {
                 if($clause = $queryDef->checkClauses($badClauses))
                     throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
@@ -319,8 +329,9 @@ class Row
                     . 'query definition'
                 );
             }
+        } else {
+            $queryDef = $this->table->query();
         }
-        $queryDef = $this->table->query($queryDef);
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
         if($demandOnlyColumns) {
             $columns = [];
@@ -371,18 +382,42 @@ class Row
 
     public function insert($queryDef = [])
     {
-        $fields = [];
+        static $badClauses = [
+            'select',
+            'insert',
+            'replace',
+            'update',
+            'delete',
+            'group',
+            'order',
+            'having',
+            'limit',
+        ];
+        if($queryDef) {
+            if(is_array($queryDef)) {
+                foreach($badClauses as $clause)
+                    if(isset($queryDef[$clause]))
+                        throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
+                $queryDef = $this->table->query($queryDef);
+            } elseif($queryDef instanceof QueryBuilder) {
+                if($clause = $queryDef->checkClauses($badClauses))
+                    throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for insert() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        } else {
+            $queryDef = $this->table->query($queryDef);
+        }
         foreach($this->table->getStaticColumns() as $column)
             if(array_key_exists($column, $this->fields))
-                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
-        if(!$fields)
+                $queryDef->insert($column, $this->fields[$column]);
+        if(!$queryDef->getInsert())
             return Junxa::RESULT_INSERT_NOOP;
-        if($queryDef)
-            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
-                if(isset($queryDef[$item]))
-                    throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $item);
-        $queryDef['insert'] = $fields;
-        $query = $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->queryStatus();
         if(!Junxa::OK($res))
             return $res;
