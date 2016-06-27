@@ -36,8 +36,15 @@ class Row
                 $this->columns[$column] = $table->$column->import($data[$i]);
             }
         }
-        if(method_exists($this, 'init'))
-            $this->init();
+        $this->init();
+    }
+
+    /**
+     * Initialization function to be called upon the database model being set
+     * up.  Intended to be overridden by child classes.
+     */
+    protected function init()
+    {
     }
 
     public function cacheKey()
@@ -238,8 +245,7 @@ class Row
             $column = $columns[$i];
             $this->$column = $row[$i];
         }
-        if(method_exists($this, 'init'))
-            $this->init();
+        $this->init();
         $this->checkCaching();
         return Junxa::RESULT_SUCCESS;
     }
