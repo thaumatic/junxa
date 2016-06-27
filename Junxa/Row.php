@@ -3,6 +3,7 @@
 namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa;
+use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Query as Q;
 
@@ -47,11 +48,19 @@ class Row
     {
     }
 
+    /**
+     * Retrieves the table row cache key to use for this row, based on its
+     * primary key settings.
+     *
+     * @return string
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
+     * table we are attached to has no primary key
+     */
     public function cacheKey()
     {
         switch(count($this->table->primary)) {
         case 0  :
-            throw new \Exception('cannot calculate cache key without primary keys');
+            throw new JunxaConfigurationException('cannot generate cache key without primary key');
         case 1  :
             $key = $this->table->primary[0];
             return strval($this->$key);
