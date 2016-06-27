@@ -215,7 +215,12 @@ class Junxa
      * @var array<string:mixed>|Thaumatic\Junxa an alternate Junxa configuration or instance that database changes (not selects)
      * should be sent to (for primary/secondary replication architectures)
      */
-    private $sendChanges;
+    private $changeHandler;
+
+    /**
+     * @var Thaumatic\Junxa the object to send changes to, either the same as $changeHandler or built based on it
+     */
+    private $changeHandlerObject;
 
     /**
      * @var int bitmask of Thaumatic\Junxa::DB_* values for Junxa's general behavior
@@ -335,48 +340,42 @@ class Junxa
     public function __construct(array $def = null)
     {
         if($def !== null) {
-            if(!empty($def['hostname']))
-                $this->hostname = $def['hostname'];
-            if(!empty($def['database']))
-                $this->database = $def['database'];
-            if(!empty($def['username']))
-                $this->username = $def['username'];
-            if(!empty($def['password']))
-                $this->password = $def['password'];
-            if(!empty($def['options']))
-                $this->options = $def['options'];
-            if(!empty($def['defaultTableClass']))
-                $this->defaultTableClass = $def['defaultTableClass'];
-            if(!empty($def['defaultColumnClass']))
-                $this->defaultColumnClass = $def['defaultColumnClass'];
-            if(!empty($def['defaultRowClass']))
-                $this->defaultRowClass = $def['defaultRowClass'];
-            if(!empty($def['autoTableClassNamespace']))
-                $this->autoTableClassNamespace = $def['autoTableClassNamespace'];
-            if(!empty($def['autoColumnClassNamespace']))
-                $this->autoColumnClassNamespace = $def['autoColumnClassNamespace'];
-            if(!empty($def['autoRowClassNamespace']))
-                $this->autoRowClassNamespace = $def['autoRowClassNamespace'];
-            if(!empty($def['tableClasses']))
-                foreach($def['tableClasses'] as $name => $class)
-                    if(preg_match('!^/.*/$!', $name))
-                        $this->regexpTableClasses[$name] = $class;
-                    else
-                        $this->tableClasses[$name] = $class;
-            if(!empty($def['columnClasses']))
-                foreach($def['columnClasses'] as $name => $class)
-                    if(preg_match('!^/.*/$!', $name))
-                        $this->regexpColumnClasses[$name] = $class;
-                    else
-                        $this->columnClasses[$name] = $class;
-            if(!empty($def['rowClasses']))
-                foreach($def['rowClasses'] as $name => $class)
-                    if(preg_match('!^/.*/$!', $name))
-                        $this->regexpRowClasses[$name] = $class;
-                    else
-                        $this->rowClasses[$name] = $class;
-            if(!empty($def['sendChanges']))
-                $this->sendChanges = $def['sendChanges'];
+            if(array_key_exists('hostname', $def))
+                $this->setHostname($def['hostname']);
+            if(array_key_exists('database', $def))
+                $this->setDatabase($def['database']);
+            if(array_key_exists('username', $def))
+                $this->setUsername($def['username']);
+            if(array_key_exists('password', $def))
+                $this->setPassword($def['password']);
+            if(array_key_exists('options', $def))
+                $this->setOptions($def['options']);
+            if(array_key_exists('defaultTableClass', $def))
+                $this->setDefaultTableClass($def['defaultTableClass']);
+            if(array_key_exists('defaultColumnClass', $def))
+                $this->setDefaultColumnClass($def['defaultColumnClass']);
+            if(array_key_exists('defaultRowClass', $def))
+                $this->setDefaultRowClass($def['defaultRowClass']);
+            if(array_key_exists('autoTableClassNamespace', $def))
+                $this->setAutoTableClassNamespace($def['autoTableClassNamespace']);
+            if(array_key_exists('autoColumnClassNamespace', $def))
+                $this->setAutoColumnClassNamespace($def['autoColumnClassNamespace']);
+            if(array_key_exists('autoRowClassNamespace', $def))
+                $this->setAutoRowClassNamespace($def['autoRowClassNamespace']);
+            if(array_key_exists('regexpTableClasses', $def))
+                $this->setRegexpTableClasses($def['regexpTableClasses']);
+            if(array_key_exists('regexpColumnClasses', $def))
+                $this->setRegexpColumnClasses($def['regexpColumnClasses']);
+            if(array_key_exists('regexpRowClasses', $def))
+                $this->setRegexpRowClasses($def['regexpRowClasses']);
+            if(array_key_exists('tableClasses', $def))
+                $this->setTableClasses($def['tableClasses']);
+            if(array_key_exists('columnClasses', $def))
+                $this->setColumnClasses($def['columnClasses']);
+            if(array_key_exists('rowClasses', $def))
+                $this->setRowClasses($def['rowClasses']);
+            if(array_key_exists('changeHandler', $def))
+                $this->setChangeHandler($def['changeHandler']);
             $this->ready();
         }
     }
@@ -387,11 +386,13 @@ class Junxa
      * to be called explicitly when configuring in fluent mode.
      *
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
+     * @return $this
      */
     public function ready()
     {
         $this->connect();
         $this->determineTables();
+        return $this;
     }
 
     /**
@@ -497,6 +498,7 @@ class Junxa
     public function setOptions($val)
     {
         $this->options = $val;
+        return $this;
     }
 
     /**
@@ -522,6 +524,7 @@ class Junxa
             $this->options |= $option;
         else
             $this->options &= ~$option;
+        return $this;
     }
 
     /**
@@ -533,6 +536,322 @@ class Junxa
     public function getOption($option)
     {
         return (bool) ($this->options & $option);
+    }
+
+    /**
+     * Sets the class to use as the table model when no more specific table
+     * model is found.
+     *
+     * @param string class name
+     * @return $this
+     */
+    public function setDefaultTableClass($val)
+    {
+        $this->defaultTableClass = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the class used as the table model when no more specific table
+     * model is found.
+     *
+     * @return string
+     */
+    public function getDefaultTableClass()
+    {
+        return $this->defaultTableClass;
+    }
+
+    /**
+     * Sets the class to use as the row model when no more specific row model
+     * is found.
+     *
+     * @param string class name
+     * @return $this
+     */
+    public function setDefaultRowClass($val)
+    {
+        $this->defaultRowClass = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the class used as the row model when no more specific row
+     * model is found.
+     *
+     * @return string
+     */
+    public function getDefaultRowClass()
+    {
+        return $this->defaultRowClass;
+    }
+
+    /**
+     * Sets the namespace that will be searched for a class to use for the
+     * table model if no more specific table model is found (looking for a
+     * class name that is the PascalCase version of the table name).
+     *
+     * @param string namespace prefix, without trailing backslash
+     * @return $this
+     */
+    public function setAutoTableClassNamespace($val)
+    {
+        $this->autoTableClassNamespace = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the auto table class namespace.
+     *
+     * @return string
+     */
+    public function getAutoTableClassNamespace($val)
+    {
+        return $this->autoTableClassNamespace;
+    }
+
+    /**
+     * Sets the namespace that will be searched for a class to use for the
+     * column model if no more specific column model is found (looking for a
+     * class name that is the PascalCase version of the table name).
+     *
+     * @param string namespace prefix, without trailing backslash
+     * @return $this
+     */
+    public function setAutoColumnClassNamespace($val)
+    {
+        $this->autoColumnClassNamespace = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the auto column class namespace.
+     *
+     * @return string
+     */
+    public function getAutoColumnClassNamespace($val)
+    {
+        return $this->autoColumnClassNamespace;
+    }
+
+    /**
+     * Sets the namespace that will be searched for a class to use for the
+     * row model if no more specific row model is found (looking for a
+     * class name that is the PascalCase version of the table name).
+     *
+     * @param string namespace prefix, without trailing backslash
+     * @return $this
+     */
+    public function setAutoRowClassNamespace($val)
+    {
+        $this->autoRowClassNamespace = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the auto row class namespace.
+     *
+     * @return string
+     */
+    public function getAutoRowClassNamespace($val)
+    {
+        return $this->autoRowClassNamespace;
+    }
+
+    /**
+     * Sets a mapping of regular expressions to class names; if no more
+     * specific table model is found, this mapping will be searched and
+     * for the first regular expression that matches the table name, the
+     * corresponding class will be used as the table model.
+     *
+     * @param array<string:string> map of regular expressions to class names
+     * @return $this
+     */
+    public function setRegexpTableClasses(array $val)
+    {
+        $this->regexpTableClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of regexp-based table classes.
+     *
+     * @return array<string:string>
+     */
+    public function getRegexpTableClasses()
+    {
+        return $this->regexpTableClasses;
+    }
+
+    /**
+     * Sets a mapping of regular expressions to class names; if no more
+     * specific column model is found, this mapping will be searched and
+     * for the first regular expression that matches the table name, the
+     * corresponding class will be used as the column model.
+     *
+     * @param array<string:string> map of regular expressions to class names
+     * @return $this
+     */
+    public function setRegexpColumnClasses(array $val)
+    {
+        $this->regexpColumnClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of regexp-based column classes.
+     *
+     * @return array<string:string>
+     */
+    public function getRegexpColumnClasses()
+    {
+        return $this->regexpColumnClasses;
+    }
+
+    /**
+     * Sets a mapping of regular expressions to class names; if no more
+     * specific row model is found, this mapping will be searched and
+     * for the first regular expression that matches the table name, the
+     * corresponding class will be used as the row model.
+     *
+     * @param array<string:string> map of regular expressions to class names
+     * @return $this
+     */
+    public function setRegexpRowClasses(array $val)
+    {
+        $this->regexpRowClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of regexp-based row classes.
+     *
+     * @return array<string:string>
+     */
+    public function getRegexpRowClasses()
+    {
+        return $this->regexpRowClasses;
+    }
+
+    /**
+     * Sets a mapping of table names to class names.  If a table name appears
+     * in this mapping, the corresponding class name will be used for the
+     * table model.  This is the most specific table class specification.
+     *
+     * @param array<string:string> map of table names to class names
+     * @return $this
+     */
+    public function setTableClasses(array $val)
+    {
+        $this->tableClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of explicit table classes.
+     *
+     * @return array<string:string>
+     */
+    public function getTableClasses()
+    {
+        return $this->tableClasses;
+    }
+
+    /**
+     * Sets a mapping of table names to class names.  If a table name appears
+     * in this mapping, the corresponding class name will be used for the
+     * column model.  This is the most specific column class specification.
+     *
+     * @param array<string:string> map of table names to class names
+     * @return $this
+     */
+    public function setColumnClasses(array $val)
+    {
+        $this->columnClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of explicit column classes.
+     *
+     * @return array<string:string>
+     */
+    public function getColumnClasses()
+    {
+        return $this->columnClasses;
+    }
+
+    /**
+     * Sets a mapping of table names to class names.  If a table name appears
+     * in this mapping, the corresponding class name will be used for the
+     * row model.  This is the most specific row class specification.
+     *
+     * @param array<string:string> map of table names to class names
+     * @return $this
+     */
+    public function setRowClasses(array $val)
+    {
+        $this->rowClasses = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the mapping of explicit row classes.
+     *
+     * @return array<string:string>
+     */
+    public function getRowClasses()
+    {
+        return $this->rowClasses;
+    }
+
+    /**
+     * Sets an alternate Junxa instance to forward changes (any queries other
+     * than SELECTs or SHOWs) to.  This is to support primary/secondary
+     * replication architectures; Junxa can be configured to read from the
+     * secondary(ies) and write to the primary.
+     * 
+     * @param Thaumatic\Junxa|array Junxa instance or array configuration for Junxa instance (will be instanced on demand)
+     * @return $this
+     */
+    public function setChangeHandler($val)
+    {
+        $this->changeHandler = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the change handler configuration.
+     *
+     * @return Thaumatic\Junxa|array
+     */
+    public function getChangeHandler()
+    {
+        return $this->changeHandler;
+    }
+
+    /**
+     * Retrieves the alternate Junxa instance to send database changes to, if any.
+     *
+     * @return Thaumatic\Junxa|false
+     * @throws Thaumatic\Junxa\JunxaConfigurationException if the change handler configuration is invalid
+     */
+    private function getChangeHandlerObject()
+    {
+        if($this->changeHandlerObject === null) {
+            if($this->changeHandler === null) {
+                $this->changeHandlerObject = false;
+            } elseif($this->changeHandler instanceof Junxa) {
+                $this->changeHandlerObject = $this->changeHandler;
+            } elseif(!is_array($this->changeHandler)) {
+                throw new JunxaConfigurationException('invalid change handler');
+            } else {
+                $def = $this->changeHandler;
+                $class = empty($def['class']) ? 'Thaumatic\Junxa' : $def['class'];
+                $this->changeHandlerObject = new $class($def);
+            }
+        }
+        return $this->changeHandlerObject;
     }
 
     /**
@@ -749,7 +1068,7 @@ class Junxa
             if(preg_match('/^\s*(SELECT|SHOW)\s*/is', $query)) {
                 $isResult = true;
             } else {
-                $handler = $this->changeHandler();
+                $handler = $this->getChangeHandlerObject();
                 if($handler) {
                     $result = $handler->query($query, $mode, $echo, $emptyOkay);
                     $this->queryStatus = $handler->getQueryStatus();
@@ -773,7 +1092,7 @@ class Junxa
             if($query->type == 'select' || $query->type == 'show') {
                 $isResult = true;
             } else {
-                $handler = $this->changeHandler();
+                $handler = $this->getChangeHandlerObject();
                 if($handler) {
                     $result = $handler->query($query, $mode, $echo, $emptyOkay);
                     $this->queryStatus = $handler->queryStatus;
@@ -1061,27 +1380,6 @@ class Junxa
     public function getInsertId()
     {
         return $this->insertId;
-    }
-
-    /**
-     * Retrieves the alternate Junxa instance to send database changes to, if any.
-     *
-     * @return Thaumatic\Junxa|false
-     */
-    private function changeHandler()
-    {
-        if($this->changeHandler === null) {
-            if($this->sendChanges === null) {
-                $this->changeHandler = false;
-            } elseif($this->sendChanges instanceof Junxa) {
-                $this->changeHandler = $this->sendChanges;
-            } else {
-                $def = $this->sendChanges;
-                $class = empty($def['class']) ? 'Thaumatic\Junxa' : $def['class'];
-                $this->changeHandler = new $class($def);
-            }
-        }
-        return $this->changeHandler;
     }
 
     /**
