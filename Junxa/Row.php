@@ -542,19 +542,43 @@ class Row
 
     public function delete($queryDef = [])
     {
+        static $badClauses = [
+            'select',
+            'insert',
+            'replace',
+            'update',
+            'delete',
+            'group',
+            'order',
+            'having',
+        ];
+        if($queryDef) {
+            if(is_array($queryDef)) {
+                foreach($badClauses as $clause)
+                    if(isset($queryDef[$clause]))
+                        throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
+                $queryDef = $this->table->query($queryDef);
+            } elseif($queryDef instanceof QueryBuilder) {
+                if($clause = $queryDef->checkClauses($badClauses))
+                    throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for delete() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        } else {
+            $queryDef = $this->table->query();
+        }
         $cond = $this->getMatchCondition();
         if(!$cond)
             return Junxa::RESULT_DELETE_FAIL;
-        if($queryDef)
-            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having'] as $item)
-                if(isset($queryDef[$item]))
-                    throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $item);
-        $queryDef['delete'] = $this->table;
-        if(isset($queryDef['where']))
-            $queryDef['where'] = array_merge(is_array($cond) ? $cond : [$cond], is_array($queryDef['where']) ? $queryDef['where'] : [$queryDef['where']]);
-        else
-            $queryDef['where'] = $cond;
-        $res = $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        foreach($cond as $item)
+            $queryDef->where($item);
+        $queryDef->delete($this->table);
+        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->db()->queryStatus();
         if(Junxa::OK($res)) {
             $this->deleted = true;
             $this->checkCaching(true);
@@ -562,6 +586,12 @@ class Row
         return $res;
     }
 
+    /**
+     * Retrieves whether this row has been deleted via the delete() call on
+     * itself.
+     *
+     * @return bool
+     */
     public function getDeleted()
     {
         return $this->deleted;
