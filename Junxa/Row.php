@@ -446,7 +446,7 @@ class Row
 
     public function changed()
     {
-        if(!count($this->data))
+        if(!$this->data)
             return true;
         $demandOnlyColumns = $table->getDemandOnlyColumns();
         if($demandOnlyColumns) {
