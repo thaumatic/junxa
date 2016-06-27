@@ -158,6 +158,16 @@ class Builder
     }
 
     /**
+     * Retrieves the select clause.
+     *
+     * @return array<mixed>
+     */
+    public function getSelect()
+    {
+        return $this->select;
+    }
+
+    /**
      * Clears the select clause.
      *
      * @return $this
@@ -210,6 +220,16 @@ class Builder
     }
 
     /**
+     * Retrieves the update clause.
+     *
+     * @return array<mixed>
+     */
+    public function getUpdate()
+    {
+        return $this->update;
+    }
+
+    /**
      * Clears the update clause.
      *
      * @return $this
@@ -243,6 +263,16 @@ class Builder
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
+    }
+
+    /**
+     * Retrieves the insert clause.
+     *
+     * @return array<mixed>
+     */
+    public function getInsert()
+    {
+        return $this->insert;
     }
 
     /**
@@ -282,6 +312,16 @@ class Builder
     }
 
     /**
+     * Retrieves the replace clause.
+     *
+     * @return array<mixed>
+     */
+    public function getReplace()
+    {
+        return $this->replace;
+    }
+
+    /**
      * Clears the replace clause.
      *
      * @return $this
@@ -298,6 +338,16 @@ class Builder
             $what = $this->table;
         $this->delete[] = $what;
         return $this;
+    }
+
+    /**
+     * Retrieves the delete clause.
+     *
+     * @return array<mixed>
+     */
+    public function getDelete()
+    {
+        return $this->delete;
     }
 
     /**
@@ -424,6 +474,31 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves the join clause.
+     *
+     * @return array<mixed>
+     */
+    public function getJoin()
+    {
+        return $this->join;
+    }
+
+    /**
+     * Retrieves the where clause.
+     *
+     * @return array<mixed>
+     */
+    public function getWhere()
+    {
+        return $this->where;
+    }
+
+    /**
+     * Clears the where clause.
+     *
+     * @return $this
+     */
     public function clearWhere()
     {
         $this->where = [];
@@ -462,6 +537,21 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves the having clause.
+     *
+     * @return array<mixed>
+     */
+    public function getHaving()
+    {
+        return $this->having;
+    }
+
+    /**
+     * Clears the having clause.
+     *
+     * @return $this
+     */
     public function clearHaving()
     {
         $this->having = [];
@@ -500,6 +590,21 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves the order clause.
+     *
+     * @return array<mixed>
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+
+    /**
+     * Clears the order clause.
+     *
+     * @return $this
+     */
     public function clearOrder()
     {
         $this->order = [];
@@ -507,10 +612,10 @@ class Builder
     }
 
     /**
-     * Convert the most recently added order item to descending sort.
+     * Converts the most recently added order item to descending sort.
      *
      * @return $this
-     * @throws Exception if there are no order items
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there are no order items
      */
     public function desc()
     {
@@ -544,6 +649,21 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves the group clause.
+     *
+     * @return array<mixed>
+     */
+    public function getGroup()
+    {
+        return $this->group;
+    }
+
+    /**
+     * Clears the group clause.
+     *
+     * @return $this
+     */
     public function clearGroup()
     {
         $this->group = [];
@@ -559,6 +679,24 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves the limit clause.
+     *
+     * @return int|string|null
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Defines a limit clause according to a desired page size
+     * and page number.
+     *
+     * @param numeric page number desired
+     * @param numeric page size desired
+     * @return $this
+     */
     public function page($pageNum, $pageSize)
     {
         $pageSize = intval($pageSize);
