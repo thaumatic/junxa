@@ -111,7 +111,11 @@ class Column
         $this->init();
     }
 
-    public function init()
+    /**
+     * Initialization function to be called upon the table model being set up.
+     * Intended to be overridden by child classes.
+     */
+    protected function init()
     {
     }
 
