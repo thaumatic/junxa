@@ -10,6 +10,8 @@ use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 class Column
 {
 
+    const OPTION_NON_MERGING        = 0x00000001;
+
     const MYSQL_FLAG_NOT_NULL       = 0x00000001;
     const MYSQL_FLAG_PRI_KEY        = 0x00000002;
     const MYSQL_FLAG_UNIQUE_KEY     = 0x00000004;
@@ -31,6 +33,7 @@ class Column
     private $fullType;
     private $length;
     private $name;
+    private $options = 0;
     private $precision;
     private $table;
     private $type;
@@ -252,7 +255,7 @@ class Column
         return $out;
     }
 
-    public function table_scan(&$tables, &$null)
+    public function tableScan(&$tables, &$null)
     {
         $tables[$this->table->name()] = true;
     }
@@ -277,12 +280,51 @@ class Column
     {
         $table = $this->table();
         $table->setColumnDemandOnly($this->name(), $flag);
+        return $this;
     }
 
     public function queryDemandOnly()
     {
         $table = $this->table();
         return $table->queryColumnDemandOnly($this->name());
+    }
+
+    /**
+     * Sets the column options bitmask.
+     *
+     * @param int bitmask of Thaumatic\Junxa\Column::OPTION_* values
+     * @return $this
+     */
+    public function setOptions($val)
+    {
+        $this->options = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the column options bitmask.
+     *
+     * @return int bitmask of Thaumatic\Junxa\Column::OPTION_* values
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Enables or disables a column option.
+     *
+     * @param Thaumatic\Junxa\Column::OPTION_* option to manipulate
+     * @param bool whether we want the option on or off
+     * @return $this
+     */
+    public function setOption($option, $flag)
+    {
+        if($flag)
+            $this->options |= $option;
+        else
+            $this->options &= ~$option;
+        return $this;
     }
 
 }
