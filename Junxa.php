@@ -419,7 +419,16 @@ class Junxa
     {
         $this->connect();
         $this->determineTables();
+        $this->init();
         return $this;
+    }
+
+    /**
+     * Initialization function to be called upon the database model being set
+     * up.  Intended to be overridden by child classes.
+     */
+    protected function init()
+    {
     }
 
     /**
