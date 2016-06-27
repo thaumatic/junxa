@@ -8,6 +8,7 @@ use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
+use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 
 /**
  * Models a database row.
@@ -212,7 +213,7 @@ class Row
     public function getMatchCondition()
     {
         $key = $this->table->primaryKey();
-        if(!count($key))
+        if(!$key)
             return 0;
         $what = [];
         foreach($key as $column) {
@@ -302,7 +303,24 @@ class Row
 
     public function update($queryDef = [])
     {
-        $fields = [];
+        static $badClauses = ['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having'];
+        if($queryDef) {
+            if(is_array($queryDef)) {
+                foreach($badClauses as $clause)
+                    if(isset($queryDef[$clause]))
+                        throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
+            } elseif($queryDef instanceof QueryBuilder) {
+                if($clause = $queryDef->checkClauses($badClauses))
+                    throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for update() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        }
+        $queryDef = $this->table->query($queryDef);
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
         if($demandOnlyColumns) {
             $columns = [];
@@ -319,7 +337,7 @@ class Row
                         || $this->fields[$column] != $value
                     )
                 )
-                    $fields[] = Q::set($this->table->$column, $this->fields[$column]);
+                    $queryDef->update($column, $this->fields[$column]);
             }
         } else {
             $columns = $this->table->getStaticColumns();
@@ -335,23 +353,16 @@ class Row
                     || $this->fields[$column] != $value
                 )
             )
-                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
+                $queryDef->update($column, $this->fields[$column]);
         }
-        if(!$fields)
+        if(!$queryDef->getUpdate())
             return Junxa::RESULT_UPDATE_NOOP;
         $cond = $this->getMatchCondition();
         if(!$cond)
             return Junxa::RESULT_UPDATE_NOKEY;
-        if($queryDef)
-            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having'] as $item)
-                if(isset($queryDef[$item]))
-                    throw new JunxaInvalidQueryException('query definition for update() may not define ' . $item);
-        $queryDef['update'] = $fields;
-        if(isset($queryDef['where']))
-            $queryDef['where'] = array_merge(is_array($cond) ? $cond : [$cond], is_array($queryDef['where']) ? $queryDef['where'] : [$queryDef['where']]);
-        else
-            $queryDef['where'] = $cond;
-        $query = $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        foreach($cond as $item)
+            $queryDef->where($item);
+        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->queryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
