@@ -441,7 +441,7 @@ class Row
 
     public function save($queryDef = [])
     {
-        return count($this->data) ? $this->update($queryDef) : $this->insert($queryDef);
+        return $this->data ? $this->update($queryDef) : $this->insert($queryDef);
     }
 
     public function changed()
