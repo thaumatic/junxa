@@ -347,11 +347,16 @@ class Table
      * user could construct a custom query, possibly a dangerous one.  Use
      * rowByPrimaryKey() if you need this.
      *
-     * @param mixed either a primary key part, a Junxa query builder, a Junxa query element, or an array query specification
-     * @param scalar... additional primary key parts, if the table has a multi-part primary key
-     * @return Thaumatic\Junxa\Row row result, actual class will be as defined by Junxa::rowClass()
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if primary key retrieval is used and the number of arguments doesn't match
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if an invalid query definition is provided
+     * @param mixed either a primary key part, a Junxa query builder, a Junxa
+     * query element, or an array query specification
+     * @param scalar... additional primary key parts, if the table has a
+     * multi-part primary key
+     * @return Thaumatic\Junxa\Row row result, actual class will be as defined
+     * by Junxa::rowClass()
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if primary
+     * key retrieval is used and the number of arguments doesn't match
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if an
+     * invalid query definition is provided
      */
     public function row(/* $arg1[, $arg2...] */)
     {
@@ -420,10 +425,14 @@ class Table
      * function.
      * 
      * @param scalar a primary key part
-     * @param scalar... additional primary key parts, if the table has a multi-part primary key
-     * @return Thaumatic\Junxa\Row row result, actual class will be as defined by Junxa::rowClass()
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if primary key retrieval is used and the number of arguments doesn't match
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if an invalid query definition is provided
+     * @param scalar... additional primary key parts, if the table has a
+     * multi-part primary key
+     * @return Thaumatic\Junxa\Row row result, actual class will be as defined
+     * by Junxa::rowClass()
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if primary
+     * key retrieval is used and the number of arguments doesn't match
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if an
+     * invalid query definition is provided
      */
     public function rowByPrimaryKey(/* $arg1[, $arg2...] */)
     {
@@ -441,8 +450,10 @@ class Table
      * query builder, a Junxa query element, a Junxa column, or an array, which
      * will be treated as the specification for a query builder.
      *
-     * @param mixed query builder or query element or column or array query specification, defaults to all rows
-     * @return array<Thaumatic\Junxa\Row> row results, actual class will be as defined by Junxa::rowClass()
+     * @param mixed query builder or query element or column or array query
+     * specification, defaults to all rows
+     * @return array<Thaumatic\Junxa\Row> row results, actual class will be as
+     * defined by Junxa::rowClass()
      */
     public function rows($what = [])
     {
