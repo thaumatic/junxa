@@ -466,18 +466,42 @@ class Row
 
     public function replace($queryDef = [])
     {
-        $fields = [];
+        static $badClauses = [
+            'select',
+            'insert',
+            'replace',
+            'update',
+            'delete',
+            'group',
+            'order',
+            'having',
+            'limit',
+        ];
+        if($queryDef) {
+            if(is_array($queryDef)) {
+                foreach($badClauses as $clause)
+                    if(isset($queryDef[$clause]))
+                        throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+                $queryDef = $this->table->query($queryDef);
+            } elseif($queryDef instanceof QueryBuilder) {
+                if($clause = $queryDef->checkClauses($badClauses))
+                    throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for replace() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        } else {
+            $queryDef = $this->table->query($queryDef);
+        }
         foreach($this->table->getStaticColumns() as $column)
             if(array_key_exists($column, $this->fields))
-                $fields[] = Q::set($this->table->$column, $this->fields[$column]);
-        if(!$fields)
+                $queryDef->replace($column, $this->fields[$column]);
+        if(!$queryDef->getReplace())
             return Junxa::RESULT_REPLACE_NOOP;
-        if($queryDef)
-            foreach(['select', 'insert', 'replace', 'update', 'delete', 'group', 'order', 'having', 'limit'] as $item)
-                if(isset($queryDef[$item]))
-                    throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $item);
-        $queryDef['replace'] = $fields;
-        $query = $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
+        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->queryStatus();
         if(!Junxa::OK($res))
             return $res;
