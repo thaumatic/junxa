@@ -84,7 +84,7 @@ class Builder
         foreach(['select', 'insert', 'replace', 'update', 'delete'] as $type) {
             if($this->$type) {
                 if($this->type && $this->type !== $type)
-                    if($this->type === 'insert' && $type === 'insert')
+                    if($this->type === 'insert' && $type === 'update')
                         continue;
                     else
                         throw new JunxaInvalidQueryException('query specifies both ' . $this->type . ' and ' . $type . ' operations');
