@@ -129,7 +129,7 @@ class Column
         return $this->table;
     }
 
-    public function name()
+    public function getName()
     {
         return $this->name;
     }
@@ -261,7 +261,7 @@ class Column
 
     public function tableScan(&$tables, &$null)
     {
-        $tables[$this->table->name()] = true;
+        $tables[$this->table->getName()] = true;
     }
 
     public function express($query, $context, $column, $parent)
@@ -269,28 +269,28 @@ class Column
         if($this->dynalias)
             return $this->dynalias->express($query, $context, $column, $parent);
         elseif($query->isMultitable())
-            return '`' . $this->table->name() . '`.`' . $this->name() . '`';
+            return '`' . $this->table->getName() . '`.`' . $this->getName() . '`';
         else
-            return '`' . $this->name() . '`';
+            return '`' . $this->getName() . '`';
     }
 
     public function serialize()
     {
         $table = $this->table();
-        return 'column:' . $table->name() . "\0" . $this->name();
+        return 'column:' . $table->getName() . "\0" . $this->getName();
     }
 
     public function setDemandOnly($flag)
     {
         $table = $this->table();
-        $table->setColumnDemandOnly($this->name(), $flag);
+        $table->setColumnDemandOnly($this->getName(), $flag);
         return $this;
     }
 
     public function queryDemandOnly()
     {
         $table = $this->table();
-        return $table->queryColumnDemandOnly($this->name());
+        return $table->queryColumnDemandOnly($this->getName());
     }
 
     /**
