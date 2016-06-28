@@ -228,7 +228,7 @@ class Row
 
     public function find()
     {
-        $target = $this->table->selectTarget();
+        $target = $this->table->getSelectTarget();
         $query = [
             'select'    => $target,
             'limit'     => 2,
@@ -275,8 +275,8 @@ class Row
         $cond = $this->getMatchCondition();
         if(!$cond)
             return Junxa::RESULT_REFRESH_FAIL;
-        $target = $this->table->select_target();
-        if($this->table->db()->change_handler())
+        $target = $this->table->getSelectTarget();
+        if($this->table->db()->getChangeHandlerObject())
             usleep(200000);
         $row = $this->table->db()->query([
             'select'    => $target,
@@ -425,7 +425,7 @@ class Row
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->autoIncrementPrimary())
+            if($field = $this->table->getAutoIncrementPrimary())
                 $this->fields[$field] = $this->table->db()->getInsertId();
         return $this->refresh();
     }
@@ -481,7 +481,7 @@ class Row
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->autoIncrementPrimary())
+            if($field = $this->table->getAutoIncrementPrimary())
                 if($id = $this->table->db()->getInsertId())
                     $this->fields[$field] = $id;
         return $this->refresh();
@@ -530,7 +530,7 @@ class Row
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->autoIncrementPrimary())
+            if($field = $this->table->getAutoIncrementPrimary())
                 $this->fields[$field] = $this->table->db()->getInsertId();
         return $this->refresh();
     }

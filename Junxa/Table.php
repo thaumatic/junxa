@@ -294,7 +294,7 @@ class Table
      *
      * @return string|null
      */
-    public function autoIncrementPrimary()
+    public function getAutoIncrementPrimary()
     {
         return $this->autoIncrementPrimary;
     }
@@ -305,7 +305,7 @@ class Table
      *
      * @return mixed
      */
-    public function selectTarget()
+    public function getSelectTarget()
     {
         if($this->dynamicColumns) {
             $out = $this->dynamicColumns;
@@ -377,7 +377,7 @@ class Table
         $class = $this->db->rowClass($this->name);
         if(!$argc)
             return new $class($this, null);
-        $target = $this->selectTarget();
+        $target = $this->getSelectTarget();
         if($argc === 1 && !is_scalar($args[0])) {
             $what = $args[0];
             if($what instanceof QueryBuilder) {
