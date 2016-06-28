@@ -80,7 +80,7 @@ class Element
             case 'RIGHT'            :
             case 'NATURAL RIGHT'    :
                 if($this->content[0] instanceof Table)
-                    $null[$this->content[0]->name()] = true;
+                    $null[$this->content[0]->getName()] = true;
                 break;
             }
         }
@@ -92,7 +92,7 @@ class Element
             for($i = 0; $i < count($what); $i++)
                 $this->nullCheck($what[$i], $null);
         } elseif($what instanceof Table) {
-            $null[$what->name()] = true;
+            $null[$what->getName()] = true;
         } elseif($what instanceof Element && $what->getStyle() === 'join') {
             $what->nullAllTables($null);
         }
