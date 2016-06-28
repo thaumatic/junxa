@@ -328,6 +328,29 @@ class Table
     }
 
     /**
+     * Removes the specified key from the cache.
+     *
+     * @param string the cache key
+     * @return $this
+     */
+    public function removeCacheKey($key)
+    {
+        unset($this->cache[$key]);
+    }
+
+    /**
+     * Sets the cached value for the specified key.
+     *
+     * @param string the cache key
+     * @param mixed the value
+     * @return $this
+     */
+    public function setCachedValue($key, $value)
+    {
+        $this->cache[$key] = $value;
+    }
+
+    /**
      * @throws JunxaConfigurationException if the database model was not configured for row caching
      */
     public function cachedRow(/* $pkValue1[, $pkValue2...] */)
