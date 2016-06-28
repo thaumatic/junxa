@@ -4,24 +4,11 @@ require 'DatabaseTest.php';
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
+use Thaumatic\Junxa\Query as Q;
 
 class BasicInteractionTest
     extends DatabaseTest
 {
-
-    private function runBasicInteractionTests($db)
-    {
-        $this->assertInstanceOf('Thaumatic\Junxa', $db);
-        $categoryTable = $db->category;
-        $this->assertInstanceOf('Thaumatic\Junxa\Table', $categoryTable);
-        $this->assertSame('category', $categoryTable->name());
-        $itemTable = $db->item;
-        $this->assertInstanceOf('Thaumatic\Junxa\Table', $itemTable);
-        $this->assertSame('item', $itemTable->name());
-        $categoryTableIdColumn = $categoryTable->id;
-        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryTableIdColumn);
-        $this->assertSame('id', $categoryTableIdColumn->name());
-    }
 
     public function testWithArraySetup()
     {
@@ -30,6 +17,7 @@ class BasicInteractionTest
             'database'  => DatabaseTest::TEST_DATABASE_NAME,
         ]);
         $this->runBasicInteractionTests($db);
+        $this->runInsertTests($db);
     }
 
     public function testWithFluentSetup()
@@ -40,6 +28,29 @@ class BasicInteractionTest
             ->ready()
         ;
         $this->runBasicInteractionTests($db);
+        $this->runInsertTests($db);
+    }
+
+    private function runBasicInteractionTests($db)
+    {
+        $this->assertInstanceOf('Thaumatic\Junxa', $db);
+        $categoryTable = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $categoryTable);
+        $this->assertSame('category', $categoryTable->getName());
+        $itemTable = $db->item;
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $itemTable);
+        $this->assertSame('item', $itemTable->getName());
+        $categoryTableIdColumn = $categoryTable->id;
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryTableIdColumn);
+        $this->assertSame('id', $categoryTableIdColumn->getName());
+    }
+
+    private function runInsertTests($db)
+    {
+        $category = $db->category->row();
+        $category->name = 'Uncategorized';
+        $category->created_at = Q::func('NOW');
+        $category->insert();
     }
 
 }
