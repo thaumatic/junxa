@@ -63,7 +63,9 @@ class Row
     {
         if(array_key_exists($name, $this->fields))
             return $this->fields[$name];
-        throw new JunxaNoSuchColumnException($name);
+        if(!$this->table->hasColumn($name))
+            throw new JunxaNoSuchColumnException($name);
+        return null;
     }
 
     /**
@@ -76,7 +78,7 @@ class Row
      */
     public function __set($name, $value)
     {
-        if(array_key_exists($name, $this->fields))
+        if(array_key_exists($name, $this->fields) || $this->table->hasColumn($name))
             $this->fields[$name] = $value;
         else
             throw new JunxaNoSuchColumnException($name);
