@@ -288,11 +288,11 @@ class Row
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
         if($demandOnlyColumns) {
             $columns = [];
-            foreach($this->table->columns as $column)
+            foreach($this->table->getColumns() as $column)
                 if(!in_array($column, $demandOnlyColumns))
                     $columns[] = $column;
         } else {
-            $columns = $this->table->columns;
+            $columns = $this->table->getColumns();
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];

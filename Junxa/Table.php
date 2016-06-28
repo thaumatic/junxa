@@ -221,7 +221,7 @@ class Table
      *
      * @return array<string>
      */
-    public function columns()
+    public function getColumns()
     {
         return $this->columns;
     }
