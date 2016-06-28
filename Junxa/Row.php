@@ -203,12 +203,12 @@ class Row
 
     public function checkCaching($uncache = false)
     {
-        if(($this->table->db()->options & Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->primary)) {
+        if($this->table->db()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
             $key = $this->cacheKey();
             if($uncache)
-                unset($this->table->cache[$key]);
-            elseif(empty($this->table->cache[$key]))
-                $this->table->cache[$key] = $this;
+                $this->table->removeCacheKey($key);
+            elseif($this->table->getCachedValue($key) === null)
+                $this->table->setCachedValue($key, $this);
         }
     }
 
