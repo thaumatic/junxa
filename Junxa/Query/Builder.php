@@ -910,10 +910,24 @@ class Builder
 
     /**
      * Retrieves whether this query spans multiple tables.
+     *
+     * @return bool
      */
     public function isMultitable()
     {
         return $this->isMultitable;
+    }
+
+    /**
+     * Retrieves whether a table's contents are potentially null in a query
+     * because of its join position.
+     *
+     * @param string table name
+     * @return bool
+     */
+    public function isNullTable($name)
+    {
+        return array_key_exists($name, $this->nullTables);
     }
 
     /**
