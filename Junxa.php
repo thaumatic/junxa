@@ -1120,8 +1120,9 @@ class Junxa
             // fallthrough
         case 'object'   :
             if($mode === 0)
-                $mode = $query->mode;
-            if($query->type == 'select' || $query->type == 'show') {
+                $mode = $query->getMode();
+            $queryType = $query->getType();
+            if($queryType === 'select' || $queryType === 'show') {
                 $isResult = true;
             } else {
                 $handler = $this->getChangeHandlerObject();
@@ -1143,9 +1144,9 @@ class Junxa
                     $whyEcho = 'query option';
                 }
             }
-            if($query->type == 'update')
+            if($queryType === 'update')
                 $update = true;
-            elseif($query->type == 'insert' && $query->option('ignore'))
+            elseif($queryType === 'insert' && $query->option('ignore'))
                 $insertIgnore = true;
             $query = $query->express();
             break;
