@@ -715,6 +715,16 @@ class Builder
         return $this;
     }
 
+    /**
+     * Retrieves whether any options are enabled.
+     *
+     * @return bool
+     */
+    public function hasOptions()
+    {
+        return (bool) $this->options;
+    }
+
     public function options(array $what)
     {
         foreach($what as $key => $value)
