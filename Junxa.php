@@ -896,7 +896,7 @@ class Junxa
     {
         if(!$this->database)
             throw new JunxaConfigurationException('database to connect to has not been specified');
-        if($this->options & self::DB_PERSISTENT_CONNECTION)
+        if($this->getOption(self::DB_PERSISTENT_CONNECTION))
             $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->database);
         else
             $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
@@ -1134,7 +1134,7 @@ class Junxa
                     return $result;
                 }
             }
-            if($query->options) {
+            if($query->hasOptions()) {
                 if($query->option('emptyOkay'))
                     $emptyOkay = true;
                 if($query->option('error_okay'))
@@ -1153,7 +1153,7 @@ class Junxa
         default         :
             throw new JunxaInvalidQueryException('invalid argument to query()');
         }
-        if($this->options & self::DB_COLLECT_QUERY_STATISTICS) {
+        if($this->getOption(self::DB_COLLECT_QUERY_STATISTICS)) {
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
         }
@@ -1179,7 +1179,7 @@ class Junxa
                 $this->connect();
                 return $this->query($query, $mode, $echo, $emptyOkay);
             }
-            if($this->options & self::DB_DATABASE_ERRORS)
+            if($this->getOption(self::DB_DATABASE_ERRORS))
                 if(!$errorOkay)
                     throw new JunxaInvalidQueryException($this->queryMessage . "\nQuery was:\n" . $query);
                 else
