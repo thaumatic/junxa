@@ -76,6 +76,17 @@ class Builder
     }
 
     /**
+     * Retrieves the query type.  $this->validate() must have been
+     * called first for the result to be meaningful.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
      * Performs basic validation of the query's configuration.
      *
      * @return $this
