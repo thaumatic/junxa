@@ -187,7 +187,7 @@ class Row
     {
         if(empty($this->fields[$column])) {
             $table = $this->table();
-            if($table->queryColumnDemandOnly($column) && !$this->primaryKeyUnset())
+            if($table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset())
                 $this->fields[$column] = $this->backendValue($column);
         }
         return isset($this->fields[$column]) ? $this->fields[$column] : null;
@@ -214,7 +214,7 @@ class Row
 
     public function getMatchCondition()
     {
-        $key = $this->table->primaryKey();
+        $key = $this->table->getPrimaryKey();
         if(!$key)
             return 0;
         $what = [];
@@ -620,16 +620,16 @@ class Row
         return $this->deleted;
     }
 
-    public function primaryKey()
+    public function getPrimaryKey()
     {
         $table = $this->table();
-        return $table->primaryKey();
+        return $table->getPrimaryKey();
     }
 
-    public function primaryKeyUnset()
+    public function getPrimaryKeyUnset()
     {
         $table = $this->table();
-        foreach($table->primaryKey() as $column)
+        foreach($table->getPrimaryKey() as $column)
             if(empty($this->fields[$column]))
                 return true;
         return false;
