@@ -378,7 +378,7 @@ class Row
             $queryDef->where($item);
         $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->queryStatus();
+        $res = $this->table->db()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
 
@@ -421,7 +421,7 @@ class Row
             return Junxa::RESULT_INSERT_NOOP;
         $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->queryStatus();
+        $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
@@ -477,7 +477,7 @@ class Row
             return Junxa::RESULT_MERGE_NOKEY;
         $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->queryStatus();
+        $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
@@ -526,7 +526,7 @@ class Row
             return Junxa::RESULT_REPLACE_NOOP;
         $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->queryStatus();
+        $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
             return $res;
         if($res === Junxa::RESULT_SUCCESS)
@@ -601,7 +601,7 @@ class Row
             $queryDef->where($item);
         $queryDef->delete($this->table);
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->queryStatus();
+        $res = $this->table->db()->getQueryStatus();
         if(Junxa::OK($res)) {
             $this->deleted = true;
             $this->checkCaching(true);
