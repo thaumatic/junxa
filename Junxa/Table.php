@@ -242,7 +242,7 @@ class Table
      *
      * @return array<string>
      */
-    public function staticColumns()
+    public function getStaticColumns()
     {
         return $this->staticColumns;
     }
@@ -252,7 +252,7 @@ class Table
      *
      * @return array<string>
      */
-    public function dynamicColumns()
+    public function getDynamicColumns()
     {
         return $this->dynamicColumns;
     }
@@ -262,7 +262,7 @@ class Table
      *
      * @return array<string>
      */
-    public function demandOnlyColumns()
+    public function getDemandOnlyColumns()
     {
         return $this->demandOnlyColumns;
     }
