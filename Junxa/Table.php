@@ -227,6 +227,17 @@ class Table
     }
 
     /**
+     * Retrieves whether the table has a column of a given name.
+     *
+     * @param string column name
+     * @return bool
+     */
+    public function hasColumn($name)
+    {
+        return in_array($name, $this->columns);
+    }
+
+    /**
      * Retrieves the list of non-dynamic (i.e. referencing an actual database column) column names for this table.
      *
      * @return array<string>
