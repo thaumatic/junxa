@@ -575,7 +575,7 @@ class Table
     {
         if($context === 'join')
             return '`' . $this->name . '`';
-        if($query->getIsMultitable() && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')) {
+        if($query->isMultitable() && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')) {
             if($this->demandOnlyColumns && $context !== 'function') {
                 $items = [];
                 foreach($this->columns as $column)

@@ -911,7 +911,7 @@ class Builder
     /**
      * Retrieves whether this query spans multiple tables.
      */
-    public function getIsMultitable()
+    public function isMultitable()
     {
         return $this->isMultitable;
     }

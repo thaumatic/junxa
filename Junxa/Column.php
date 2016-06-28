@@ -268,7 +268,7 @@ class Column
     {
         if($this->dynalias)
             return $this->dynalias->express($query, $context, $column, $parent);
-        elseif($query->getIsMultitable())
+        elseif($query->isMultitable())
             return '`' . $this->table->name() . '`.`' . $this->name() . '`';
         else
             return '`' . $this->name() . '`';
