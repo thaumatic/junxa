@@ -339,6 +339,17 @@ class Table
     }
 
     /**
+     * Retreives the cached value for the specified key.
+     *
+     * @param string the cache key
+     * @return mixed
+     */
+    public function getCachedValue($key, $value)
+    {
+        return array_key_exists($key, $this->cache) ? $this->cache[$key] : null;
+    }
+
+    /**
      * Sets the cached value for the specified key.
      *
      * @param string the cache key
