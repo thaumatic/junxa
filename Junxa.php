@@ -868,7 +868,7 @@ class Junxa
      * @throws Thaumatic\Junxa\Exception\JunxaConfigurationException if the
      * change handler configuration is invalid
      */
-    private function getChangeHandlerObject()
+    public function getChangeHandlerObject()
     {
         if($this->changeHandlerObject === null) {
             if($this->changeHandler === null) {
