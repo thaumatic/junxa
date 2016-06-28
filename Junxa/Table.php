@@ -93,11 +93,11 @@ class Table
     private function determineColumns($columnCount = null, $fields = [])
     {
         $index = 0;
-        foreach($this->db->query('SHOW COLUMNS FROM ' . $this->name()) as $row)
+        foreach($this->db->query('SHOW COLUMNS FROM ' . $this->getName()) as $row)
             $colinfo[$index++] = $row;
         if($columnCount === null) {
             $fields = [];
-            $res = $this->db->query("SELECT *\n\tFROM " . $this->name() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
+            $res = $this->db->query("SELECT *\n\tFROM " . $this->getName() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
             $columnCount = $res->field_count;
             for($i = 0; $i < $columnCount; $i++) {
                 $fields[] = $res->fetch_field();
@@ -272,7 +272,7 @@ class Table
      *
      * @return string
      */
-    public function name()
+    public function getName()
     {
         return $this->name;
     }
@@ -283,7 +283,7 @@ class Table
      *
      * @return array<string>
      */
-    public function primaryKey()
+    public function getPrimaryKey()
     {
         return $this->primary;
     }
@@ -520,7 +520,7 @@ class Table
      */
     public function optimize()
     {
-        $this->db->query('OPTIMIZE TABLE `' . $this->name() . '`', Junxa::QUERY_FORGET);
+        $this->db->query('OPTIMIZE TABLE `' . $this->getName() . '`', Junxa::QUERY_FORGET);
     }
 
     /**
@@ -617,7 +617,7 @@ class Table
      */
     public function serialize()
     {
-        return 'table:' . $this->name();
+        return 'table:' . $this->getName();
     }
 
     /**
