@@ -600,6 +600,7 @@ class Row
         foreach($cond as $item)
             $queryDef->where($item);
         $queryDef->delete($this->table);
+        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         if(Junxa::OK($res)) {
