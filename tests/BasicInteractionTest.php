@@ -15,6 +15,7 @@ class BasicInteractionTest
         $db = new Junxa([
             'hostname'  => 'localhost',
             'database'  => DatabaseTest::TEST_DATABASE_NAME,
+            'options'   => Junxa::DB_DATABASE_ERRORS,
         ]);
         $this->runBasicInteractionTests($db);
         $this->runInsertTests($db);
@@ -25,6 +26,7 @@ class BasicInteractionTest
         $db = Junxa::make()
             ->setHostname('localhost')
             ->setDatabase(DatabaseTest::TEST_DATABASE_NAME)
+            ->setOption(Junxa::DB_DATABASE_ERRORS, true)
             ->ready()
         ;
         $this->runBasicInteractionTests($db);
@@ -51,6 +53,11 @@ class BasicInteractionTest
         $category->name = 'Uncategorized';
         $category->created_at = Q::func('NOW');
         $category->insert();
+        $this->assertInternalType('int', $category->id);
+        $this->assertSame('Uncategorized', $category->name);
+        $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->created_at);
+        $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->changed_at);
+        $category->delete();
     }
 
 }
