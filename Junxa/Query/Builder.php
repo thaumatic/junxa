@@ -762,6 +762,9 @@ class Builder
         $tables = [];
         $null = [];
         $type = $this->type;
+        if ($type === null) {
+            throw new JunxaInvalidQueryException('query has not been validated');
+        }
         $main = $this->$type;
         if(is_array($main)) {
             for($i = 0; $i < count($main); $i++)
