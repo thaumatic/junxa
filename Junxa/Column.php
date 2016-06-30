@@ -222,7 +222,7 @@ class Column
             case 'tinyint'  :
                 if($this->flag(self::MYSQL_FLAG_ZEROFILL))
                     break;
-                if($this->length === 1 && $this->flag(self::MYSQL_FLAG_UNSIGNED))
+                if($this->length === 1 && !$this->flag(self::MYSQL_FLAG_UNSIGNED))
                     // interpret as bool
                     if($value === '1')
                         return true;
