@@ -49,15 +49,38 @@ class BasicInteractionTest
 
     private function runInsertTests($db)
     {
-        $category = $db->category->row();
-        $category->name = 'Uncategorized';
-        $category->created_at = Q::func('NOW');
-        $category->insert();
-        $this->assertInternalType('int', $category->id);
-        $this->assertSame('Uncategorized', $category->name);
-        $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->created_at);
-        $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->changed_at);
-        $category->delete();
+        try {
+            $category = $db->category->row();
+            $category->name = 'Uncategorized';
+            $category->created_at = Q::func('NOW');
+            $category->insert();
+            $this->assertInternalType('int', $category->id);
+            $this->assertSame('Uncategorized', $category->name);
+            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->created_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($category->created_at));
+            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->changed_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
+            $this->assertTrue($category->active);
+            $item = $db->item->row();
+            $item->category_id = $category->id;
+            $item->name = 'Widget';
+            $item->created_at = Q::func('NOW');
+            $item->insert();
+            $this->assertInternalType('int', $item->id);
+            $this->assertSame($category->id, $item->category_id);
+            $this->assertSame('Widget', $item->name);
+            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $item->created_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($item->created_at));
+            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $item->changed_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
+            $this->assertTrue($item->active);
+            $item->delete();
+        } finally {
+            if(isset($category) && $category->id !== null)
+                $category->delete();
+            if(isset($item) && $item->id !== null)
+                $item->delete();
+        }
     }
 
 }
