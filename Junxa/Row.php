@@ -264,7 +264,7 @@ class Row
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->fields[$column] = $data[$i];
+            $this->fields[$column] = $this->table->$column->import($data[$i]);
         }
         $this->checkCaching();
         return $out;
@@ -296,7 +296,7 @@ class Row
         }
         for($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->fields[$column] = $row[$i];
+            $this->fields[$column] = $this->table->$column->import($row[$i]);
         }
         $this->init();
         $this->checkCaching();
