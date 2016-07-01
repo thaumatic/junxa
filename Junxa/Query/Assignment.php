@@ -11,15 +11,15 @@ use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
  */
 class Assignment
 {
-	
-	private $column;
-	private $value;
+    
+    private $column;
+    private $value;
 
-	public function __construct(Column $column, $value)
-	{
-		$this->column = $column;
-		$this->value = $value;
-	}
+    public function __construct(Column $column, $value)
+    {
+        $this->column = $column;
+        $this->value = $value;
+    }
 
     public function getColumn()
     {
@@ -31,11 +31,11 @@ class Assignment
         return $this->value;
     }
 
-	public function tableScan(&$tables, &$null)
-	{
-		$this->column->tableScan($tables, $null);
-		if(is_object($this->value) && method_exists($this->value, 'tableScan'))
-			$this->value->tableScan($tables, $null);
-	}
-
+    public function tableScan(&$tables, &$null)
+    {
+        $this->column->tableScan($tables, $null);
+        if (is_object($this->value) && method_exists($this->value, 'tableScan')) {
+            $this->value->tableScan($tables, $null);
+        }
+    }
 }

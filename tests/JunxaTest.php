@@ -1,13 +1,12 @@
 <?php
 
-require 'DatabaseTest.php';
+require_once 'DatabaseTest.php';
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
 
-class JunxaTest
-    extends DatabaseTest
+class JunxaTest extends DatabaseTest
 {
 
     public function testWithArraySetup()
@@ -83,11 +82,12 @@ class JunxaTest
             $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
             $this->assertTrue($item->active);
         } finally {
-            if(isset($category) && $category->id !== null)
+            if (isset($category) && $category->id !== null) {
                 $category->delete();
-            if(isset($item) && $item->id !== null)
+            }
+            if (isset($item) && $item->id !== null) {
                 $item->delete();
+            }
         }
     }
-
 }

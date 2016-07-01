@@ -72,18 +72,25 @@ class Builder
      */
     public function __construct($def = [], $skipValidate = false)
     {
-        if(!$def)
+        if (!$def) {
             return;
-        foreach(['select', 'insert', 'replace', 'update', 'where', 'having', 'order', 'group'] as $item)
-            if(isset($def[$item]) && $def[$item] !== [])
+        }
+        foreach (['select', 'insert', 'replace', 'update', 'where', 'having', 'order', 'group'] as $item) {
+            if (isset($def[$item]) && $def[$item] !== []) {
                 $this->$item = is_array($def[$item]) ? $def[$item] : [$def[$item]];
-        foreach(['join', 'delete', 'limit', 'mode'] as $item)
-            if(isset($def[$item]) && $def[$item] !== [])
+            }
+        }
+        foreach (['join', 'delete', 'limit', 'mode'] as $item) {
+            if (isset($def[$item]) && $def[$item] !== []) {
                 $this->$item = $def[$item];
-        if(isset($def['options']))
+            }
+        }
+        if (isset($def['options'])) {
             $this->options = is_array($def['options']) ? $def['options'] : [$def['options'] => true];
-        if(!$skipValidate)
+        }
+        if (!$skipValidate) {
             $this->validate();
+        }
     }
 
     /**
@@ -105,37 +112,45 @@ class Builder
      */
     public function validate()
     {
-        if ($this->validated)
+        if ($this->validated) {
             return $this;
-        foreach(['select', 'insert', 'replace', 'update', 'delete'] as $type) {
-            if($this->$type) {
-                if($this->type && $this->type !== $type)
-                    if($this->type === 'insert' && $type === 'update')
+        }
+        foreach (['select', 'insert', 'replace', 'update', 'delete'] as $type) {
+            if ($this->$type) {
+                if ($this->type && $this->type !== $type) {
+                    if ($this->type === 'insert' && $type === 'update') {
                         continue;
-                    else
+                    } else {
                         throw new JunxaInvalidQueryException('query specifies both ' . $this->type . ' and ' . $type . ' operations');
+                    }
+                }
                 $this->type = $type;
             }
         }
-        if(!$this->type)
+        if (!$this->type) {
             throw new JunxaInvalidQueryException('query must specify an operation type');
-        switch($this->type) {
-        case 'select'   :
-            break;
-        case 'insert'   :
-        case 'replace'  :
-            foreach(['join', 'where', 'having', 'order', 'group', 'limit'] as $item)
-                if($this->$item)
-                    throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
-            break;
-        case 'update'   :
-        case 'delete'   :
-            foreach(['join', 'having', 'group'] as $item)
-                if($this->$item)
-                    throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
-            break;
-        default         :
-            throw new JunxaInvalidQueryException("unknown query type $this->type");
+        }
+        switch ($this->type) {
+            case 'select':
+                break;
+            case 'insert':
+            case 'replace':
+                foreach (['join', 'where', 'having', 'order', 'group', 'limit'] as $item) {
+                    if ($this->$item) {
+                        throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
+                    }
+                }
+                break;
+            case 'update':
+            case 'delete':
+                foreach (['join', 'having', 'group'] as $item) {
+                    if ($this->$item) {
+                        throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
+                    }
+                }
+                break;
+            default:
+                throw new JunxaInvalidQueryException("unknown query type $this->type");
         }
         $this->validated = true;
         return $this;
@@ -180,18 +195,19 @@ class Builder
     public function select()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'select');
-        case 1  :
-            $what = $args[0];
-            if(is_string($what) && $this->table)
-                $what = $this->table->$what;
-            $this->select[] = $what;
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'select');
+            case 1:
+                $what = $args[0];
+                if (is_string($what) && $this->table) {
+                    $what = $this->table->$what;
+                }
+                $this->select[] = $what;
+                $this->changed();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -228,8 +244,9 @@ class Builder
     public function alias($name)
     {
         $ix = count($this->select) - 1;
-        if($ix < 0)
+        if ($ix < 0) {
             throw new JunxaInvalidQueryException('no select items');
+        }
         $this->select[$ix] = Q::alias($this->select[$ix], $name);
         $this->changed();
         return $this;
@@ -238,26 +255,28 @@ class Builder
     public function update()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'update');
-        case 1  :
-            $what = $args[0];
-            if(!($what instanceof Assignment))
-                throw new JunxaInvalidQueryException('single argument to update() must be a column assignment');
-            $this->update[] = $what;
-            $this->changed();
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->update[] = new Assignment($a, $b);
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'update');
+            case 1:
+                $what = $args[0];
+                if (!($what instanceof Assignment)) {
+                    throw new JunxaInvalidQueryException('single argument to update() must be a column assignment');
+                }
+                $this->update[] = $what;
+                $this->changed();
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->update[] = new Assignment($a, $b);
+                $this->changed();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -287,26 +306,28 @@ class Builder
     public function insert()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'insert');
-        case 1  :
-            $what = $args[0];
-            if(!($what instanceof Assignment))
-                throw new JunxaInvalidQueryException('single argument to insert() must be a column assignment');
-            $this->insert[] = $what;
-            $this->changed();
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->insert[] = new Assignment($a, $b);
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'insert');
+            case 1:
+                $what = $args[0];
+                if (!($what instanceof Assignment)) {
+                    throw new JunxaInvalidQueryException('single argument to insert() must be a column assignment');
+                }
+                $this->insert[] = $what;
+                $this->changed();
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->insert[] = new Assignment($a, $b);
+                $this->changed();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -336,26 +357,28 @@ class Builder
     public function replace()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'replace');
-        case 1  :
-            $what = $args[0];
-            if(!($what instanceof Assignment))
-                throw new JunxaInvalidQueryException('single argument to replace() must be a column assignment');
-            $this->replace[] = $what;
-            $this->changed();
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->replace[] = new Assignment($a, $b);
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'replace');
+            case 1:
+                $what = $args[0];
+                if (!($what instanceof Assignment)) {
+                    throw new JunxaInvalidQueryException('single argument to replace() must be a column assignment');
+                }
+                $this->replace[] = $what;
+                $this->changed();
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->replace[] = new Assignment($a, $b);
+                $this->changed();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -384,8 +407,9 @@ class Builder
 
     public function delete($what = null)
     {
-        if($what === null && $this->table)
+        if ($what === null && $this->table) {
             $what = $this->table;
+        }
         $this->delete[] = $what;
         $this->changed();
         return $this;
@@ -431,14 +455,17 @@ class Builder
 
     public function join($what)
     {
-        if(is_array($what)) {
-            foreach($what as $value)
+        if (is_array($what)) {
+            foreach ($what as $value) {
                 $this->join($value);
+            }
         } else {
-            if(!$this->join && $this->table)
+            if (!$this->join && $this->table) {
                 $this->join[] = $this->table;
-            if(is_string($what) && $this->database)
+            }
+            if (is_string($what) && $this->database) {
                 $what = Q::innerJoin($this->database->$what);
+            }
             $this->join[] = $what;
             $this->changed();
         }
@@ -447,12 +474,14 @@ class Builder
 
     public function from($what)
     {
-        if(is_array($what)) {
-            foreach($what as $value)
+        if (is_array($what)) {
+            foreach ($what as $value) {
                 $this->join($value);
+            }
         } else {
-            if(is_string($what) && $this->database)
+            if (is_string($what) && $this->database) {
                 $what = Q::innerJoin($this->database->$what);
+            }
             $this->join[] = $what;
             $this->changed();
         }
@@ -462,36 +491,38 @@ class Builder
     public function on()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'on');
-        case 1  :
-            $what = $args[0];
-            $this->join[] = Q::joinOn($what);
-            $this->changed();
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->join[] = Q::joinOn(Q::eq($a, $b));
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'on');
+            case 1:
+                $what = $args[0];
+                $this->join[] = Q::joinOn($what);
+                $this->changed();
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->join[] = Q::joinOn(Q::eq($a, $b));
+                $this->changed();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
 
     public function using($what)
     {
-        if(is_array($what) && $this->table) {
+        if (is_array($what) && $this->table) {
             $conv = [];
-            foreach($what as $item)
+            foreach ($what as $item) {
                 $conv[] = is_string($item) ? $this->table->$item : $item;
+            }
             $what = $conv;
-        } elseif(is_string($what) && $this->table) {
+        } elseif (is_string($what) && $this->table) {
             $what = $this->table->$what;
         }
         $this->join[] = Q::joinUsing($what);
@@ -502,33 +533,37 @@ class Builder
     public function where()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'where');
-        case 1  :
-            $arg = $args[0];
-            if(is_array($arg)) {
-                foreach($arg as $key => $value)
-                    $this->where($key, $value);
-            } else {
-                if(is_string($arg) && $this->table)
-                    $arg = $this->table->$arg;
-                $this->where[] = $arg;
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'where');
+            case 1:
+                $arg = $args[0];
+                if (is_array($arg)) {
+                    foreach ($arg as $key => $value) {
+                        $this->where($key, $value);
+                    }
+                } else {
+                    if (is_string($arg) && $this->table) {
+                        $arg = $this->table->$arg;
+                    }
+                    $this->where[] = $arg;
+                    $this->changed();
+                }
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_array($a)) {
+                    throw new JunxaInvalidQueryException('cannot use array with second argument');
+                }
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->where[] = Q::eq($a, $b);
                 $this->changed();
-            }
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_array($a))
-                throw new JunxaInvalidQueryException('cannot use array with second argument');
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->where[] = Q::eq($a, $b);
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -568,33 +603,37 @@ class Builder
     public function having()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'having');
-        case 1  :
-            $arg = $args[0];
-            if(is_array($arg)) {
-                foreach($arg as $key => $value)
-                    $this->having($key, $value);
-            } else {
-                if(is_string($arg) && $this->table)
-                    $arg = $this->table->$arg;
-                $this->having[] = $arg;
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'having');
+            case 1:
+                $arg = $args[0];
+                if (is_array($arg)) {
+                    foreach ($arg as $key => $value) {
+                        $this->having($key, $value);
+                    }
+                } else {
+                    if (is_string($arg) && $this->table) {
+                        $arg = $this->table->$arg;
+                    }
+                    $this->having[] = $arg;
+                    $this->changed();
+                }
+                break;
+            case 2:
+                $a = $args[0];
+                $b = $args[1];
+                if (is_array($a)) {
+                    throw new JunxaInvalidQueryException('cannot use array with second argument');
+                }
+                if (is_string($a) && $this->table) {
+                    $a = $this->table->$a;
+                }
+                $this->having[] = Q::eq($a, $b);
                 $this->changed();
-            }
-            break;
-        case 2  :
-            $a = $args[0];
-            $b = $args[1];
-            if(is_array($a))
-                throw new JunxaInvalidQueryException('cannot use array with second argument');
-            if(is_string($a) && $this->table)
-                $a = $this->table->$a;
-            $this->having[] = Q::eq($a, $b);
-            $this->changed();
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -623,7 +662,7 @@ class Builder
 
     public function shiftHavingToWhere()
     {
-        if($this->having) {
+        if ($this->having) {
             $this->where($this->having);
             $this->having = [];
             $this->changed();
@@ -634,23 +673,25 @@ class Builder
     public function order()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'order');
-        case 1  :
-            $what = $args[0];
-            if(is_array($what)) {
-                foreach($what as $item)
-                    $this->order($item);
-            } else {
-                if(is_string($what) && $this->table)
-                    $what = $this->table->$what;
-                $this->order[] = $what;
-                $this->changed();
-            }
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'order');
+            case 1:
+                $what = $args[0];
+                if (is_array($what)) {
+                    foreach ($what as $item) {
+                        $this->order($item);
+                    }
+                } else {
+                    if (is_string($what) && $this->table) {
+                        $what = $this->table->$what;
+                    }
+                    $this->order[] = $what;
+                    $this->changed();
+                }
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -686,8 +727,9 @@ class Builder
     public function desc()
     {
         $ix = count($this->order) - 1;
-        if($ix < 0)
+        if ($ix < 0) {
             throw new JunxaInvalidQueryException('no order items');
+        }
         $this->order[$ix] = Q::desc($this->order[$ix]);
         $this->changed();
         return $this;
@@ -696,23 +738,25 @@ class Builder
     public function group()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            return new Part($this, 'group');
-        case 1  :
-            $what = $args[0];
-            if(is_array($what)) {
-                foreach($what as $item)
-                    $this->group($item);
-            } else {
-                if(is_string($what) && $this->table)
-                    $what = $this->table->$what;
-                $this->group[] = $what;
-                $this->changed();
-            }
-            break;
-        default :
-            throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+        switch (count($args)) {
+            case 0:
+                return new Part($this, 'group');
+            case 1:
+                $what = $args[0];
+                if (is_array($what)) {
+                    foreach ($what as $item) {
+                        $this->group($item);
+                    }
+                } else {
+                    if (is_string($what) && $this->table) {
+                        $what = $this->table->$what;
+                    }
+                    $this->group[] = $what;
+                    $this->changed();
+                }
+                break;
+            default:
+                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -741,10 +785,11 @@ class Builder
 
     public function limit($a, $b = null)
     {
-        if($b === null)
+        if ($b === null) {
             $this->limit = intval($a);
-        else
+        } else {
             $this->limit = intval($a) . ', ' . intval($b);
+        }
         $this->changed();
         return $this;
     }
@@ -787,8 +832,9 @@ class Builder
 
     public function options(array $what)
     {
-        foreach($what as $key => $value)
+        foreach ($what as $key => $value) {
             $this->options[$key] = $value;
+        }
         $this->changed();
         return $this;
     }
@@ -796,25 +842,28 @@ class Builder
     public function option()
     {
         $args = func_get_args();
-        switch(count($args)) {
-        case 0  :
-            throw new JunxaInvalidQueryException('not enough arguments (0)');
-        case 1  :
-            $name = $args[0];
-            if(!is_string($name))
-                throw new JunxaInvalidQueryException('option name must be string');
-            return array_key_exists($name, $this->options) ? $this->options[$name] : null;
-        case 2  :
-            $name = $args[0];
-            if(!is_string($name))
-                throw new JunxaInvalidQueryException('option name must be string');
-            $value = $args[1];
-            if($value === null)
-                unset($this->options[$name]);
-            else
-                $this->options[$name] = $value;
-            $this->changed();
-            break;
+        switch (count($args)) {
+            case 0:
+                throw new JunxaInvalidQueryException('not enough arguments (0)');
+            case 1:
+                $name = $args[0];
+                if (!is_string($name)) {
+                    throw new JunxaInvalidQueryException('option name must be string');
+                }
+                return array_key_exists($name, $this->options) ? $this->options[$name] : null;
+            case 2:
+                $name = $args[0];
+                if (!is_string($name)) {
+                    throw new JunxaInvalidQueryException('option name must be string');
+                }
+                $value = $args[1];
+                if ($value === null) {
+                    unset($this->options[$name]);
+                } else {
+                    $this->options[$name] = $value;
+                }
+                $this->changed();
+                break;
         }
         return $this;
     }
@@ -828,20 +877,24 @@ class Builder
             throw new JunxaInvalidQueryException('query has not been validated');
         }
         $main = $this->$type;
-        if(is_array($main)) {
-            for($i = 0; $i < count($main); $i++)
-                if(is_object($main[$i]) && method_exists($main[$i], 'tableScan'))
+        if (is_array($main)) {
+            for ($i = 0; $i < count($main); $i++) {
+                if (is_object($main[$i]) && method_exists($main[$i], 'tableScan')) {
                     $main[$i]->tableScan($tables, $null);
+                }
+            }
         } else {
             $main->tableScan($tables, $null);
         }
-        foreach(['join', 'where', 'group', 'having', 'order'] as $item) {
+        foreach (['join', 'where', 'group', 'having', 'order'] as $item) {
             $value = $this->$item;
-            if(!empty($value)) {
-                if(is_array($value)) {
-                    for($i = 0; $i < count($value); $i++)
-                        if(is_object($value[$i]) && method_exists($value[$i], 'tableScan'))
+            if (!empty($value)) {
+                if (is_array($value)) {
+                    for ($i = 0; $i < count($value); $i++) {
+                        if (is_object($value[$i]) && method_exists($value[$i], 'tableScan')) {
                             $value[$i]->tableScan($tables, $null);
+                        }
+                    }
                 } else {
                     $value->tableScan($tables, $null);
                 }
@@ -849,131 +902,152 @@ class Builder
         }
         $this->tables = array_keys($tables);
         $this->nullTables = $null;
-        if(count($this->tables) > 1)
+        if (count($this->tables) > 1) {
             $this->isMultitable = true;
+        }
     }
 
     public function express()
     {
-        if($this->outputCache !== null)
+        if ($this->outputCache !== null) {
             return $this->outputCache;
+        }
         $this->validate();
         $this->expressed = [];
         $type = $this->type;
         $main = $this->$type;
         $this->performTableScan();
         $out = strtoupper($type) . ' ';
-        switch($type) {
-        case 'select'   :
-            if($this->option('distinct'))
-                $out .= 'DISTINCT ';
-            $out .= Junxa::resolve($main, $this, $type, null, $this);
-            if($join = $this->join)
-                $out .= "\n\tFROM " . Junxa::resolve($join, $this, 'join', null, $this);
-            elseif(count($this->tables))
-                $out .= "\n\tFROM `" . join('`, `', $this->tables) . '`';
-            break;
-        case 'replace'  :
-        case 'insert'   :
-            if(count($this->tables) != 1)
-                throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
-            if($this->options) {
-                if($this->option('high_priority'))
-                    $out .= 'HIGH_PRIORITY ';
-                elseif($this->option('low_priority'))
-                    $out .= 'LOW_PRIORITY ';
-                elseif($this->option('delayed'))
-                    $out .= 'DELAYED ';
-                if($this->option('ignore'))
-                    $out .= 'IGNORE ';
-            }
-            $fields = [];
-            $values = [];
-            $out .= "\n\t" . $this->tables[0] . ' ';
-            foreach($main as $item) {
-                if(!($item instanceof Assignment))
-                    throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
-                $fields[] = Junxa::resolve($item->getColumn(), $this, $type, null, $this);
-                $values[] = Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
-            }
-            $out .= ' (' . join(', ', $fields) . ")\n\tVALUES\n\t(" . join(', ', $values) . ')';
-            if($this->update) {
-                $out .= "\n\tON DUPLICATE KEY UPDATE ";
-                $elem = [];
-                foreach($this->update as $item) {
-                    if(!($item instanceof Assignment))
-                        throw new JunxaInvalidQueryException('ON DUPLICATE KEY UPDATE list elements must be column assignments');
-                    $elem[] =
+        switch ($type) {
+            case 'select':
+                if ($this->option('distinct')) {
+                    $out .= 'DISTINCT ';
+                }
+                $out .= Junxa::resolve($main, $this, $type, null, $this);
+                if ($join = $this->join) {
+                    $out .= "\n\tFROM " . Junxa::resolve($join, $this, 'join', null, $this);
+                } elseif (count($this->tables)) {
+                    $out .= "\n\tFROM `" . join('`, `', $this->tables) . '`';
+                }
+                break;
+            case 'replace':
+            case 'insert':
+                if (count($this->tables) != 1) {
+                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                }
+                if ($this->options) {
+                    if ($this->option('high_priority')) {
+                        $out .= 'HIGH_PRIORITY ';
+                    } elseif ($this->option('low_priority')) {
+                        $out .= 'LOW_PRIORITY ';
+                    } elseif ($this->option('delayed')) {
+                        $out .= 'DELAYED ';
+                    }
+                    if ($this->option('ignore')) {
+                        $out .= 'IGNORE ';
+                    }
+                }
+                $fields = [];
+                $values = [];
+                $out .= "\n\t" . $this->tables[0] . ' ';
+                foreach ($main as $item) {
+                    if (!($item instanceof Assignment)) {
+                        throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
+                    }
+                    $fields[] = Junxa::resolve($item->getColumn(), $this, $type, null, $this);
+                    $values[] = Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
+                }
+                $out .= ' (' . join(', ', $fields) . ")\n\tVALUES\n\t(" . join(', ', $values) . ')';
+                if ($this->update) {
+                    $out .= "\n\tON DUPLICATE KEY UPDATE ";
+                    $elem = [];
+                    foreach ($this->update as $item) {
+                        if (!($item instanceof Assignment)) {
+                            throw new JunxaInvalidQueryException('ON DUPLICATE KEY UPDATE list elements must be column assignments');
+                        }
+                        $elem[] =
                         Junxa::resolve($item->getColumn(), $this, $type, null, $this)
                         . ' = '
                         . Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
+                    }
+                    $out .= join(', ', $elem);
                 }
-                $out .= join(', ', $elem);
-            }
-            break;
-        case 'update'   :
-            if(count($this->tables) != 1)
-                throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
-            $out .= $this->tables[0] . "\n\tSET ";
-            $elem = [];
-            foreach($main as $item) {
-                if(!($item instanceof Assignment))
-                    throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
-                $column = $item->getColumn();
-                $value = $item->getValue();
-                $elem[] =
+                break;
+            case 'update':
+                if (count($this->tables) != 1) {
+                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                }
+                $out .= $this->tables[0] . "\n\tSET ";
+                $elem = [];
+                foreach ($main as $item) {
+                    if (!($item instanceof Assignment)) {
+                        throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
+                    }
+                    $column = $item->getColumn();
+                    $value = $item->getValue();
+                    $elem[] =
                     Junxa::resolve($column, $this, $type, null, $this)
                     . ' = '
                     . Junxa::resolve($value, $this, $type, $column, $this);
-            }
-            $out .= join(', ', $elem);
-            break;
-        case 'delete'   :
-            if(count($this->tables) != 1)
-                throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
-            $out .= 'FROM ' . $this->tables[0];
-            break;
+                }
+                $out .= join(', ', $elem);
+                break;
+            case 'delete':
+                if (count($this->tables) != 1) {
+                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                }
+                $out .= 'FROM ' . $this->tables[0];
+                break;
         }
-        if($this->where)
+        if ($this->where) {
             $out .= "\n\tWHERE " . Junxa::resolve(is_array($this->where) ? (count($this->where) > 1 ? Q::andClause($this->where) : $this->where[0]) : $this->where, $this, 'where', null, $this);
-        if($this->group)
+        }
+        if ($this->group) {
             $out .= "\n\tGROUP BY " . Junxa::resolve($this->group, $this, 'group', null, $this);
-        if($this->having)
+        }
+        if ($this->having) {
             $out .= "\n\tHAVING " . Junxa::resolve(is_array($this->having) ? (count($this->having) > 1 ? Q::andClause($this->having) : $this->having[0]) : $this->having, $this, 'having', null, $this);
-        if($this->order)
+        }
+        if ($this->order) {
             $out .= "\n\tORDER BY " . Junxa::resolve($this->order, $this, 'order', null, $this);
-        if(isset($this->limit))
+        }
+        if (isset($this->limit)) {
             $out .= "\n\tLIMIT " . $this->limit;
+        }
         $this->outputCache = $out;
         return $out;
     }
 
     public function execute()
     {
-        if(!$this->database)
+        if (!$this->database) {
             throw new JunxaInvalidQueryException('cannot call execute() on a query that was not generated from a database');
+        }
         $this->validate();
         return $this->database->query($this);
     }
 
     public function rows()
     {
-        if(!$this->table)
+        if (!$this->table) {
             throw new JunxaInvalidQueryException('cannot call rows() on a query that was not generated from a table');
+        }
         return $this->table->rows($this);
     }
 
     public function row()
     {
-        if(!$this->table)
+        if (!$this->table) {
             throw new JunxaInvalidQueryException('cannot call row() on a query that was not generated from a table');
+        }
         return $this->table->row($this);
     }
 
     public function count()
     {
-        if(!$this->table)
+        if (!$this->table) {
             throw new JunxaInvalidQueryException('cannot call count() on a query that was not generated from a table');
+        }
         return $this->table->rowCount($this);
     }
 
@@ -1008,10 +1082,11 @@ class Builder
      */
     public function checkClauses($clauses)
     {
-        foreach($clauses as $clause)
-            if(isset($this->$clause) && $this->$clause)
+        foreach ($clauses as $clause) {
+            if (isset($this->$clause) && $this->$clause) {
                 return $clause;
+            }
+        }
         return null;
     }
-
 }

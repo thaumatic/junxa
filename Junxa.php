@@ -355,43 +355,61 @@ class Junxa
      */
     public function __construct(array $def = null)
     {
-        if($def !== null) {
-            if(array_key_exists('hostname', $def))
+        if ($def !== null) {
+            if (array_key_exists('hostname', $def)) {
                 $this->setHostname($def['hostname']);
-            if(array_key_exists('database', $def))
+            }
+            if (array_key_exists('database', $def)) {
                 $this->setDatabase($def['database']);
-            if(array_key_exists('username', $def))
+            }
+            if (array_key_exists('username', $def)) {
                 $this->setUsername($def['username']);
-            if(array_key_exists('password', $def))
+            }
+            if (array_key_exists('password', $def)) {
                 $this->setPassword($def['password']);
-            if(array_key_exists('options', $def))
+            }
+            if (array_key_exists('options', $def)) {
                 $this->setOptions($def['options']);
-            if(array_key_exists('defaultTableClass', $def))
+            }
+            if (array_key_exists('defaultTableClass', $def)) {
                 $this->setDefaultTableClass($def['defaultTableClass']);
-            if(array_key_exists('defaultColumnClass', $def))
+            }
+            if (array_key_exists('defaultColumnClass', $def)) {
                 $this->setDefaultColumnClass($def['defaultColumnClass']);
-            if(array_key_exists('defaultRowClass', $def))
+            }
+            if (array_key_exists('defaultRowClass', $def)) {
                 $this->setDefaultRowClass($def['defaultRowClass']);
-            if(array_key_exists('autoTableClassNamespace', $def))
+            }
+            if (array_key_exists('autoTableClassNamespace', $def)) {
                 $this->setAutoTableClassNamespace($def['autoTableClassNamespace']);
-            if(array_key_exists('autoColumnClassNamespace', $def))
+            }
+            if (array_key_exists('autoColumnClassNamespace', $def)) {
                 $this->setAutoColumnClassNamespace($def['autoColumnClassNamespace']);
-            if(array_key_exists('autoRowClassNamespace', $def))
+            }
+            if (array_key_exists('autoRowClassNamespace', $def)) {
                 $this->setAutoRowClassNamespace($def['autoRowClassNamespace']);
-            if(array_key_exists('regexpTableClasses', $def))
+            }
+            if (array_key_exists('regexpTableClasses', $def)) {
                 $this->setRegexpTableClasses($def['regexpTableClasses']);
-            if(array_key_exists('regexpColumnClasses', $def))
+            }
+            if (array_key_exists('regexpColumnClasses', $def)) {
                 $this->setRegexpColumnClasses($def['regexpColumnClasses']);
-            if(array_key_exists('regexpRowClasses', $def))
+            }
+            if (array_key_exists('regexpRowClasses', $def)) {
                 $this->setRegexpRowClasses($def['regexpRowClasses']);
-            if(array_key_exists('tableClasses', $def))
+            }
+            if (array_key_exists('tableClasses', $def)) {
                 $this->setTableClasses($def['tableClasses']);
-            if(array_key_exists('columnClasses', $def))
+            }
+            if (array_key_exists('columnClasses', $def)) {
                 $this->setColumnClasses($def['columnClasses']);
-            if(array_key_exists('rowClasses', $def))
+            }
+            if (array_key_exists('rowClasses', $def)) {
                 $this->setRowClasses($def['rowClasses']);
-            if(array_key_exists('changeHandler', $def))
+            }
+            if (array_key_exists('changeHandler', $def)) {
                 $this->setChangeHandler($def['changeHandler']);
+            }
             $this->ready();
         }
     }
@@ -545,10 +563,11 @@ class Junxa
      */
     public function setOption($option, $flag)
     {
-        if($flag)
+        if ($flag) {
             $this->options |= $option;
-        else
+        } else {
             $this->options &= ~$option;
+        }
         return $this;
     }
 
@@ -835,7 +854,7 @@ class Junxa
      * than SELECTs or SHOWs) to.  This is to support primary/secondary
      * replication architectures; Junxa can be configured to read from the
      * secondary(ies) and write to the primary.
-     * 
+     *
      * @param Thaumatic\Junxa|array Junxa instance or array configuration for Junxa instance (will be instanced on demand)
      * @return $this
      */
@@ -865,12 +884,12 @@ class Junxa
      */
     public function getChangeHandlerObject()
     {
-        if($this->changeHandlerObject === null) {
-            if($this->changeHandler === null) {
+        if ($this->changeHandlerObject === null) {
+            if ($this->changeHandler === null) {
                 $this->changeHandlerObject = false;
-            } elseif($this->changeHandler instanceof Junxa) {
+            } elseif ($this->changeHandler instanceof Junxa) {
                 $this->changeHandlerObject = $this->changeHandler;
-            } elseif(!is_array($this->changeHandler)) {
+            } elseif (!is_array($this->changeHandler)) {
                 throw new JunxaConfigurationException('invalid change handler');
             } else {
                 $def = $this->changeHandler;
@@ -889,12 +908,14 @@ class Junxa
      */
     public function connect()
     {
-        if(!$this->database)
+        if (!$this->database) {
             throw new JunxaConfigurationException('database to connect to has not been specified');
-        if($this->getOption(self::DB_PERSISTENT_CONNECTION))
+        }
+        if ($this->getOption(self::DB_PERSISTENT_CONNECTION)) {
             $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->database);
-        else
+        } else {
             $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
+        }
         return $this;
     }
 
@@ -906,18 +927,23 @@ class Junxa
      */
     public function tableClass($table)
     {
-        if(!empty($this->tableClasses[$table]))
+        if (!empty($this->tableClasses[$table])) {
             return $this->tableClasses[$table];
-        foreach($this->regexpTableClasses as $name => $class)
-            if(preg_match($name, $table))
-                return $class;
-        if(!empty($this->autoTableClassNamespace)) {
-            $name = $this->autoTableClassNamespace . '\\' . self::pascalCase($table);
-            if(class_exists($name))
-                return $name;
         }
-        if(!empty($this->defaultTableClass))
+        foreach ($this->regexpTableClasses as $name => $class) {
+            if (preg_match($name, $table)) {
+                return $class;
+            }
+        }
+        if (!empty($this->autoTableClassNamespace)) {
+            $name = $this->autoTableClassNamespace . '\\' . self::pascalCase($table);
+            if (class_exists($name)) {
+                return $name;
+            }
+        }
+        if (!empty($this->defaultTableClass)) {
             return $this->defaultTableClass;
+        }
         return 'Thaumatic\Junxa\Table';
     }
 
@@ -929,18 +955,23 @@ class Junxa
      */
     public function columnClass($table)
     {
-        if(!empty($this->columnClasses[$table]))
+        if (!empty($this->columnClasses[$table])) {
             return $this->columnClasses[$table];
-        foreach($this->regexpColumnClasses as $name => $class)
-            if(preg_match($name, $table))
-                return $class;
-        if(!empty($this->autoColumnClassNamespace)) {
-            $name = $this->autoColumnClassNamespace . '\\' . self::pascalCase($table);
-            if(class_exists($name))
-                return $name;
         }
-        if(!empty($this->defaultColumnClass))
+        foreach ($this->regexpColumnClasses as $name => $class) {
+            if (preg_match($name, $table)) {
+                return $class;
+            }
+        }
+        if (!empty($this->autoColumnClassNamespace)) {
+            $name = $this->autoColumnClassNamespace . '\\' . self::pascalCase($table);
+            if (class_exists($name)) {
+                return $name;
+            }
+        }
+        if (!empty($this->defaultColumnClass)) {
             return $this->defaultColumnClass;
+        }
         return 'Thaumatic\Junxa\Column';
     }
 
@@ -952,18 +983,23 @@ class Junxa
      */
     public function rowClass($table)
     {
-        if(!empty($this->rowClasses[$table]))
+        if (!empty($this->rowClasses[$table])) {
             return $this->rowClasses[$table];
-        foreach($this->regexpRowClasses as $name => $class)
-            if(preg_match($name, $table))
-                return $class;
-        if(!empty($this->autoRowClassNamespace)) {
-            $name = $this->autoRowClassNamespace . '\\' . self::pascalCase($table);
-            if(class_exists($name))
-                return $name;
         }
-        if(!empty($this->defaultRowClass))
+        foreach ($this->regexpRowClasses as $name => $class) {
+            if (preg_match($name, $table)) {
+                return $class;
+            }
+        }
+        if (!empty($this->autoRowClassNamespace)) {
+            $name = $this->autoRowClassNamespace . '\\' . self::pascalCase($table);
+            if (class_exists($name)) {
+                return $name;
+            }
+        }
+        if (!empty($this->defaultRowClass)) {
             return $this->defaultRowClass;
+        }
         return 'Thaumatic\Junxa\Row';
     }
 
@@ -997,11 +1033,12 @@ class Junxa
      */
     public function table($name)
     {
-        if(empty($this->tableModels[$name])) {
-            if(!in_array($name, $this->tables)) {
+        if (empty($this->tableModels[$name])) {
+            if (!in_array($name, $this->tables)) {
                 $this->determineTables();
-                if(!in_array($name, $this->tables))
+                if (!in_array($name, $this->tables)) {
                     throw new JunxaNoSuchTableException($name);
+                }
             }
             $class = $this->tableClass($name);
             $this->tableModels[$name] = new $class($this, $name);
@@ -1018,34 +1055,39 @@ class Junxa
     public function loadTables()
     {
         $baseTables = func_get_args();
-        if(count($baseTables) === 1 && is_array($baseTables[0]))
+        if (count($baseTables) === 1 && is_array($baseTables[0])) {
             $baseTables = $baseTables[0];
+        }
         $tables = [];
-        foreach($baseTables as $baseTable)
-            if(empty($this->tableModels[$baseTable]))
+        foreach ($baseTables as $baseTable) {
+            if (empty($this->tableModels[$baseTable])) {
                 $tables[] = $baseTable;
-        if(!$tables)
+            }
+        }
+        if (!$tables) {
             return;
+        }
         $tablesRescanned = false;
-        for($index = 0; $index < count($tables); $index++) {
-            if(!in_array($tables[$index], $this->tables)) {
-                if(!$tablesRescanned) {
+        for ($index = 0; $index < count($tables); $index++) {
+            if (!in_array($tables[$index], $this->tables)) {
+                if (!$tablesRescanned) {
                     $this->determineTables();
                     $tablesRescanned = true;
                 }
-                if(!in_array($tables[$index], $this->tables))
+                if (!in_array($tables[$index], $this->tables)) {
                     throw new JunxaNoSuchTableException($tables[$index]);
+                }
             }
             $tableIndices[$tables[$index]] = $index;
         }
         $res = $this->query("SELECT *\n\tFROM " . join(', ', $tables) . "\n\tLIMIT 0", self::QUERY_RAW);
         $fieldSets = [];
-        for($i = 0, $j = $res->field_count; $i < $j; $i++) {
+        for ($i = 0, $j = $res->field_count; $i < $j; $i++) {
             $tableIndex = $tableIndices[$field->table];
             $fieldSets[$tableIndex][] = $res->fetch_field();
         }
         $res->free();
-        for($index = 0; $index < count($tables); $index++) {
+        for ($index = 0; $index < count($tables); $index++) {
             $table = $tables[$index];
             $class = $this->tableClass($table);
             $this->tableModels[$table] = new $class($this, $table, count($fieldSets[$index]), $fieldSets[$index]);
@@ -1059,18 +1101,19 @@ class Junxa
         $globalStats = self::$overallQueryStatistics;
         arsort($globalStats);
         $out = '';
-        foreach($stats as $key => $val) {
-            if(!$anyStats) {
+        foreach ($stats as $key => $val) {
+            if (!$anyStats) {
                 $out .= "Query statistics from database called:<br>\n";
                 $anyStats = true;
             }
             $out .= "<pre>$val: $key</pre>\n";
             $globalStats[$key] -= $val;
         }
-        foreach($globalStats as $key => $val) {
-            if(!$val)
+        foreach ($globalStats as $key => $val) {
+            if (!$val) {
                 continue;
-            if(!$anyGlobalStats) {
+            }
+            if (!$anyGlobalStats) {
                 $out .= "Additional query statistics generated through copies of database or other databases:<br>\n";
                 $anyGlobalStats = true;
             }
@@ -1081,8 +1124,9 @@ class Junxa
 
     public function query($query = null, $mode = 0, $echo = false, $emptyOkay = false)
     {
-        if($query === null)
+        if ($query === null) {
             return QueryBuilder::make($this);
+        }
         $isResult = false;
         $this->queryStatus = self::RESULT_FAILURE;
         $this->queryMessage = '';
@@ -1090,236 +1134,261 @@ class Junxa
         $update = false;
         $whyEcho = $echo ? 'function parameter' : null;
         $errorOkay = false;
-        switch(gettype($query)) {
-        case 'string'   :
-            if(preg_match('/^\s*(SELECT|SHOW)\s*/is', $query)) {
-                $isResult = true;
-            } else {
-                $handler = $this->getChangeHandlerObject();
-                if($handler) {
-                    $result = $handler->query($query, $mode, $echo, $emptyOkay);
-                    $this->queryStatus = $handler->getQueryStatus();
-                    $this->queryMessage = $handler->getQueryMessage();
-                    $this->insertId = $handler->getInsertId();
-                    return $result;
+        switch (gettype($query)) {
+            case 'string':
+                if (preg_match('/^\s*(SELECT|SHOW)\s*/is', $query)) {
+                    $isResult = true;
                 } else {
-                    if(preg_match('/^\s*UPDATE\s+/is', $query))
-                        $update = true;
-                    elseif(preg_match('/^\s*INSERT[^(]+IGNORE\s+/is', $query))
-                        $insertIgnore = true;
+                    $handler = $this->getChangeHandlerObject();
+                    if ($handler) {
+                        $result = $handler->query($query, $mode, $echo, $emptyOkay);
+                        $this->queryStatus = $handler->getQueryStatus();
+                        $this->queryMessage = $handler->getQueryMessage();
+                        $this->insertId = $handler->getInsertId();
+                        return $result;
+                    } else {
+                        if (preg_match('/^\s*UPDATE\s+/is', $query)) {
+                            $update = true;
+                        } elseif (preg_match('/^\s*INSERT[^(]+IGNORE\s+/is', $query)) {
+                            $insertIgnore = true;
+                        }
+                    }
                 }
-            }
-            break;
-        case 'array'    :
-            $query = new QueryBuilder($query);
-            // fallthrough
-        case 'object'   :
-            if(!($query instanceof QueryBuilder))
-                throw new JunxaInvalidQueryException(
+                break;
+            case 'array':
+                $query = new QueryBuilder($query);
+                // fallthrough
+            case 'object':
+                if (!($query instanceof QueryBuilder)) {
+                } new JunxaInvalidQueryException(
                     'object query must be a '
                     . 'Thaumatic\Junxa\Query\Builder, '
                     . ' got ' . get_class($query)
                 );
-            $query->validate();
-            if($mode === 0)
-                $mode = $query->getMode();
-            $queryType = $query->getType();
-            if($queryType === 'select' || $queryType === 'show') {
-                $isResult = true;
-            } else {
-                $handler = $this->getChangeHandlerObject();
-                if($handler) {
-                    $result = $handler->query($query, $mode, $echo, $emptyOkay);
-                    $this->queryStatus = $handler->queryStatus;
-                    $this->queryMessage = $handler->queryMessage;
-                    $this->insertId = $handler->insertId;
-                    return $result;
+                $query->validate();
+                if ($mode === 0) {
+                    $mode = $query->getMode();
                 }
-            }
-            if($query->hasOptions()) {
-                if($query->option('emptyOkay'))
-                    $emptyOkay = true;
-                if($query->option('error_okay'))
-                    $errorOkay = true;
-                if(!$echo && $query->option('echo')) {
-                    $echo = true;
-                    $whyEcho = 'query option';
+                $queryType = $query->getType();
+                if ($queryType === 'select' || $queryType === 'show') {
+                    $isResult = true;
+                } else {
+                    $handler = $this->getChangeHandlerObject();
+                    if ($handler) {
+                        $result = $handler->query($query, $mode, $echo, $emptyOkay);
+                        $this->queryStatus = $handler->queryStatus;
+                        $this->queryMessage = $handler->queryMessage;
+                        $this->insertId = $handler->insertId;
+                        return $result;
+                    }
                 }
-            }
-            if($queryType === 'update')
-                $update = true;
-            elseif($queryType === 'insert' && $query->option('ignore'))
-                $insertIgnore = true;
-            $query = $query->express();
-            break;
-        default         :
-            throw new JunxaInvalidQueryException('invalid argument to query()');
+                if ($query->hasOptions()) {
+                    if ($query->option('emptyOkay')) {
+                        $emptyOkay = true;
+                    }
+                    if ($query->option('error_okay')) {
+                        $errorOkay = true;
+                    }
+                    if (!$echo && $query->option('echo')) {
+                        $echo = true;
+                        $whyEcho = 'query option';
+                    }
+                }
+                if ($queryType === 'update') {
+                    $update = true;
+                } elseif ($queryType === 'insert' && $query->option('ignore')) {
+                    $insertIgnore = true;
+                }
+                $query = $query->express();
+                break;
+            default:
+                throw new JunxaInvalidQueryException('invalid argument to query()');
         }
-        if($this->getOption(self::DB_COLLECT_QUERY_STATISTICS)) {
+        if ($this->getOption(self::DB_COLLECT_QUERY_STATISTICS)) {
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
         }
-        if(!$echo && !empty($GLOBALS['echo'])) {
+        if (!$echo && !empty($GLOBALS['echo'])) {
             $echo = true;
             $whyEcho = 'global flag';
         }
-        if($echo)
+        if ($echo) {
             echo("SQL (echoed because of $whyEcho): $query <br />\n");
+        }
         $res = $this->link->query($query);
-        if($res) {
-            if($insertIgnore && $this->getAffectedRows() <= 0)
+        if ($res) {
+            if ($insertIgnore && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_INSERT_FAIL;
-            elseif($update && $this->getAffectedRows() <= 0)
+            } elseif ($update && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_UPDATE_FAIL;
-            else
+            } else {
                 $this->queryStatus = self::RESULT_SUCCESS;
+            }
         } else {
             $this->queryMessage = $this->link->error;
             $errno = $this->link->errno;
-            if($errno == 2006 || $errno == 2013) {
+            if ($errno == 2006 || $errno == 2013) {
                 usleep(1000);
                 $this->connect();
                 return $this->query($query, $mode, $echo, $emptyOkay);
             }
             $this->queryStatus = self::RESULT_FAILURE;
-            if(!$errorOkay)
+            if (!$errorOkay) {
                 throw new JunxaQueryExecutionException($this->queryMessage . ' from ' . $query);
+            }
         }
-        if(!$isResult && preg_match('/^\s*(INSERT|REPLACE)\b/i', $query))
+        if (!$isResult && preg_match('/^\s*(INSERT|REPLACE)\b/i', $query)) {
             $this->insertId = $this->link->insert_id;
-        if(!$mode)
+        }
+        if (!$mode) {
             $mode = $isResult ? self::QUERY_OBJECTS : self::QUERY_FORGET;
-        if(!$res || !$isResult) {
-            switch($mode) {
-            case self::QUERY_RAW                :
-            case self::QUERY_FORGET             :
-                return $res;
-            case self::QUERY_SINGLE_ASSOC       :
-            case self::QUERY_SINGLE_ARRAY       :
-            case self::QUERY_SINGLE_OBJECT      :
-            case self::QUERY_SINGLE_CELL        :
-                return null;
-            default                             :
-                return [];
+        }
+        if (!$res || !$isResult) {
+            switch ($mode) {
+                case self::QUERY_RAW:
+                case self::QUERY_FORGET:
+                    return $res;
+                case self::QUERY_SINGLE_ASSOC:
+                case self::QUERY_SINGLE_ARRAY:
+                case self::QUERY_SINGLE_OBJECT:
+                case self::QUERY_SINGLE_CELL:
+                    return null;
+                default:
+                    return [];
             }
         }
         $out = null;
-        switch($mode) {
-        case self::QUERY_RAW                    :
-            return $res;
-        case self::QUERY_FORGET                 :
-            $out = $res;
-            break;
-        case self::QUERY_ASSOCS                 :
-            $out = [];
-            while($row = $res->fetch_array(MYSQLI_ASSOC))
-                $out[] = $row;
-            break;
-        case self::QUERY_ARRAYS                 :
-            $out = [];
-            while($row = $res->fetch_array(MYSQLI_NUM))
-                $out[] = $row;
-            break;
-        case self::QUERY_DUAL_ARRAYS            :
-            $out = [];
-            while($row = $res->fetch_array(MYSQLI_BOTH))
-                $out[] = $row;
-            break;
-        case self::QUERY_OBJECTS                :
-            $out = [];
-            while($row = $res->fetch_object())
-                $out[] = $row;
-            break;
-        case self::QUERY_SINGLE_ASSOC           :
-            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
-                throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_ASSOC had ' . $res->num_rows . ' rows'
-                );
-            if($res->num_rows > 0)
-                $out = $res->fetch_array(MYSQLI_ASSOC);
-            break;
-        case self::QUERY_SINGLE_ARRAY           :
-            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
-                throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_ARRAY had ' . $res->num_rows . ' rows'
-                );
-            if($res->num_rows > 0)
-                $out = $res->fetch_array(MYSQLI_NUM);
-            break;
-        case self::QUERY_SINGLE_OBJECT          :
-            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
-                throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_OBJECT had ' . $res->num_rows . ' rows'
-                );
-            if($res->num_rows > 0)
-                $out = $res->fetch_object();
-            break;
-        case self::QUERY_SINGLE_CELL            :
-            if($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0))
-                throw new JunxaInvalidQueryException(
-                    'QUERY_SINGLE_CELL had ' . $res->num_rows . ' rows'
-                );
-            if($res->num_rows > 0) {
-                $row = $res->fetch_array(MYSQLI_NUM);
-                if(count($row) !== 1)
+        switch ($mode) {
+            case self::QUERY_RAW:
+                return $res;
+            case self::QUERY_FORGET:
+                $out = $res;
+                break;
+            case self::QUERY_ASSOCS:
+                $out = [];
+                while ($row = $res->fetch_array(MYSQLI_ASSOC)) {
+                    $out[] = $row;
+                }
+                break;
+            case self::QUERY_ARRAYS:
+                $out = [];
+                while ($row = $res->fetch_array(MYSQLI_NUM)) {
+                    $out[] = $row;
+                }
+                break;
+            case self::QUERY_DUAL_ARRAYS:
+                $out = [];
+                while ($row = $res->fetch_array(MYSQLI_BOTH)) {
+                    $out[] = $row;
+                }
+                break;
+            case self::QUERY_OBJECTS:
+                $out = [];
+                while ($row = $res->fetch_object()) {
+                    $out[] = $row;
+                }
+                break;
+            case self::QUERY_SINGLE_ASSOC:
+                if ($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0)) {
                     throw new JunxaInvalidQueryException(
-                        'QUERY_SINGLE_CELL had row with '
-                        . count($row)
-                        . ' columns'
+                        'QUERY_SINGLE_ASSOC had ' . $res->num_rows . ' rows'
                     );
-                $out = $row[0];
-            }
-            break;
-        case self::QUERY_COLUMN_ASSOC           :
-            $out = [];
-            if($res->num_rows > 0) {
-                $row = $res->fetch_array(MYSQLI_NUM);
-                if(count($row) != 2)
+                }
+                if ($res->num_rows > 0) {
+                    $out = $res->fetch_array(MYSQLI_ASSOC);
+                }
+                break;
+            case self::QUERY_SINGLE_ARRAY:
+                if ($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0)) {
                     throw new JunxaInvalidQueryException(
-                        'QUERY_COLUMN_ASSOC had row with '
-                        . count($row)
-                        . ' columns'
+                        'QUERY_SINGLE_ARRAY had ' . $res->num_rows . ' rows'
                     );
-                do
-                    $out[$row[0]] = $row[1];
-                while($row = $res->fetch_array(MYSQLI_NUM));
-            }
-            break;
-        case self::QUERY_COLUMN_ARRAY           :
-            $out = [];
-            if($res->num_rows > 0) {
-                $row = $res->fetch_array(MYSQLI_NUM);
-                if(count($row) != 1)
+                }
+                if ($res->num_rows > 0) {
+                    $out = $res->fetch_array(MYSQLI_NUM);
+                }
+                break;
+            case self::QUERY_SINGLE_OBJECT:
+                if ($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0)) {
                     throw new JunxaInvalidQueryException(
-                        'QUERY_COLUMN_ARRAY had row with '
-                        . count($row)
-                        . ' columns'
+                        'QUERY_SINGLE_OBJECT had ' . $res->num_rows . ' rows'
                     );
-                do
-                    $out[] = $row[0];
-                while($row = $res->fetch_array(MYSQLI_NUM));
-            }
-            break;
-        case self::QUERY_COLUMN_OBJECT          :
-            $out = new stdClass;
-            if($res->num_rows > 0) {
-                $row = $res->fetch_array(MYSQLI_NUM);
-                if(count($row) != 2)
+                }
+                if ($res->num_rows > 0) {
+                    $out = $res->fetch_object();
+                }
+                break;
+            case self::QUERY_SINGLE_CELL:
+                if ($res->num_rows !== 1 && (!$emptyOkay || $res->num_rows !== 0)) {
                     throw new JunxaInvalidQueryException(
-                        'QUERY_COLUMN_OBJECT had row with '
-                        . count($row)
-                        . ' columns'
+                        'QUERY_SINGLE_CELL had ' . $res->num_rows . ' rows'
                     );
-                do
-                    $out->{$row[0]} = $row[1];
-                while($row = $res->fetch_array(MYSQLI_NUM));
-            }
-            break;
-        default                             :
-            throw new JunxaInvalidQueryException(
-                'invalid query mode '
-                . (is_scalar($mode) ? $mode : gettype($mode))
-            );
+                }
+                if ($res->num_rows > 0) {
+                    $row = $res->fetch_array(MYSQLI_NUM);
+                    if (count($row) !== 1) {
+                        throw new JunxaInvalidQueryException(
+                            'QUERY_SINGLE_CELL had row with '
+                            . count($row)
+                            . ' columns'
+                        );
+                    }
+                    $out = $row[0];
+                }
+                break;
+            case self::QUERY_COLUMN_ASSOC:
+                $out = [];
+                if ($res->num_rows > 0) {
+                    $row = $res->fetch_array(MYSQLI_NUM);
+                    if (count($row) != 2) {
+                        throw new JunxaInvalidQueryException(
+                            'QUERY_COLUMN_ASSOC had row with '
+                            . count($row)
+                            . ' columns'
+                        );
+                    }
+                    do {
+                        $out[$row[0]] = $row[1];
+                    } while ($row = $res->fetch_array(MYSQLI_NUM));
+                }
+                break;
+            case self::QUERY_COLUMN_ARRAY:
+                $out = [];
+                if ($res->num_rows > 0) {
+                    $row = $res->fetch_array(MYSQLI_NUM);
+                    if (count($row) != 1) {
+                        throw new JunxaInvalidQueryException(
+                            'QUERY_COLUMN_ARRAY had row with '
+                            . count($row)
+                            . ' columns'
+                        );
+                    }
+                    do {
+                        $out[] = $row[0];
+                    } while ($row = $res->fetch_array(MYSQLI_NUM));
+                }
+                break;
+            case self::QUERY_COLUMN_OBJECT:
+                $out = new stdClass;
+                if ($res->num_rows > 0) {
+                    $row = $res->fetch_array(MYSQLI_NUM);
+                    if (count($row) != 2) {
+                        throw new JunxaInvalidQueryException(
+                            'QUERY_COLUMN_OBJECT had row with '
+                            . count($row)
+                            . ' columns'
+                        );
+                    }
+                    do {
+                        $out->{$row[0]} = $row[1];
+                    } while ($row = $res->fetch_array(MYSQLI_NUM));
+                }
+                break;
+            default:
+                throw new JunxaInvalidQueryException(
+                    'invalid query mode '
+                    . (is_scalar($mode) ? $mode : gettype($mode))
+                );
         }
         $res->free();
         return $out;
@@ -1329,7 +1398,7 @@ class Junxa
     {
         $this->tables = [];
         $res = $this->link->query('SHOW TABLES');
-        while($row = $res->fetch_array(MYSQLI_NUM)) {
+        while ($row = $res->fetch_array(MYSQLI_NUM)) {
             $table = $row[0];
             $this->tables[] = $table;
         }
@@ -1444,26 +1513,29 @@ class Junxa
      */
     public static function resolve($item, QueryBuilder $query, $context, $column, $parent)
     {
-        if(is_array($item)) {
+        if (is_array($item)) {
             $elem = [];
             $ix = 0;
-            foreach($item as $subitem)
+            foreach ($item as $subitem) {
                 $elem[$ix++] = self::resolve($subitem, $query, $context, $column, $parent);
-            if($context == 'join') {
+            }
+            if ($context == 'join') {
                 $keys = array_keys($item);
                 $out = $elem[0];
-                for($i = 1; $i < count($keys); $i++)
-                    if($item[$keys[$i]] instanceof Table && $item[$keys[$i - 1]] instanceof Table)
+                for ($i = 1; $i < count($keys); $i++) {
+                    if ($item[$keys[$i]] instanceof Table && $item[$keys[$i - 1]] instanceof Table) {
                         $out .= ', ' . $elem[$i];
-                    else
+                    } else {
                         $out .= ' ' . $elem[$i];
+                    }
+                }
                 return $out;
             } else {
                 return join(', ', $elem);
             }
-        } elseif(is_object($item) && method_exists($item, 'express')) {
+        } elseif (is_object($item) && method_exists($item, 'express')) {
             return $item->express($query, $context, $column, $parent);
-        } elseif($column) {
+        } elseif ($column) {
             return $column->represent($item, $query, $context, $parent);
         } else {
             return $this->quote($item);
@@ -1478,25 +1550,31 @@ class Junxa
      */
     public static function quote($data)
     {
-        if(!isset($data))
+        if (!isset($data)) {
             return 'NULL';
-        if(is_object($data))
-            if($data instanceof Row && isset($data->id))
+        }
+        if (is_object($data)) {
+            if ($data instanceof Row && isset($data->id)) {
                 $data = $data->id;
-            else
+            } else {
                 throw new JunxaInvalidQueryException(
                     'cannot use ' . get_class($data) . ' as raw data'
                 );
-        if(is_numeric($data))
+            }
+        }
+        if (is_numeric($data)) {
             return $data;
-        if(is_bool($data))
+        }
+        if (is_bool($data)) {
             return $data ? 1 : 0;
-        if(!is_string($data))
+        }
+        if (!is_string($data)) {
             throw new JunxaInvalidQueryException(
                 'cannot use ' . gettype($data) . ' as raw data'
             );
-        $data = $link->real_escape_string($data);
-        return "'" . $data . "'";
+        }
+            $data = $link->real_escape_string($data);
+            return "'" . $data . "'";
     }
 
     /**
@@ -1510,8 +1588,7 @@ class Junxa
         return ucfirst(
             preg_replace_callback(
                 '/_([^_])/',
-                function($match)
-                {
+                function ($match) {
                     return ucfirst($match[1]);
                 },
                 strtolower($text)
@@ -1527,11 +1604,10 @@ class Junxa
      */
     public static function camelCase($text)
     {
-        return 
+        return
             preg_replace_callback(
                 '/_([^_])/',
-                function($match)
-                {
+                function ($match) {
                     return ucfirst($match[1]);
                 },
                 strtolower($text)
@@ -1557,5 +1633,4 @@ class Junxa
     {
         return $code > 0;
     }
-
 }

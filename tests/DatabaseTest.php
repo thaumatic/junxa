@@ -1,7 +1,6 @@
 <?php
 
-abstract class DatabaseTest
-    extends PHPUnit_Framework_TestCase
+abstract class DatabaseTest extends PHPUnit_Framework_TestCase
 {
 
     const TEST_DATABASE_NAME = 'test_junxa';
@@ -13,7 +12,7 @@ abstract class DatabaseTest
     {
         parent::setUpBeforeClass();
         self::$db = new mysqli('localhost');
-        if(self::$db->connect_error) {
+        if (self::$db->connect_error) {
             throw new Exception(
                 'need anonymous access to mysql on localhost to '
                 . 'run database-based tests'
@@ -27,8 +26,9 @@ abstract class DatabaseTest
         self::$db->select_db(self::TEST_DATABASE_NAME);
         $res = self::$db->multi_query(file_get_contents($filename));
         self::$db->store_result();
-        while(self::$db->more_results())
+        while (self::$db->more_results()) {
             self::$db->next_result();
+        }
     }
 
     public static function tearDownAfterClass()
@@ -41,5 +41,4 @@ abstract class DatabaseTest
     {
         return self::$db;
     }
-
 }

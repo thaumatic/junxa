@@ -24,7 +24,7 @@ class Query
 
     public static function eq($a, $b)
     {
-	    return new Element('comparison', '=', [$a, $b]);
+        return new Element('comparison', '=', [$a, $b]);
     }
 
     public static function ne($a, $b)
@@ -79,10 +79,11 @@ class Query
 
     public static function not($arg)
     {
-        if($arg instanceof Column && $arg->type === 'tinyint' && $arg->length === 1)
+        if ($arg instanceof Column && $arg->type === 'tinyint' && $arg->length === 1) {
             return new Element('comparison', '=', [$arg, 0]);
-        else
+        } else {
             return new Element('unary', 'NOT', $arg);
+        }
     }
 
     public static function paren()
@@ -155,7 +156,8 @@ class Query
         return new Element('function', $name, $args);
     }
 
-    public static function cast($what, $type) {
+    public static function cast($what, $type)
+    {
         return new Element('cast', $type, $what);
     }
 
@@ -219,5 +221,4 @@ class Query
     {
         return new Element('join', 'RIGHT', $table);
     }
-
 }

@@ -25,17 +25,19 @@ class Row
     {
         $this->table = $table;
         $this->data = $data;
-        if($data) {
+        if ($data) {
             $demandOnlyColumns = $table->getDemandOnlyColumns();
-            if($demandOnlyColumns) {
+            if ($demandOnlyColumns) {
                 $columns = [];
-                foreach($table->getColumns() as $column)
-                    if(!in_array($column, $demandOnlyColumns))
+                foreach ($table->getColumns() as $column) {
+                    if (!in_array($column, $demandOnlyColumns)) {
                         $columns[] = $column;
+                    }
+                }
             } else {
                 $columns = $table->getColumns();
             }
-            for($i = 0; $i < count($columns); $i++) {
+            for ($i = 0; $i < count($columns); $i++) {
                 $column = $columns[$i];
                 $this->fields[$column] = $table->$column->import($data[$i]);
             }
@@ -61,10 +63,12 @@ class Row
      */
     public function __get($name)
     {
-        if(array_key_exists($name, $this->fields))
+        if (array_key_exists($name, $this->fields)) {
             return $this->fields[$name];
-        if(!$this->table->hasColumn($name))
+        }
+        if (!$this->table->hasColumn($name)) {
             throw new JunxaNoSuchColumnException($name);
+        }
         return null;
     }
 
@@ -78,10 +82,11 @@ class Row
      */
     public function __set($name, $value)
     {
-        if(array_key_exists($name, $this->fields) || $this->table->hasColumn($name))
+        if (array_key_exists($name, $this->fields) || $this->table->hasColumn($name)) {
             $this->fields[$name] = $value;
-        else
+        } else {
             throw new JunxaNoSuchColumnException($name);
+        }
     }
 
     /**
@@ -94,16 +99,17 @@ class Row
      */
     public function cacheKey()
     {
-        switch(count($this->table->primary)) {
-        case 0  :
-            throw new JunxaConfigurationException('cannot generate cache key without primary key');
-        case 1  :
-            $key = $this->table->primary[0];
-            return strval($this->fields[$key]);
-        default :
-            foreach($this->table->primary as $key)
-                $elem[] = $this->fields[$key];
-            return join("\0", $args) . '|' . join('', array_map('md5', $args));
+        switch (count($this->table->primary)) {
+            case 0:
+                throw new JunxaConfigurationException('cannot generate cache key without primary key');
+            case 1:
+                $key = $this->table->primary[0];
+                return strval($this->fields[$key]);
+            default:
+                foreach ($this->table->primary as $key) {
+                    $elem[] = $this->fields[$key];
+                }
+                return join("\0", $args) . '|' . join('', array_map('md5', $args));
         }
     }
 
@@ -127,8 +133,9 @@ class Row
      */
     public function column($column)
     {
-        if(!in_array($column, $this->table->columns))
+        if (!in_array($column, $this->table->columns)) {
             throw new JunxaNoSuchColumnException($column);
+        }
         return $this->table->$column;
     }
 
@@ -185,10 +192,11 @@ class Row
 
     public function value($column)
     {
-        if(empty($this->fields[$column])) {
+        if (empty($this->fields[$column])) {
             $table = $this->table();
-            if($table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset())
+            if ($table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset()) {
                 $this->fields[$column] = $this->backendValue($column);
+            }
         }
         return isset($this->fields[$column]) ? $this->fields[$column] : null;
     }
@@ -196,31 +204,36 @@ class Row
     public function demandAll()
     {
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
-        if($demandOnlyColumns)
-            foreach($demandOnlyColumns as $column)
+        if ($demandOnlyColumns) {
+            foreach ($demandOnlyColumns as $column) {
                 $this->value($column);
+            }
+        }
     }
 
     public function checkCaching($uncache = false)
     {
-        if($this->table->db()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
+        if ($this->table->db()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
             $key = $this->cacheKey();
-            if($uncache)
+            if ($uncache) {
                 $this->table->removeCacheKey($key);
-            elseif($this->table->getCachedValue($key) === null)
+            } elseif ($this->table->getCachedValue($key) === null) {
                 $this->table->setCachedValue($key, $this);
+            }
         }
     }
 
     public function getMatchCondition()
     {
         $key = $this->table->getPrimaryKey();
-        if(!$key)
+        if (!$key) {
             return 0;
+        }
         $what = [];
-        foreach($key as $column) {
-            if(empty($this->fields[$column]))
+        foreach ($key as $column) {
+            if (empty($this->fields[$column])) {
                 return 0;
+            }
             $what[] = Q::eq($this->table->$column, $this->fields[$column]);
         }
         return $what;
@@ -233,36 +246,40 @@ class Row
             'select'    => $target,
             'limit'     => 2,
         ];
-        foreach($this->table->columns as $column) {
-            if(empty($this->fields[$column]))
+        foreach ($this->table->columns as $column) {
+            if (empty($this->fields[$column])) {
                 continue;
+            }
             $cond[] = Q::eq($this->table->$column, $this->fields[$column]);
         }
-        if(count($cond))
+        if (count($cond)) {
             $query['where'] = $cond;
+        }
         $rows = $this->table->db()->query($query, Junxa::QUERY_ARRAYS);
-        switch(count($rows)) {
-        case 0  :
-            return Junxa::RESULT_FIND_FAIL;
-        case 1  :
-            $out = Junxa::RESULT_SUCCESS;
-            break;
-        default :
-            $out = Junxa::RESULT_FIND_EXCESS;
-            break;
+        switch (count($rows)) {
+            case 0:
+                return Junxa::RESULT_FIND_FAIL;
+            case 1:
+                $out = Junxa::RESULT_SUCCESS;
+                break;
+            default:
+                $out = Junxa::RESULT_FIND_EXCESS;
+                break;
         }
         $data = $rows[0];
         $this->data = $data;
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
-        if($demandOnlyColumns) {
+        if ($demandOnlyColumns) {
             $columns = [];
-            foreach($this->table->columns as $column)
-                if(!in_array($column, $demandOnlyColumns))
+            foreach ($this->table->columns as $column) {
+                if (!in_array($column, $demandOnlyColumns)) {
                     $columns[] = $column;
+                }
+            }
         } else {
             $columns = $this->table->columns;
         }
-        for($i = 0; $i < count($columns); $i++) {
+        for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
             $this->fields[$column] = $this->table->$column->import($data[$i]);
         }
@@ -273,28 +290,33 @@ class Row
     public function refresh()
     {
         $cond = $this->getMatchCondition();
-        if(!$cond)
+        if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
+        }
         $target = $this->table->getSelectTarget();
-        if($this->table->db()->getChangeHandlerObject())
+        if ($this->table->db()->getChangeHandlerObject()) {
             usleep(200000);
+        }
         $row = $this->table->db()->query([
             'select'    => $target,
             'where'     => $cond,
         ], Junxa::QUERY_SINGLE_ARRAY);
-        if(!$row)
+        if (!$row) {
             throw new JunxaInvalidQueryException('table refresh query returned no data');
+        }
         $this->data = $row;
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
-        if($demandOnlyColumns) {
+        if ($demandOnlyColumns) {
             $columns = [];
-            foreach($this->table->getColumns() as $column)
-                if(!in_array($column, $demandOnlyColumns))
+            foreach ($this->table->getColumns() as $column) {
+                if (!in_array($column, $demandOnlyColumns)) {
                     $columns[] = $column;
+                }
+            }
         } else {
             $columns = $this->table->getColumns();
         }
-        for($i = 0; $i < count($columns); $i++) {
+        for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
             $this->fields[$column] = $this->table->$column->import($row[$i]);
         }
@@ -314,15 +336,18 @@ class Row
             'group',
             'having',
         ];
-        if($queryDef) {
-            if(is_array($queryDef)) {
-                foreach($badClauses as $clause)
-                    if(isset($queryDef[$clause]))
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach ($badClauses as $clause) {
+                    if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
+                    }
+                }
                 $queryDef = $this->table->query($queryDef);
-            } elseif($queryDef instanceof QueryBuilder) {
-                if($clause = $queryDef->checkClauses($badClauses))
+            } elseif ($queryDef instanceof QueryBuilder) {
+                if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
+                }
             } else {
                 throw new JunxaInvalidQueryException(
                     'query definition for update() must be a '
@@ -334,15 +359,16 @@ class Row
             $queryDef = $this->table->query();
         }
         $demandOnlyColumns = $this->table->getDemandOnlyColumns();
-        if($demandOnlyColumns) {
+        if ($demandOnlyColumns) {
             $columns = [];
-            foreach($this->table->getStaticColumns() as $column)
-                if(!in_array($column, $demandOnlyColumns))
+            foreach ($this->table->getStaticColumns() as $column) {
+                if (!in_array($column, $demandOnlyColumns)) {
                     $columns[] = $column;
-            foreach($demandOnlyColumns as $column) {
+                }
+            }
+            foreach ($demandOnlyColumns as $column) {
                 $value = $this->backendValue($column);
-                if(
-                    $this->fields[$column] !== $value
+                if ($this->fields[$column] !== $value
                     && (
                         !is_numeric($value)
                         || !is_numeric($this->fields[$column])
@@ -355,11 +381,10 @@ class Row
         } else {
             $columns = $this->table->getStaticColumns();
         }
-        for($i = 0; $i < count($columns); $i++) {
+        for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
             $value = $this->data[$i];
-            if(
-                $this->fields[$column] !== $value
+            if ($this->fields[$column] !== $value
                 && (
                     !is_numeric($value)
                     || !is_numeric($this->fields[$column])
@@ -369,13 +394,16 @@ class Row
                 $queryDef->update($column, $this->fields[$column]);
             }
         }
-        if(!$queryDef->getUpdate())
+        if (!$queryDef->getUpdate()) {
             return Junxa::RESULT_UPDATE_NOOP;
+        }
         $cond = $this->getMatchCondition();
-        if(!$cond)
+        if (!$cond) {
             return Junxa::RESULT_UPDATE_NOKEY;
-        foreach($cond as $item)
+        }
+        foreach ($cond as $item) {
             $queryDef->where($item);
+        }
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
@@ -394,15 +422,18 @@ class Row
             'having',
             'limit',
         ];
-        if($queryDef) {
-            if(is_array($queryDef)) {
-                foreach($badClauses as $clause)
-                    if(isset($queryDef[$clause]))
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach ($badClauses as $clause) {
+                    if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
+                    }
+                }
                 $queryDef = $this->table->query($queryDef);
-            } elseif($queryDef instanceof QueryBuilder) {
-                if($clause = $queryDef->checkClauses($badClauses))
+            } elseif ($queryDef instanceof QueryBuilder) {
+                if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
+                }
             } else {
                 throw new JunxaInvalidQueryException(
                     'query definition for insert() must be a '
@@ -413,18 +444,24 @@ class Row
         } else {
             $queryDef = $this->table->query($queryDef);
         }
-        foreach($this->table->getStaticColumns() as $column)
-            if(array_key_exists($column, $this->fields))
+        foreach ($this->table->getStaticColumns() as $column) {
+            if (array_key_exists($column, $this->fields)) {
                 $queryDef->insert($column, $this->fields[$column]);
-        if(!$queryDef->getInsert())
+            }
+        }
+        if (!$queryDef->getInsert()) {
             return Junxa::RESULT_INSERT_NOOP;
+        }
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
-        if(!Junxa::OK($res))
+        if (!Junxa::OK($res)) {
             return $res;
-        if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->getAutoIncrementPrimary())
+        }
+        if ($res === Junxa::RESULT_SUCCESS) {
+            if ($field = $this->table->getAutoIncrementPrimary()) {
                 $this->fields[$field] = $this->table->db()->getInsertId();
+            }
+        }
         return $this->refresh();
     }
 
@@ -439,15 +476,18 @@ class Row
             'group',
             'having',
         ];
-        if($queryDef) {
-            if(is_array($queryDef)) {
-                foreach($badClauses as $clause)
-                    if(isset($queryDef[$clause]))
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach ($badClauses as $clause) {
+                    if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
+                    }
+                }
                 $queryDef = $this->table->query($queryDef);
-            } elseif($queryDef instanceof QueryBuilder) {
-                if($clause = $queryDef->checkClauses($badClauses))
+            } elseif ($queryDef instanceof QueryBuilder) {
+                if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
+                }
             } else {
                 throw new JunxaInvalidQueryException(
                     'query definition for merge() must be a '
@@ -459,28 +499,36 @@ class Row
             $queryDef = $this->table->query();
         }
         $foundUniqueKeyMember = false;
-        foreach($this->table->getStaticColumns() as $column) {
-            if(array_key_exists($column, $this->fields)) {
+        foreach ($this->table->getStaticColumns() as $column) {
+            if (array_key_exists($column, $this->fields)) {
                 $columnModel = $this->table->$column;
-                if(!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE))
+                if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE)) {
                     $foundUniqueKeyMember = true;
+                }
                 $queryDef->insert($column, $this->fields[$column]);
-                if(!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE))
+                if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)) {
                     $queryDef->update($column, $this->fields[$column]);
+                }
             }
         }
-        if(!$queryDef->getInsert())
+        if (!$queryDef->getInsert()) {
             return Junxa::RESULT_MERGE_NOOP;
-        if(!$foundUniqueKeyMember)
+        }
+        if (!$foundUniqueKeyMember) {
             return Junxa::RESULT_MERGE_NOKEY;
+        }
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
-        if(!Junxa::OK($res))
+        if (!Junxa::OK($res)) {
             return $res;
-        if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->getAutoIncrementPrimary())
-                if($id = $this->table->db()->getInsertId())
+        }
+        if ($res === Junxa::RESULT_SUCCESS) {
+            if ($field = $this->table->getAutoIncrementPrimary()) {
+                if ($id = $this->table->db()->getInsertId()) {
                     $this->fields[$field] = $id;
+                }
+            }
+        }
         return $this->refresh();
     }
 
@@ -497,15 +545,18 @@ class Row
             'having',
             'limit',
         ];
-        if($queryDef) {
-            if(is_array($queryDef)) {
-                foreach($badClauses as $clause)
-                    if(isset($queryDef[$clause]))
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach ($badClauses as $clause) {
+                    if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+                    }
+                }
                 $queryDef = $this->table->query($queryDef);
-            } elseif($queryDef instanceof QueryBuilder) {
-                if($clause = $queryDef->checkClauses($badClauses))
+            } elseif ($queryDef instanceof QueryBuilder) {
+                if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+                }
             } else {
                 throw new JunxaInvalidQueryException(
                     'query definition for replace() must be a '
@@ -516,18 +567,24 @@ class Row
         } else {
             $queryDef = $this->table->query($queryDef);
         }
-        foreach($this->table->getStaticColumns() as $column)
-            if(array_key_exists($column, $this->fields))
+        foreach ($this->table->getStaticColumns() as $column) {
+            if (array_key_exists($column, $this->fields)) {
                 $queryDef->replace($column, $this->fields[$column]);
-        if(!$queryDef->getReplace())
+            }
+        }
+        if (!$queryDef->getReplace()) {
             return Junxa::RESULT_REPLACE_NOOP;
+        }
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
-        if(!Junxa::OK($res))
+        if (!Junxa::OK($res)) {
             return $res;
-        if($res === Junxa::RESULT_SUCCESS)
-            if($field = $this->table->getAutoIncrementPrimary())
+        }
+        if ($res === Junxa::RESULT_SUCCESS) {
+            if ($field = $this->table->getAutoIncrementPrimary()) {
                 $this->fields[$field] = $this->table->db()->getInsertId();
+            }
+        }
         return $this->refresh();
     }
 
@@ -538,24 +595,30 @@ class Row
 
     public function changed()
     {
-        if(!$this->data)
+        if (!$this->data) {
             return true;
+        }
         $demandOnlyColumns = $table->getDemandOnlyColumns();
-        if($demandOnlyColumns) {
-            foreach($demandOnlyColumns as $column)
-                if($this->fields[$column] !== $this->backendValue($column))
+        if ($demandOnlyColumns) {
+            foreach ($demandOnlyColumns as $column) {
+                if ($this->fields[$column] !== $this->backendValue($column)) {
                     return true;
+                }
+            }
             $columns = [];
-            foreach($this->table->getStaticColumns() as $column)
-                if(!in_array($column, $demandOnlyColumns))
+            foreach ($this->table->getStaticColumns() as $column) {
+                if (!in_array($column, $demandOnlyColumns)) {
                     $columns[] = $column;
+                }
+            }
         } else {
             $columns = $this->table->getStaticColumns();
         }
-        for($i = 0; $i < count($columns); $i++) {
+        for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            if($this->fields[$column] !== $this->data[$i])
+            if ($this->fields[$column] !== $this->data[$i]) {
                 return true;
+            }
         }
         return false;
     }
@@ -571,15 +634,18 @@ class Row
             'group',
             'having',
         ];
-        if($queryDef) {
-            if(is_array($queryDef)) {
-                foreach($badClauses as $clause)
-                    if(isset($queryDef[$clause]))
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach ($badClauses as $clause) {
+                    if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
+                    }
+                }
                 $queryDef = $this->table->query($queryDef);
-            } elseif($queryDef instanceof QueryBuilder) {
-                if($clause = $queryDef->checkClauses($badClauses))
+            } elseif ($queryDef instanceof QueryBuilder) {
+                if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
+                }
             } else {
                 throw new JunxaInvalidQueryException(
                     'query definition for delete() must be a '
@@ -591,14 +657,16 @@ class Row
             $queryDef = $this->table->query();
         }
         $cond = $this->getMatchCondition();
-        if(!$cond)
+        if (!$cond) {
             return Junxa::RESULT_DELETE_FAIL;
-        foreach($cond as $item)
+        }
+        foreach ($cond as $item) {
             $queryDef->where($item);
+        }
         $queryDef->delete($this->table);
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
-        if(Junxa::OK($res)) {
+        if (Junxa::OK($res)) {
             $this->deleted = true;
             $this->checkCaching(true);
         }
@@ -625,10 +693,11 @@ class Row
     public function getPrimaryKeyUnset()
     {
         $table = $this->table();
-        foreach($table->getPrimaryKey() as $column)
-            if(empty($this->fields[$column]))
+        foreach ($table->getPrimaryKey() as $column) {
+            if (empty($this->fields[$column])) {
                 return true;
+            }
+        }
         return false;
     }
-
 }
