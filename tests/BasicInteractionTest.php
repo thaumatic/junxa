@@ -47,7 +47,7 @@ class BasicInteractionTest
         $this->assertSame('id', $categoryTableIdColumn->getName());
     }
 
-    private function runInsertTests($db)
+    private function runInsertUpdateAndDeleteTests($db)
     {
         try {
             $category = $db->category->row();
@@ -74,7 +74,6 @@ class BasicInteractionTest
             $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $item->changed_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
             $this->assertTrue($item->active);
-            $item->delete();
         } finally {
             if(isset($category) && $category->id !== null)
                 $category->delete();
