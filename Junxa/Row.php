@@ -29,11 +29,11 @@ class Row
             $demandOnlyColumns = $table->getDemandOnlyColumns();
             if($demandOnlyColumns) {
                 $columns = [];
-                foreach($table->columns as $column)
+                foreach($table->getColumns() as $column)
                     if(!in_array($column, $demandOnlyColumns))
                         $columns[] = $column;
             } else {
-                $columns = $table->columns;
+                $columns = $table->getColumns();
             }
             for($i = 0; $i < count($columns); $i++) {
                 $column = $columns[$i];
