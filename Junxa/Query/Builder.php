@@ -32,11 +32,12 @@ class Builder
     private $order = [];
     private $limit;
     private $options = [];
-    private $outputCache = '';
+    private $outputCache;
     private $expressed;
     private $tables = [];
     private $nullTables = [];
     private $isMultitable = false;
+    private $validated = false;
 
     /**
      * Static factory method used by database and table models to generate attached queries.
@@ -52,6 +53,16 @@ class Builder
         $out->database = $database;
         $out->table = $table;
         return $out;
+    }
+
+    /**
+     * Called when an alteration is made to the query definition.  Marks the
+     * query builder as not validated and clears any output caching.
+     */
+    private function changed()
+    {
+        $this->outputCache = null;
+        $this->validated = false;
     }
 
     /**
@@ -94,6 +105,8 @@ class Builder
      */
     public function validate()
     {
+        if ($this->validated)
+            return $this;
         foreach(['select', 'insert', 'replace', 'update', 'delete'] as $type) {
             if($this->$type) {
                 if($this->type && $this->type !== $type)
@@ -124,7 +137,21 @@ class Builder
         default         :
             throw new JunxaInvalidQueryException("unknown query type $this->type");
         }
+        $this->validated = true;
         return $this;
+    }
+
+    /**
+     * Performs basic validation of the query's configuration even if has
+     * already been validated.
+     *
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
+     */
+    public function revalidate()
+    {
+        $this->validated = false;
+        return $this->validate();
     }
 
     /**
@@ -161,6 +188,7 @@ class Builder
             if(is_string($what) && $this->table)
                 $what = $this->table->$what;
             $this->select[] = $what;
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -186,6 +214,7 @@ class Builder
     public function clearSelect()
     {
         $this->select = [];
+        $this->changed();
         return $this;
     }
 
@@ -202,6 +231,7 @@ class Builder
         if($ix < 0)
             throw new JunxaInvalidQueryException('no select items');
         $this->select[$ix] = Q::alias($this->select[$ix], $name);
+        $this->changed();
         return $this;
     }
 
@@ -216,6 +246,7 @@ class Builder
             if(!($what instanceof Assignment))
                 throw new JunxaInvalidQueryException('single argument to update() must be a column assignment');
             $this->update[] = $what;
+            $this->changed();
             break;
         case 2  :
             $a = $args[0];
@@ -223,6 +254,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->update[] = new Assignment($a, $b);
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -248,6 +280,7 @@ class Builder
     public function clearUpdate()
     {
         $this->update = [];
+        $this->changed();
         return $this;
     }
 
@@ -262,6 +295,7 @@ class Builder
             if(!($what instanceof Assignment))
                 throw new JunxaInvalidQueryException('single argument to insert() must be a column assignment');
             $this->insert[] = $what;
+            $this->changed();
             break;
         case 2  :
             $a = $args[0];
@@ -269,6 +303,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->insert[] = new Assignment($a, $b);
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -294,6 +329,7 @@ class Builder
     public function clearInsert()
     {
         $this->insert = [];
+        $this->changed();
         return $this;
     }
 
@@ -308,6 +344,7 @@ class Builder
             if(!($what instanceof Assignment))
                 throw new JunxaInvalidQueryException('single argument to replace() must be a column assignment');
             $this->replace[] = $what;
+            $this->changed();
             break;
         case 2  :
             $a = $args[0];
@@ -315,6 +352,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->replace[] = new Assignment($a, $b);
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -340,6 +378,7 @@ class Builder
     public function clearReplace()
     {
         $this->replace = [];
+        $this->changed();
         return $this;
     }
 
@@ -348,6 +387,7 @@ class Builder
         if($what === null && $this->table)
             $what = $this->table;
         $this->delete[] = $what;
+        $this->changed();
         return $this;
     }
 
@@ -369,6 +409,7 @@ class Builder
     public function clearDelete()
     {
         $this->replace = [];
+        $this->changed();
         return $this;
     }
 
@@ -399,6 +440,7 @@ class Builder
             if(is_string($what) && $this->database)
                 $what = Q::innerJoin($this->database->$what);
             $this->join[] = $what;
+            $this->changed();
         }
         return $this;
     }
@@ -412,6 +454,7 @@ class Builder
             if(is_string($what) && $this->database)
                 $what = Q::innerJoin($this->database->$what);
             $this->join[] = $what;
+            $this->changed();
         }
         return $this;
     }
@@ -425,6 +468,7 @@ class Builder
         case 1  :
             $what = $args[0];
             $this->join[] = Q::joinOn($what);
+            $this->changed();
             break;
         case 2  :
             $a = $args[0];
@@ -432,6 +476,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->join[] = Q::joinOn(Q::eq($a, $b));
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -450,6 +495,7 @@ class Builder
             $what = $this->table->$what;
         }
         $this->join[] = Q::joinUsing($what);
+        $this->changed();
         return $this;
     }
 
@@ -468,6 +514,7 @@ class Builder
                 if(is_string($arg) && $this->table)
                     $arg = $this->table->$arg;
                 $this->where[] = $arg;
+                $this->changed();
             }
             break;
         case 2  :
@@ -478,6 +525,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->where[] = Q::eq($a, $b);
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -513,6 +561,7 @@ class Builder
     public function clearWhere()
     {
         $this->where = [];
+        $this->changed();
         return $this;
     }
 
@@ -531,6 +580,7 @@ class Builder
                 if(is_string($arg) && $this->table)
                     $arg = $this->table->$arg;
                 $this->having[] = $arg;
+                $this->changed();
             }
             break;
         case 2  :
@@ -541,6 +591,7 @@ class Builder
             if(is_string($a) && $this->table)
                 $a = $this->table->$a;
             $this->having[] = Q::eq($a, $b);
+            $this->changed();
             break;
         default :
             throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
@@ -566,6 +617,7 @@ class Builder
     public function clearHaving()
     {
         $this->having = [];
+        $this->changed();
         return $this;
     }
 
@@ -574,6 +626,7 @@ class Builder
         if($this->having) {
             $this->where($this->having);
             $this->having = [];
+            $this->changed();
         }
         return $this;
     }
@@ -593,6 +646,7 @@ class Builder
                 if(is_string($what) && $this->table)
                     $what = $this->table->$what;
                 $this->order[] = $what;
+                $this->changed();
             }
             break;
         default :
@@ -619,6 +673,7 @@ class Builder
     public function clearOrder()
     {
         $this->order = [];
+        $this->changed();
         return $this;
     }
 
@@ -634,6 +689,7 @@ class Builder
         if($ix < 0)
             throw new JunxaInvalidQueryException('no order items');
         $this->order[$ix] = Q::desc($this->order[$ix]);
+        $this->changed();
         return $this;
     }
 
@@ -652,6 +708,7 @@ class Builder
                 if(is_string($what) && $this->table)
                     $what = $this->table->$what;
                 $this->group[] = $what;
+                $this->changed();
             }
             break;
         default :
@@ -678,6 +735,7 @@ class Builder
     public function clearGroup()
     {
         $this->group = [];
+        $this->changed();
         return $this;
     }
 
@@ -687,6 +745,7 @@ class Builder
             $this->limit = intval($a);
         else
             $this->limit = intval($a) . ', ' . intval($b);
+        $this->changed();
         return $this;
     }
 
@@ -712,6 +771,7 @@ class Builder
     {
         $pageSize = intval($pageSize);
         $this->limit = (($pageSize * max($pageNum - 1, 0))) . ', ' . $pageSize;
+        $this->changed();
         return $this;
     }
 
@@ -729,6 +789,7 @@ class Builder
     {
         foreach($what as $key => $value)
             $this->options[$key] = $value;
+        $this->changed();
         return $this;
     }
 
@@ -752,6 +813,7 @@ class Builder
                 unset($this->options[$name]);
             else
                 $this->options[$name] = $value;
+            $this->changed();
             break;
         }
         return $this;
@@ -793,8 +855,9 @@ class Builder
 
     public function express()
     {
-        if($this->outputCache)
+        if($this->outputCache !== null)
             return $this->outputCache;
+        $this->validate();
         $this->expressed = [];
         $type = $this->type;
         $main = $this->$type;
@@ -881,7 +944,8 @@ class Builder
             $out .= "\n\tORDER BY " . Junxa::resolve($this->order, $this, 'order', null, $this);
         if(isset($this->limit))
             $out .= "\n\tLIMIT " . $this->limit;
-        return $this->outputCache = $out;
+        $this->outputCache = $out;
+        return $out;
     }
 
     public function execute()

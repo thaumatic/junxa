@@ -449,7 +449,6 @@ class Table
             ->limit(1)
             ->option('emptyOkay', true)
             ->setMode(Junxa::QUERY_SINGLE_ARRAY)
-            ->validate()
         ;
         $row = $this->db->query($query);
         if(!$row)
@@ -529,7 +528,6 @@ class Table
             ->clearSelect()
             ->select($this->selectTarget())
             ->setMode(Junxa::QUERY_ARRAYS)
-            ->validate()
         ;
         $class = $this->db->rowClass($this->name);
         $rows = $this->db->query($query);
@@ -593,10 +591,7 @@ class Table
         } else {
             $query->select()->func('COUNT', $this);
         }
-        $query
-            ->setMode(Junxa::QUERY_SINGLE_CELL)
-            ->validate()
-        ;
+        $query->setMode(Junxa::QUERY_SINGLE_CELL);
         return $this->db->query($query);
     }
 

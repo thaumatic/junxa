@@ -376,7 +376,6 @@ class Row
             return Junxa::RESULT_UPDATE_NOKEY;
         foreach($cond as $item)
             $queryDef->where($item);
-        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
@@ -419,7 +418,6 @@ class Row
                 $queryDef->insert($column, $this->fields[$column]);
         if(!$queryDef->getInsert())
             return Junxa::RESULT_INSERT_NOOP;
-        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
@@ -475,7 +473,6 @@ class Row
             return Junxa::RESULT_MERGE_NOOP;
         if(!$foundUniqueKeyMember)
             return Junxa::RESULT_MERGE_NOKEY;
-        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
@@ -524,7 +521,6 @@ class Row
                 $queryDef->replace($column, $this->fields[$column]);
         if(!$queryDef->getReplace())
             return Junxa::RESULT_REPLACE_NOOP;
-        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         if(!Junxa::OK($res))
@@ -600,7 +596,6 @@ class Row
         foreach($cond as $item)
             $queryDef->where($item);
         $queryDef->delete($this->table);
-        $queryDef->validate();
         $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->table->db()->getQueryStatus();
         if(Junxa::OK($res)) {

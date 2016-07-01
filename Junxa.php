@@ -1114,6 +1114,13 @@ class Junxa
             $query = new QueryBuilder($query);
             // fallthrough
         case 'object'   :
+            if(!($query instanceof QueryBuilder))
+                throw new JunxaInvalidQueryException(
+                    'object query must be a '
+                    . 'Thaumatic\Junxa\Query\Builder, '
+                    . ' got ' . get_class($query)
+                );
+            $query->validate();
             if($mode === 0)
                 $mode = $query->getMode();
             $queryType = $query->getType();
