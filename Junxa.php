@@ -40,19 +40,14 @@ class Junxa
     const DB_PRELOAD_TABLES             = 0x00000001;
 
     /**
-     * @const int database-level behavioral option: throw exceptions when encountering database errors
-     */
-    const DB_DATABASE_ERRORS            = 0x00000002;
-
-    /**
      * @const int database-level behavioral option: cache row results from tables
      */
-    const DB_CACHE_TABLE_ROWS           = 0x00000004;
+    const DB_CACHE_TABLE_ROWS           = 0x00000002;
 
     /**
      * @const int database-level behavioral option: collect statistics on queries executed
      */
-    const DB_COLLECT_QUERY_STATISTICS   = 0x00000008;
+    const DB_COLLECT_QUERY_STATISTICS   = 0x00000004;
 
     /**
      * @const int database-level behavioral option: use a persistent connection
@@ -1179,11 +1174,9 @@ class Junxa
                 $this->connect();
                 return $this->query($query, $mode, $echo, $emptyOkay);
             }
-            if($this->getOption(self::DB_DATABASE_ERRORS))
-                if(!$errorOkay)
-                    throw new JunxaInvalidQueryException($this->queryMessage . "\nQuery was:\n" . $query);
-                else
-                    $this->queryStatus = self::RESULT_FAILURE;
+            $this->queryStatus = self::RESULT_FAILURE;
+            if(!$errorOkay)
+                throw new JunxaQueryExecutionException($this->queryMessage . ' from ' . $query);
         }
         if(!$isResult && preg_match('/^\s*(INSERT|REPLACE)\b/i', $query))
             $this->insertId = $this->link->insert_id;
