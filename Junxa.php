@@ -11,7 +11,8 @@ use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Table;
 
 /**
- * This class is used to model the database that we are connecting to and provides a central point of interface for the ORM.
+ * This class is used to model the database that we are connecting to
+ * and provides a central point of interface for the ORM.
  *
  *      use Thaumatic\Junxa;
  *
@@ -35,17 +36,20 @@ class Junxa
 {
 
     /**
-     * @const int database-level behavioral option: load all tables at initialization
+     * @const int database-level behavioral option: load all tables at
+     * initialization
      */
     const DB_PRELOAD_TABLES             = 0x00000001;
 
     /**
-     * @const int database-level behavioral option: cache row results from tables
+     * @const int database-level behavioral option: cache row results from
+     * tables
      */
     const DB_CACHE_TABLE_ROWS           = 0x00000002;
 
     /**
-     * @const int database-level behavioral option: collect statistics on queries executed
+     * @const int database-level behavioral option: collect statistics on
+     * queries executed
      */
     const DB_COLLECT_QUERY_STATISTICS   = 0x00000004;
 
@@ -70,12 +74,14 @@ class Junxa
     const QUERY_ASSOCS                  = 3;
 
     /**
-     * @const int query output type: return results in numerically-indexed arrays
+     * @const int query output type: return results in numerically-indexed
+     * arrays
      */
     const QUERY_ARRAYS                  = 4;
 
     /**
-     * @const int query output type: return results in associative and numerically-indexed arrays
+     * @const int query output type: return results in associative and
+     * numerically-indexed arrays
      */
     const QUERY_DUAL_ARRAYS             = 5;
 
@@ -85,12 +91,14 @@ class Junxa
     const QUERY_OBJECTS                 = 6;
 
     /**
-     * @const int query output type: return results in a single associative array
+     * @const int query output type: return results in a single associative
+     * array
      */
     const QUERY_SINGLE_ASSOC            = 7;
 
     /**
-     * @const int query output type: return results in a single numerically-indexed array
+     * @const int query output type: return results in a single
+     * numerically-indexed array
      */
     const QUERY_SINGLE_ARRAY            = 8;
 
@@ -105,42 +113,49 @@ class Junxa
     const QUERY_SINGLE_CELL             = 10;
 
     /**
-     * @const int query output type: return results in an associative array mapping results of a two-column query
+     * @const int query output type: return results in an associative array
+     * mapping results of a two-column query
      */
     const QUERY_COLUMN_ASSOC            = 11;
 
     /**
-     * @const int query output type: return results in a numerically-indexed array containing results of a single-column query
+     * @const int query output type: return results in a numerically-indexed
+     * array containing results of a single-column query
      */
     const QUERY_COLUMN_ARRAY            = 12;
 
     /**
-     * @const int query output type: return results in a stdClass object mapping results of a two-column query
+     * @const int query output type: return results in a stdClass object
+     * mapping results of a two-column query
      */
     const QUERY_COLUMN_OBJECT           = 13;
 
     /**
-     * @const int query result code: absolutely everything went perfectly with the query
+     * @const int query result code: absolutely everything went perfectly with
+     * the query
      */
     const RESULT_SUCCESS                = 1;
 
     /**
-     * @const int query result code: a table row could not be refreshed with its current content from the database
+     * @const int query result code: a table row could not be refreshed with its
+     * current content from the database
      *
-     * A table row refresh is automatically called for after an table row insert.  The refresh will fail if the table
-     * does not have a primary key or if the primary key is not auto_increment and does not have a value in the table
-     * row object (applies to any part of a multipart primary key).
+     * A table row refresh is automatically called for after an table row
+     * insert.  The refresh will fail if the table does not have a primary key or
+     * if the primary key is not auto_increment and does not have a value in the
+     * table row object (applies to any part of a multipart primary key).
      */
     const RESULT_REFRESH_FAIL           = 2;
 
     /**
-     * @const int query result code: a table row update was called for but no changes had been made to the table row's data
+     * @const int query result code: a table row update was called for but no
+     * changes had been made to the table row's data
      */
     const RESULT_UPDATE_NOOP            = 3;
 
     /**
-     * @const int query result code: a table row find was called for and more than one matching row was found, resulting in
-     * the first row being used.
+     * @const int query result code: a table row find was called for and more
+     * than one matching row was found, resulting in the first row being used.
      */
     const RESULT_FIND_EXCESS            = 4;
 
@@ -150,45 +165,52 @@ class Junxa
     const RESULT_FAILURE                = -1;
 
     /**
-     * @const int query result code: a table row insert was called for but the table row had no values set
+     * @const int query result code: a table row insert was called for but the
+     * table row had no values set
      */
     const RESULT_INSERT_NOOP            = -2;
 
     /**
-     * @const int query result code: a table row replace was called for but the table row had no values set
+     * @const int query result code: a table row replace was called for but the
+     * table row had no values set
      */
     const RESULT_REPLACE_NOOP           = -3;
 
     /**
-     * @const int query result code: a table row merge was called for but no changes had been made to the table row's data
+     * @const int query result code: a table row merge was called for but no
+     * changes had been made to the table row's data
      */
     const RESULT_MERGE_NOOP             = -4;
 
     /**
-     * @const int query result code: a table row update was called for but the row did not have the primary
-     * key information necessary to automatically generate an update
+     * @const int query result code: a table row update was called for but the
+     * row did not have the primary key information necessary to automatically
+     * generate an update
      */
     const RESULT_UPDATE_NOKEY           = -5;
 
     /**
-     * @const int query result code: a table row merge was called for but the table did not have any non-primary
-     * unique key to base a merge on
+     * @const int query result code: a table row merge was called for but the
+     * table did not have any non-primary unique key to base a merge on
      */
     const RESULT_MERGE_NOKEY            = -6;
 
     /**
-     * @const int query result code: a table row delete was called for but the row did not have the primary
-     * key information necessary to automatically generate a delete
+     * @const int query result code: a table row delete was called for but the
+     * row did not have the primary key information necessary to automatically
+     * generate a delete
      */
     const RESULT_DELETE_FAIL            = -7;
 
     /**
-     * @const int query result code: a table row find was called for and no matching rows were found
+     * @const int query result code: a table row find was called for and no
+     * matching rows were found
      */
     const RESULT_FIND_FAIL              = -8;
 
     /**
-     * @const int query result code: an INSERT IGNORE query was executed and no rows were affected
+     * @const int query result code: an INSERT IGNORE query was executed and no
+     * rows were affected
      */
     const RESULT_INSERT_FAIL            = -9;
 
@@ -218,7 +240,8 @@ class Junxa
     private $password;
 
     /**
-     * @var array<string:mixed>|Thaumatic\Junxa an alternate Junxa configuration or instance that database changes (not selects)
+     * @var array<string:mixed>|Thaumatic\Junxa an alternate Junxa
+     * configuration or instance that database changes (not selects)
      * should be sent to (for primary/secondary replication architectures)
      */
     private $changeHandler;
