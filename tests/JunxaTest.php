@@ -6,7 +6,7 @@ use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
 
-class BasicInteractionTest
+class JunxaTest
     extends DatabaseTest
 {
 
