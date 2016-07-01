@@ -61,6 +61,13 @@ class BasicInteractionTest
             $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
             $this->assertTrue($category->active);
             //
+            $category->name = 'Recategorized';
+            $category->save();
+            $this->assertSame('Recategorized', $category->name);
+            $categoryAlt = $db->category->row($category->id);
+            $this->assertNotSame($category, $categoryAlt);
+            $this->assertSame($category->name, $categoryAlt->name);
+            //
             $item = $db->item->row();
             $item->category_id = $category->id;
             $item->name = 'Widget';
