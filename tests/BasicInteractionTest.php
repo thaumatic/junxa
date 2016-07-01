@@ -17,7 +17,7 @@ class BasicInteractionTest
             'database'  => DatabaseTest::TEST_DATABASE_NAME,
         ]);
         $this->runBasicInteractionTests($db);
-        $this->runInsertTests($db);
+        $this->runInsertUpdateAndDeleteTests($db);
     }
 
     public function testWithFluentSetup()
@@ -28,7 +28,7 @@ class BasicInteractionTest
             ->ready()
         ;
         $this->runBasicInteractionTests($db);
-        $this->runInsertTests($db);
+        $this->runInsertUpdateAndDeleteTests($db);
     }
 
     private function runBasicInteractionTests($db)
