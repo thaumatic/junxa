@@ -1160,9 +1160,9 @@ class Junxa
             echo("SQL (echoed because of $whyEcho): $query <br />\n");
         $res = $this->link->query($query);
         if($res) {
-            if($insertIgnore && $this->affectedRows() <= 0)
+            if($insertIgnore && $this->getAffectedRows() <= 0)
                 $this->queryStatus = self::RESULT_INSERT_FAIL;
-            elseif($update && $this->affectedRows() <= 0)
+            elseif($update && $this->getAffectedRows() <= 0)
                 $this->queryStatus = self::RESULT_UPDATE_FAIL;
             else
                 $this->queryStatus = self::RESULT_SUCCESS;
