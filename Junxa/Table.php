@@ -448,7 +448,7 @@ class Table
             ->select($target)
             ->limit(1)
             ->option('emptyOkay', true)
-            ->mode(Junxa::QUERY_SINGLE_ARRAY)
+            ->setMode(Junxa::QUERY_SINGLE_ARRAY)
             ->validate()
         ;
         $row = $this->db->query($query);
@@ -528,7 +528,7 @@ class Table
         $query
             ->clearSelect()
             ->select($this->selectTarget())
-            ->mode(Junxa::QUERY_ARRAYS)
+            ->setMode(Junxa::QUERY_ARRAYS)
             ->validate()
         ;
         $class = $this->db->rowClass($this->name);
@@ -594,7 +594,7 @@ class Table
             $query->select()->func('COUNT', $this);
         }
         $query
-            ->mode(Junxa::QUERY_SINGLE_CELL)
+            ->setMode(Junxa::QUERY_SINGLE_CELL)
             ->validate()
         ;
         return $this->db->query($query);
