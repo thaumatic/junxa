@@ -373,7 +373,7 @@ class Table
         $key = self::argsCacheKey($args);
         if(array_key_exists($key, $this->cache))
             return $this->cache[$key];
-        if(!($this->db->options & Junxa::DB_CACHE_TABLE_ROWS))
+        if(!$this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS))
             throw new JunxaConfigurationException('DB_CACHE_TABLE_ROWS option not enabled');
     }
 
@@ -434,7 +434,7 @@ class Table
                 throw new JunxaInvalidQueryException(
                     'row must be identified by same number of arguments as columns in primary key'
                 );
-            if($this->db->options & Junxa::DB_CACHE_TABLE_ROWS) {
+            if($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
                 $key = self::argsCacheKey($args);
                 if(!empty($this->cache[$key]))
                     return $this->cache[$key];
@@ -455,7 +455,7 @@ class Table
         if(!$row)
             return null;
         $out = new $class($this, $row);
-        if($this->db->options & Junxa::DB_CACHE_TABLE_ROWS) {
+        if($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             if(!isset($key))
                 $key = $out->cacheKey();
             if(empty($this->cache[$key]))
@@ -534,7 +534,7 @@ class Table
         $class = $this->db->rowClass($this->name);
         $rows = $this->db->query($query);
         $out = [];
-        if(($this->db->options & Junxa::DB_CACHE_TABLE_ROWS) && count($this->primary) && !$query->option('nocache')) {
+        if($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->primary) && !$query->option('nocache')) {
             foreach($rows as $data) {
                 $row = new $class($this, $data);
                 $key = $row->cacheKey();
