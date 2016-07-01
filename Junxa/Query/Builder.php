@@ -856,10 +856,12 @@ class Builder
             foreach($main as $item) {
                 if(!($item instanceof Assignment))
                     throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
+                $column = $item->getColumn();
+                $value = $item->getValue();
                 $elem[] =
-                    Junxa::resolve($item->getColumn(), $this, $type, null, $this)
+                    Junxa::resolve($column, $this, $type, null, $this)
                     . ' = '
-                    . Junxa::resolve($item->getValue(), $this, $type, $item->column, $this);
+                    . Junxa::resolve($value, $this, $type, $column, $this);
             }
             $out .= join(', ', $elem);
             break;
