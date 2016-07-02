@@ -33,7 +33,8 @@ class Table
     private $columns = [];
 
     /**
-     * @var array<string:Thaumatic\Junxa\Column> map of column names to their models
+     * @var array<string:Thaumatic\Junxa\Column> map of column names to their
+     * models
      */
     private $columnModels = [];
 
@@ -43,31 +44,43 @@ class Table
     private $primary = [];
 
     /**
-     * @var string if the table has a fully auto-incrementing (therefore single-column) primary key, the name of the column
+     * @var string if the table has a fully auto-incrementing (therefore 
+     * single-column) primary key, the name of the column
      */
     private $autoIncrementPrimary;
 
     /**
-     * @var array<string> the names of all non-dynamic columns (referencing actual database columns) in the table
+     * @var array<string> the names of all non-dynamic columns (referencing
+     * actual database columns) in the table
      */
     private $staticColumns = [];
 
     /**
-     * @var array<string> the names of all dynamic columns (virtually constructed from SQL) in the table
+     * @var array<string> the names of all dynamic columns (virtually
+     * constructed from SQL) in the table
      */
     private $dynamicColumns = [];
 
     /**
-     * @var array<string> the names of demand-only columns (not loaded when row models are generated)
+     * @var array<string> the names of demand-only columns (not loaded when
+     * row models are generated)
      */
     private $demandOnlyColumns = [];
 
     /**
-     * @var array<string:Thaumatic\Junxa\Row> row cached used when Junxa::DB_CACHE_TABLE_ROWS is on
+     * @var array<string:Thaumatic\Junxa\Row> row cached used when
+     * Junxa::DB_CACHE_TABLE_ROWS is on
      */
     private $cache = [];
 
-    public function __construct(Junxa $db, $name, $columnCount = null, $fields = [])
+    /**
+     * @param Thaumatic\Junxa the database model this table model is attached to
+     * @param string the table name
+     * @param int the number of columns in the modeled table, if known
+     * @param array<stdClass> if available, field info objects for the table's
+     * columns, as returned by mysqli::fetch_field()
+     */
+    public function __construct(Junxa $db, $name, $columnCount = null, array $fields = [])
     {
         $this->db = $db;
         $this->name = $name;
@@ -627,7 +640,10 @@ class Table
         if ($context === 'join') {
             return '`' . $this->name . '`';
         }
-        if ($query->isMultitable() && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')) {
+        if (
+            $query->isMultitable()
+            && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')
+        ) {
             if ($this->demandOnlyColumns && $context !== 'function') {
                 $items = [];
                 foreach ($this->columns as $column) {
