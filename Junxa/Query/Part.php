@@ -8,7 +8,8 @@ use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Query\Element;
 
 /**
- * Used internally by part of the fluent interface to Thaumatic\Junxa\Query\Builder to provide contextualized interaction.
+ * Used internally by part of the fluent interface to
+ * Thaumatic\Junxa\Query\Builder to provide contextualized interaction.
  */
 class Part
 {
@@ -19,7 +20,8 @@ class Part
     /**
      * Static factory method.
      *
-     * @param Thaumatic\Junxa\Query\Builder the query builder the generated Part is to be attached to
+     * @param Thaumatic\Junxa\Query\Builder the query builder the generated
+     * Part is to be attached to
      * @param string the name of the query part we are modeling
      * @return self
      */
@@ -416,8 +418,10 @@ class Part
      * Convert the most recently added order item to descending sort.
      *
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if $this is not attached to the order part of the Query
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there are no order items
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if $this
+     * is not attached to the order part of the Query
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * are no order items
      */
     public function desc()
     {
@@ -433,8 +437,10 @@ class Part
      *
      * @param string the alias name to use
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if $this is not attached to the select part of the Query
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there are no select items
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if $this
+     * is not attached to the select part of the Query
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * are no select items
      */
     public function alias($name)
     {
@@ -475,8 +481,9 @@ class Part
     }
 
     /**
-     * For any method call not supported by this object, forward the call back to the parent (which will, in most circumstaces,
-     * return itself so that it is the new fluent reference point).
+     * For any method call not supported by this object, forward the call back
+     * to the parent (which will, in most circumstaces, return itself so that
+     * it is the new fluent reference point).
      *
      * @param string the method name
      * @param array the method arguments
