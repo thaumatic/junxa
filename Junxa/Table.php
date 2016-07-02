@@ -44,7 +44,7 @@ class Table
     private $primary = [];
 
     /**
-     * @var string if the table has a fully auto-incrementing (therefore 
+     * @var string if the table has a fully auto-incrementing (therefore
      * single-column) primary key, the name of the column
      */
     private $autoIncrementPrimary;
@@ -640,8 +640,7 @@ class Table
         if ($context === 'join') {
             return '`' . $this->name . '`';
         }
-        if (
-            $query->isMultitable()
+        if ($query->isMultitable()
             && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')
         ) {
             if ($this->demandOnlyColumns && $context !== 'function') {
