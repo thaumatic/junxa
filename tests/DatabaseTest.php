@@ -13,7 +13,7 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
-        self::$db = new mysqli('localhost');
+        self::$db = new \mysqli('localhost');
         if (self::$db->connect_error) {
             throw new Exception(
                 'need anonymous access to mysql on localhost to '
