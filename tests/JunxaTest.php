@@ -14,7 +14,7 @@ class JunxaTest extends DatabaseTestAbstract
     {
         $db = new Junxa([
             'hostname'  => 'localhost',
-            'database'  => DatabaseTest::TEST_DATABASE_NAME,
+            'database'  => DatabaseTestAbstract::TEST_DATABASE_NAME,
         ]);
         $this->runBasicInteractionTests($db);
         $this->runInsertUpdateAndDeleteTests($db);
@@ -24,7 +24,7 @@ class JunxaTest extends DatabaseTestAbstract
     {
         $db = Junxa::make()
             ->setHostname('localhost')
-            ->setDatabase(DatabaseTest::TEST_DATABASE_NAME)
+            ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
             ->ready()
         ;
         $this->runBasicInteractionTests($db);
