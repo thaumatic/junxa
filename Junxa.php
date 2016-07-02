@@ -878,7 +878,8 @@ class Junxa
      * replication architectures; Junxa can be configured to read from the
      * secondary(ies) and write to the primary.
      *
-     * @param Thaumatic\Junxa|array Junxa instance or array configuration for Junxa instance (will be instanced on demand)
+     * @param Thaumatic\Junxa|array Junxa instance or array configuration for
+     * Junxa instance (will be instanced on demand)
      * @return $this
      */
     public function setChangeHandler($val)
@@ -1638,16 +1639,19 @@ class Junxa
     }
 
     /**
-     * Returns whether the result code passed as its argument indicates a successful query.  Since there are several result
-     * codes which indicate "success" along with other result information, this function should be used as a general "okayness"
-     * check.
+     * Returns whether the result code passed as its argument indicates a
+     * successful query.  Since there are several result codes which indicate
+     * "success" along with other result information, this function should be
+     * used as a general "okayness"* check.
      *
-     *      if(!Junxa::OK($row->insert()))
+     *      if (!Junxa::OK($row->insert())) {
      *          throw new Exception('insert failed');
+     *      }
      *
      *      $res = $row1->save();
-     *      if(Junxa::OK($res) && $res !== Junxa::RESULT_UPDATE_NOOP)
+     *      if (Junxa::OK($res) && $res !== Junxa::RESULT_UPDATE_NOOP) {
      *          $row2->save();
+     *      }
      *
      * @param int the result code to check
      * @return bool
