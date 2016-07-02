@@ -28,5 +28,10 @@
         "psr-4": {
             "Thaumatic\\Junxa\\": "Junxa"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Thaumatic\\Junxa\\Tests\\": "tests"
+        }
     }
 }

@@ -1,12 +1,13 @@
 <?php
 
-require_once 'DatabaseTest.php';
+namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
+use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 
-class JunxaTest extends DatabaseTest
+class JunxaTest extends DatabaseTestAbstract
 {
 
     public function testWithArraySetup()

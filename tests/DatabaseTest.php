@@ -1,6 +1,8 @@
 <?php
 
-abstract class DatabaseTest extends PHPUnit_Framework_TestCase
+namespace Thaumatic\Junxa\Tests;
+
+abstract class DatabaseTestAbstract extends PHPUnit_Framework_TestCase
 {
 
     const TEST_DATABASE_NAME = 'test_junxa';
