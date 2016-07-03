@@ -146,24 +146,6 @@ class Element
         }
     }
 
-    public function useNullSafeEquivalence($query, $context, $base1, $base2, $value1, $value2)
-    {
-        if ($value1 === 'NULL' || $value2 === 'NULL') {
-            return true;
-        }
-        if (is_object($base1)) {
-            if (!($base1 instanceof Column) || $base1->contextNull($query, $context)) {
-                return true;
-            }
-        }
-        if (is_object($base2)) {
-            if (!($base2 instanceof Column) || $base2->contextNull($query, $context)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public function express($query, $context, $column, $parent)
     {
         $base = $this->content;
@@ -201,7 +183,14 @@ class Element
             case 'comparison':
                 switch ($type) {
                     case '=':
-                        if ($this->useNullSafeEquivalence($query, $context, $base[0], $base[1], $values[0], $values[1])) {
+                        if (self::useNullSafeEquivalence(
+                            $query,
+                            $context,
+                            $base[0],
+                            $base[1],
+                            $values[0],
+                            $values[1]
+                        )) {
                             $type = '<=>';
                         }
                         break;
@@ -269,5 +258,23 @@ class Element
                 );
         }
         return $out;
+    }
+
+    private static function useNullSafeEquivalence($query, $context, $base1, $base2, $value1, $value2)
+    {
+        if ($value1 === 'NULL' || $value2 === 'NULL') {
+            return true;
+        }
+        if (is_object($base1)) {
+            if (!($base1 instanceof Column) || $base1->contextNull($query, $context)) {
+                return true;
+            }
+        }
+        if (is_object($base2)) {
+            if (!($base2 instanceof Column) || $base2->contextNull($query, $context)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
