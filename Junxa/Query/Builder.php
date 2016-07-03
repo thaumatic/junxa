@@ -126,14 +126,22 @@ class Builder
                     if ($this->type === 'insert' && $type === 'update') {
                         continue;
                     } else {
-                        throw new JunxaInvalidQueryException('query specifies both ' . $this->type . ' and ' . $type . ' operations');
+                        throw new JunxaInvalidQueryException(
+                            'query specifies both '
+                            . $this->type
+                            . ' and '
+                            . $type
+                            . ' operations'
+                        );
                     }
                 }
                 $this->type = $type;
             }
         }
         if (!$this->type) {
-            throw new JunxaInvalidQueryException('query must specify an operation type');
+            throw new JunxaInvalidQueryException(
+                'query must specify an operation type'
+            );
         }
         switch ($this->type) {
             case 'select':
@@ -142,7 +150,12 @@ class Builder
             case 'replace':
                 foreach (['join', 'where', 'having', 'order', 'group', 'limit'] as $item) {
                     if ($this->$item) {
-                        throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
+                        throw new JunxaInvalidQueryException(
+                            $item
+                            . ' specification invalid for '
+                            . $this->type
+                            . ' query'
+                        );
                     }
                 }
                 break;
@@ -150,12 +163,20 @@ class Builder
             case 'delete':
                 foreach (['join', 'having', 'group'] as $item) {
                     if ($this->$item) {
-                        throw new JunxaInvalidQueryException($item . ' specification invalid for ' . $this->type . ' query');
+                        throw new JunxaInvalidQueryException(
+                            $item
+                            . ' specification invalid for '
+                            . $this->type
+                            . ' query'
+                        );
                     }
                 }
                 break;
             default:
-                throw new JunxaInvalidQueryException("unknown query type $this->type");
+                throw new JunxaInvalidQueryException(
+                    'unknown query type '
+                    . $this->type
+                );
         }
         $this->validated = true;
         return $this;
@@ -214,7 +235,11 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidQueryException(
+                    'too many arguments ('
+                    . count($args)
+                    . ')'
+                );
         }
         return $this;
     }
@@ -269,7 +294,10 @@ class Builder
             case 1:
                 $what = $args[0];
                 if (!($what instanceof Assignment)) {
-                    throw new JunxaInvalidQueryException('single argument to update() must be a column assignment');
+                    throw new JunxaInvalidQueryException(
+                        'single argument to update() must be a column '
+                        . 'assignment'
+                    );
                 }
                 $this->update[] = $what;
                 $this->changed();
@@ -284,7 +312,11 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidQueryException(
+                    'too many arguments ('
+                    . count($args)
+                    . ')'
+                );
         }
         return $this;
     }
@@ -320,7 +352,10 @@ class Builder
             case 1:
                 $what = $args[0];
                 if (!($what instanceof Assignment)) {
-                    throw new JunxaInvalidQueryException('single argument to insert() must be a column assignment');
+                    throw new JunxaInvalidQueryException(
+                        'single argument to insert() must be a column '
+                        . 'assignment'
+                    );
                 }
                 $this->insert[] = $what;
                 $this->changed();
@@ -335,7 +370,11 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidQueryException(
+                    'too many arguments ('
+                    . count($args)
+                    . ')'
+                );
         }
         return $this;
     }
@@ -371,7 +410,10 @@ class Builder
             case 1:
                 $what = $args[0];
                 if (!($what instanceof Assignment)) {
-                    throw new JunxaInvalidQueryException('single argument to replace() must be a column assignment');
+                    throw new JunxaInvalidQueryException(
+                        'single argument to replace() must be a column '
+                        . 'assignment'
+                    );
                 }
                 $this->replace[] = $what;
                 $this->changed();
@@ -984,9 +1026,9 @@ class Builder
                             );
                         }
                         $elem[] =
-                        Junxa::resolve($item->getColumn(), $this, $type, null, $this)
-                        . ' = '
-                        . Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
+                            Junxa::resolve($item->getColumn(), $this, $type, null, $this)
+                            . ' = '
+                            . Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
                     }
                     $out .= join(', ', $elem);
                 }
@@ -1010,9 +1052,9 @@ class Builder
                     $column = $item->getColumn();
                     $value = $item->getValue();
                     $elem[] =
-                    Junxa::resolve($column, $this, $type, null, $this)
-                    . ' = '
-                    . Junxa::resolve($value, $this, $type, $column, $this);
+                        Junxa::resolve($column, $this, $type, null, $this)
+                        . ' = '
+                        . Junxa::resolve($value, $this, $type, $column, $this);
                 }
                 $out .= join(', ', $elem);
                 break;
