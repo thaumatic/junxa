@@ -57,4 +57,5 @@ class Assignment
             $this->value->tableScan($tables, $null);
         }
     }
+
 }

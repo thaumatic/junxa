@@ -20,4 +20,5 @@ class JunxaNoSuchColumnException extends JunxaException
     {
         return $this->columnName;
     }
+
 }

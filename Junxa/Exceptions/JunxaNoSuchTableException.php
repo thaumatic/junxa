@@ -20,4 +20,5 @@ class JunxaNoSuchTableException extends JunxaException
     {
         return $this->tableName;
     }
+
 }

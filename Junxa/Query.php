@@ -221,4 +221,5 @@ class Query
     {
         return new Element('join', 'RIGHT', $table);
     }
+
 }

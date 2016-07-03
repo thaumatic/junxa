@@ -704,4 +704,5 @@ class Table
             ? join("\0", $args) . '|' . join('', array_map('md5', $args))
             : strval($args[0]);
     }
+
 }

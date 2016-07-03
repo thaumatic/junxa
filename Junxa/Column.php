@@ -357,4 +357,5 @@ class Column
         }
         return $this;
     }
+
 }
