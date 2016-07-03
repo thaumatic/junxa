@@ -549,13 +549,19 @@ class Row
             if (is_array($queryDef)) {
                 foreach ($badClauses as $clause) {
                     if (isset($queryDef[$clause])) {
-                        throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+                        throw new JunxaInvalidQueryException(
+                            'query definition for replace() may not define '
+                            . $clause
+                        );
                     }
                 }
                 $queryDef = $this->table->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
-                    throw new JunxaInvalidQueryException('query definition for replace() may not define ' . $clause);
+                    throw new JunxaInvalidQueryException(
+                        'query definition for replace() may not define '
+                        . $clause
+                    );
                 }
             } else {
                 throw new JunxaInvalidQueryException(
