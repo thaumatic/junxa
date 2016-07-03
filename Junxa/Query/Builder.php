@@ -11,7 +11,8 @@ use Thaumatic\Junxa\Query\Part;
 use Thaumatic\Junxa\Table;
 
 /**
- * Models a database query.  Can accept either a full query specification in array form or be configured via fluent interface.
+ * Models a database query.  Can accept either a full query specification in
+ * array form or be configured via fluent interface.
  */
 class Builder
 {
@@ -42,10 +43,13 @@ class Builder
     /**
      * Static factory method used by database and table models to generate attached queries.
      *
-     * @param Thaumatic\Junxa the database the generated query is to be attached to
-     * @param Thaumatic\Junxa\Table the table the generated query is to be attached to, if any
+     * @param Thaumatic\Junxa the database the generated query is to be
+     * attached to
+     * @param Thaumatic\Junxa\Table the table the generated query is to be
+     * attached to, if any
      * @return self
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * is something wrong with the query
      */
     public static function make(Junxa $database, $table = null, $def = null)
     {
@@ -108,7 +112,8 @@ class Builder
      * Performs basic validation of the query's configuration.
      *
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * is something wrong with the query
      */
     public function validate()
     {
@@ -161,7 +166,8 @@ class Builder
      * already been validated.
      *
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * is something wrong with the query
      */
     public function revalidate()
     {
@@ -185,7 +191,8 @@ class Builder
      * Retrieves the query mode.
      *
      * @return int Junxa::QUERY_* mode constant
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if more than 1 argument is given
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if more
+     * than 1 argument is given
      */
     public function getMode()
     {
@@ -239,7 +246,8 @@ class Builder
      *
      * @param string the alias name to use
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there are no select items
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * are no select items
      */
     public function alias($name)
     {
@@ -722,7 +730,8 @@ class Builder
      * Converts the most recently added order item to descending sort.
      *
      * @return $this
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there are no order items
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
+     * are no order items
      */
     public function desc()
     {
@@ -932,8 +941,11 @@ class Builder
                 break;
             case 'replace':
             case 'insert':
-                if (count($this->tables) != 1) {
-                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                if (count($this->tables) !== 1) {
+                    throw new JunxaInvalidQueryException(
+                        $type
+                        . ' query requires exactly one table'
+                    );
                 }
                 if ($this->options) {
                     if ($this->option('high_priority')) {
@@ -952,7 +964,10 @@ class Builder
                 $out .= "\n\t" . $this->tables[0] . ' ';
                 foreach ($main as $item) {
                     if (!($item instanceof Assignment)) {
-                        throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
+                        throw new JunxaInvalidQueryException(
+                            $type
+                            . ' list elements must be column assignments'
+                        );
                     }
                     $fields[] = Junxa::resolve($item->getColumn(), $this, $type, null, $this);
                     $values[] = Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
@@ -963,7 +978,10 @@ class Builder
                     $elem = [];
                     foreach ($this->update as $item) {
                         if (!($item instanceof Assignment)) {
-                            throw new JunxaInvalidQueryException('ON DUPLICATE KEY UPDATE list elements must be column assignments');
+                            throw new JunxaInvalidQueryException(
+                                'ON DUPLICATE KEY UPDATE list elements must '
+                                . ' be column assignments'
+                            );
                         }
                         $elem[] =
                         Junxa::resolve($item->getColumn(), $this, $type, null, $this)
@@ -974,14 +992,20 @@ class Builder
                 }
                 break;
             case 'update':
-                if (count($this->tables) != 1) {
-                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                if (count($this->tables) !== 1) {
+                    throw new JunxaInvalidQueryException(
+                        $type
+                        . ' query requires exactly one table'
+                    );
                 }
                 $out .= $this->tables[0] . "\n\tSET ";
                 $elem = [];
                 foreach ($main as $item) {
                     if (!($item instanceof Assignment)) {
-                        throw new JunxaInvalidQueryException($type . ' list elements must be column assignments');
+                        throw new JunxaInvalidQueryException(
+                            $type
+                            . ' list elements must be column assignments'
+                        );
                     }
                     $column = $item->getColumn();
                     $value = $item->getValue();
@@ -993,23 +1017,58 @@ class Builder
                 $out .= join(', ', $elem);
                 break;
             case 'delete':
-                if (count($this->tables) != 1) {
-                    throw new JunxaInvalidQueryException($type . ' query requires exactly one table');
+                if (count($this->tables) !== 1) {
+                    throw new JunxaInvalidQueryException(
+                        $type
+                        . ' query requires exactly one table'
+                    );
                 }
                 $out .= 'FROM ' . $this->tables[0];
                 break;
         }
         if ($this->where) {
-            $out .= "\n\tWHERE " . Junxa::resolve(is_array($this->where) ? (count($this->where) > 1 ? Q::andClause($this->where) : $this->where[0]) : $this->where, $this, 'where', null, $this);
+            $out .=
+                "\n\tWHERE "
+                . Junxa::resolve(
+                    is_array($this->where)
+                    ? (
+                        count($this->where) > 1
+                        ? Q::andClause($this->where)
+                        : $this->where[0]
+                    )
+                    : $this->where,
+                    $this,
+                    'where',
+                    null,
+                    $this
+                );
         }
         if ($this->group) {
-            $out .= "\n\tGROUP BY " . Junxa::resolve($this->group, $this, 'group', null, $this);
+            $out .=
+                "\n\tGROUP BY "
+                . Junxa::resolve($this->group, $this, 'group', null, $this);
         }
         if ($this->having) {
-            $out .= "\n\tHAVING " . Junxa::resolve(is_array($this->having) ? (count($this->having) > 1 ? Q::andClause($this->having) : $this->having[0]) : $this->having, $this, 'having', null, $this);
+            $out .=
+                "\n\tHAVING "
+                . Junxa::resolve(
+                    is_array($this->having)
+                    ? (
+                        count($this->having) > 1
+                        ? Q::andClause($this->having)
+                        : $this->having[0]
+                    )
+                    : $this->having,
+                    $this,
+                    'having',
+                    null,
+                    $this
+                );
         }
         if ($this->order) {
-            $out .= "\n\tORDER BY " . Junxa::resolve($this->order, $this, 'order', null, $this);
+            $out .=
+                "\n\tORDER BY "
+                . Junxa::resolve($this->order, $this, 'order', null, $this);
         }
         if (isset($this->limit)) {
             $out .= "\n\tLIMIT " . $this->limit;
@@ -1021,7 +1080,10 @@ class Builder
     public function execute()
     {
         if (!$this->database) {
-            throw new JunxaInvalidQueryException('cannot call execute() on a query that was not generated from a database');
+            throw new JunxaInvalidQueryException(
+                'cannot call execute() on a query that was not generated '
+                . 'from a database'
+            );
         }
         $this->validate();
         return $this->database->query($this);
@@ -1030,7 +1092,10 @@ class Builder
     public function rows()
     {
         if (!$this->table) {
-            throw new JunxaInvalidQueryException('cannot call rows() on a query that was not generated from a table');
+            throw new JunxaInvalidQueryException(
+                'cannot call rows() on a query that was not generated from '
+                . 'a table'
+            );
         }
         return $this->table->rows($this);
     }
@@ -1038,7 +1103,10 @@ class Builder
     public function row()
     {
         if (!$this->table) {
-            throw new JunxaInvalidQueryException('cannot call row() on a query that was not generated from a table');
+            throw new JunxaInvalidQueryException(
+                'cannot call row() on a query that was not generated from a '
+                . 'table'
+            );
         }
         return $this->table->row($this);
     }
@@ -1046,7 +1114,10 @@ class Builder
     public function count()
     {
         if (!$this->table) {
-            throw new JunxaInvalidQueryException('cannot call count() on a query that was not generated from a table');
+            throw new JunxaInvalidQueryException(
+                'cannot call count() on a query that was not generated from '
+                . 'a table'
+            );
         }
         return $this->table->rowCount($this);
     }
