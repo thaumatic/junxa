@@ -9,9 +9,11 @@ use Thaumatic\Junxa\Query;
 use Thaumatic\Junxa\Table;
 
 /**
- * Abstracts any of various elements of queries that require representation not provided elsewhere -- basically
- * everything in a query that isn't a Column, an Assignment, or string/numeric data.  Mostly for internal use;
- * application developers should not normally need to interact with it explicitly.
+ * Abstracts any of various elements of queries that require representation
+ * not provided elsewhere -- basically everything in a query that isn't a
+ * Column, an Assignment, or string/numeric data.  Mostly for internal use;
+ * application developers should not normally need to interact with it
+ * explicitly.
  */
 class Element
 {
@@ -23,7 +25,7 @@ class Element
 
     public function __construct($style, $type, $args = [])
     {
-        static $aliasCount;
+        static $aliasCount = 0;
         $this->style = $style;
         $this->type = $type;
         $this->content = is_array($args) ? $args : [$args];
@@ -31,11 +33,21 @@ class Element
             case 'interleave':
                 if ($this->type === '') {
                     if (count($this->content) < 1) {
-                        throw new JunxaInvalidQueryException("at least one argument required for unitary $this->style element");
+                        throw new JunxaInvalidQueryException(
+                            'at least one argument required for unitary '
+                            . $this->style
+                            . ' element'
+                        );
                     }
                 } else {
                     if (count($this->content) < 2) {
-                        throw new JunxaInvalidQueryException("at least two arguments required for $this->style $this->type element");
+                        throw new JunxaInvalidQueryException(
+                            'at least two arguments required for '
+                            . $this->style
+                            . ' '
+                            . $this->type
+                            . ' element'
+                        );
                     }
                 }
                 break;
@@ -44,7 +56,13 @@ class Element
             case 'comparison':
             case 'container':
                 if (count($this->content) != 2) {
-                    throw new JunxaInvalidQueryException("two arguments required for $this->style $this->type element");
+                    throw new JunxaInvalidQueryException(
+                        'two arguments required for '
+                        . $this->style
+                        . ' '
+                        . $this->type
+                        . ' element'
+                    );
                 }
                 break;
             case 'head':
@@ -53,12 +71,22 @@ class Element
             case 'interval':
             case 'cast':
                 if (count($this->content) != 1) {
-                    throw new JunxaInvalidQueryException("one argument required for $this->style $this->type element");
+                    throw new JunxaInvalidQueryException(
+                        'one argument required for '
+                        . $this->style
+                        . ' '
+                        . $this->type
+                        . ' element'
+                    );
                 }
                 break;
             case 'literal':
                 if (count($this->content) != 0) {
-                    throw new JunxaInvalidQueryException("zero arguments required for $this->style element");
+                    throw new JunxaInvalidQueryException(
+                        'zero arguments required for '
+                        . $this->style
+                        . ' element'
+                    );
                 }
                 break;
             case 'alias':
@@ -69,7 +97,11 @@ class Element
             case 'joincond':
                 break;
             default:
-                throw new JunxaInvalidQueryException("unknown style '$this->style'");
+                throw new JunxaInvalidQueryException(
+                    'unknown style "'
+                    . $this->style
+                    . '"'
+                );
         }
     }
 
@@ -208,11 +240,17 @@ class Element
             case 'alias':
                 if ($context != 'join' && $base[0] instanceof Table) {
                     $out = $values[0];
-                } elseif (!empty($query->expressed[$this->id]) && $context != 'select' && $context != 'where' && $context != 'join') {
+                } elseif (!empty($query->expressed[$this->id])
+                    && $context !== 'select' && $context !== 'where'
+                    && $context !== 'join'
+                ) {
                     $out = '`' . $base[1] . '`';
                 } else {
                     $out = $values[0];
-                    if (empty($query->expressed[$this->id]) && $parent instanceof Query && ($context == 'select' || $context == 'join')) {
+                    if (empty($query->expressed[$this->id])
+                        && $parent instanceof Query
+                        && ($context === 'select' || $context === 'join')
+                    ) {
                         $out .= ' ' . $type . ' `' . $base[1] . '`';
                     }
                 }
@@ -222,7 +260,13 @@ class Element
                 $out = 'INTERVAL ' . $values[0] . ' ' . $type;
                 break;
             default:
-                throw new JunxaInvalidQueryException("unknown element, style '$this->style' type '$this->type'");
+                throw new JunxaInvalidQueryException(
+                    'unknown element, style "'
+                    . $this->style
+                    . '" type "'
+                    . $this->type
+                    . '"'
+                );
         }
         return $out;
     }
