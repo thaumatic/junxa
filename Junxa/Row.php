@@ -39,7 +39,9 @@ class Row
             }
             for ($i = 0; $i < count($columns); $i++) {
                 $column = $columns[$i];
-                $this->fields[$column] = $table->$column->import($data[$i]);
+                $dataItem = $table->$column->import($data[$i]);
+                $this->data[$i] = $dataItem;
+                $this->fields[$column] = $dataItem;
             }
         }
         $this->init();
@@ -187,7 +189,7 @@ class Row
             'select'     => $this->column($column),
             'where'      => $this->getMatchCondition(),
         ], Junxa::QUERY_SINGLE_ARRAY);
-        return $row[0];
+        return $this->table->$column->import($row[0]);
     }
 
     public function value($column)
@@ -281,7 +283,9 @@ class Row
         }
         for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->fields[$column] = $this->table->$column->import($data[$i]);
+            $dataItem = $this->table->$column->import($data[$i]);
+            $this->data[$i] = $dataItem;
+            $this->fields[$column] = $dataItem;
         }
         $this->checkCaching();
         return $out;
@@ -318,7 +322,9 @@ class Row
         }
         for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $this->fields[$column] = $this->table->$column->import($row[$i]);
+            $dataItem = $this->table->$column->import($row[$i]);
+            $this->data[$i] = $dataItem;
+            $this->fields[$column] = $dataItem;
         }
         $this->init();
         $this->checkCaching();
@@ -383,14 +389,7 @@ class Row
         }
         for ($i = 0; $i < count($columns); $i++) {
             $column = $columns[$i];
-            $value = $this->data[$i];
-            if ($this->fields[$column] !== $value
-                && (
-                    !is_numeric($value)
-                    || !is_numeric($this->fields[$column])
-                    || $this->fields[$column] != $value
-                )
-            ) {
+            if ($this->fields[$column] !== $this->data[$i]) {
                 $queryDef->update($column, $this->fields[$column]);
             }
         }
