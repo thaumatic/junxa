@@ -10,6 +10,8 @@ use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 class JunxaTest extends DatabaseTestAbstract
 {
 
+    const PATTERN_DATETIME_ANCHORED = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+
     public function testWithArraySetup()
     {
         $db = new Junxa([
@@ -55,9 +57,9 @@ class JunxaTest extends DatabaseTestAbstract
             //
             $this->assertInternalType('int', $category->id);
             $this->assertSame('Uncategorized', $category->name);
-            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->created_at);
+            $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $category->created_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($category->created_at));
-            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $category->changed_at);
+            $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $category->changed_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
             $this->assertTrue($category->active);
             //
@@ -77,9 +79,9 @@ class JunxaTest extends DatabaseTestAbstract
             $this->assertInternalType('int', $item->id);
             $this->assertSame($category->id, $item->category_id);
             $this->assertSame('Widget', $item->name);
-            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $item->created_at);
+            $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $item->created_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($item->created_at));
-            $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $item->changed_at);
+            $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $item->changed_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
             $this->assertTrue($item->active);
         } finally {
@@ -91,4 +93,5 @@ class JunxaTest extends DatabaseTestAbstract
             }
         }
     }
+
 }
