@@ -63,12 +63,18 @@ class JunxaTest extends DatabaseTestAbstract
             $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
             $this->assertTrue($category->active);
             //
+            $originalCategoryId = $category->id;
             $category->name = 'Recategorized';
-            $category->save();
+            $result = $category->save();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
             $this->assertSame('Recategorized', $category->name);
+            $this->assertSame($originalCategoryId, $category->id);
             $categoryAlt = $db->category->row($category->id);
             $this->assertNotSame($category, $categoryAlt);
             $this->assertSame($category->name, $categoryAlt->name);
+            $result = $category->save();
+            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+            $this->assertTrue(Junxa::OK($result));
             //
             $item = $db->item->row();
             $item->category_id = $category->id;
@@ -84,6 +90,19 @@ class JunxaTest extends DatabaseTestAbstract
             $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $item->changed_at);
             $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
             $this->assertTrue($item->active);
+            //
+            $originalItemId = $item->id;
+            $item->name = 'Whatsit';
+            $result = $item->save();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('Whatsit', $item->name);
+            $this->assertSame($originalItemId, $item->id);
+            $itemAlt = $db->item->row($item->id);
+            $this->assertNotSame($item, $itemAlt);
+            $this->assertSame($item->name, $itemAlt->name);
+            $result = $item->save();
+            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+            $this->assertTrue(Junxa::OK($result));
         } finally {
             if (isset($category) && $category->id !== null) {
                 $category->delete();
