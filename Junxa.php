@@ -357,11 +357,6 @@ class Junxa
     private static $overallQueryStatistics = [];
 
     /**
-     * @var bool class level flag for echoing queries for debugging
-     */
-    private static $echo = false;
-
-    /**
      * Static factory method.
      *
      * @param array<string:mixed> array of configuration parameters; see set functions for each for details
@@ -1232,10 +1227,6 @@ class Junxa
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
         }
-        if (!$echo && !empty($GLOBALS['echo'])) {
-            $echo = true;
-            $whyEcho = 'global flag';
-        }
         if ($echo) {
             echo("SQL (echoed because of $whyEcho): $query <br />\n");
         }
@@ -1506,24 +1497,6 @@ class Junxa
     public function getInsertId()
     {
         return $this->insertId;
-    }
-
-    /**
-     * Sets the global query echoing behavior on or off.
-     */
-    public static function setEcho($val)
-    {
-        self::$echo = $val && true;
-    }
-
-    /**
-     * Retrieves the state of global query echoing.
-     *
-     * @return bool
-     */
-    public static function getEcho()
-    {
-        return self::$echo;
     }
 
     /**
