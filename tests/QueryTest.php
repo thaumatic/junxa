@@ -12,4 +12,5 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $elem = Q::eq(1, 2);
         $this->assertInstanceOf('Thaumatic\Junxa\Query\Element', $elem);
     }
+
 }

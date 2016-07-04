@@ -43,4 +43,5 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
     {
         return self::$db;
     }
+
 }
