@@ -1141,7 +1141,7 @@ class Junxa
         return $out;
     }
 
-    public function query($query = null, $mode = 0, $echo = false, $emptyOkay = false)
+    public function query($query = null, $mode = 0, $emptyOkay = false)
     {
         if ($query === null) {
             return QueryBuilder::make($this);
@@ -1151,7 +1151,6 @@ class Junxa
         $this->queryMessage = '';
         $insertIgnore = false;
         $update = false;
-        $whyEcho = $echo ? 'function parameter' : null;
         $errorOkay = false;
         switch (gettype($query)) {
             case 'string':
@@ -1160,7 +1159,7 @@ class Junxa
                 } else {
                     $handler = $this->getChangeHandlerObject();
                     if ($handler) {
-                        $result = $handler->query($query, $mode, $echo, $emptyOkay);
+                        $result = $handler->query($query, $mode, $emptyOkay);
                         $this->queryStatus = $handler->getQueryStatus();
                         $this->queryMessage = $handler->getQueryMessage();
                         $this->insertId = $handler->getInsertId();
@@ -1194,7 +1193,7 @@ class Junxa
                 } else {
                     $handler = $this->getChangeHandlerObject();
                     if ($handler) {
-                        $result = $handler->query($query, $mode, $echo, $emptyOkay);
+                        $result = $handler->query($query, $mode, $emptyOkay);
                         $this->queryStatus = $handler->queryStatus;
                         $this->queryMessage = $handler->queryMessage;
                         $this->insertId = $handler->insertId;
@@ -1205,12 +1204,8 @@ class Junxa
                     if ($query->option('emptyOkay')) {
                         $emptyOkay = true;
                     }
-                    if ($query->option('error_okay')) {
+                    if ($query->option('errorOkay')) {
                         $errorOkay = true;
-                    }
-                    if (!$echo && $query->option('echo')) {
-                        $echo = true;
-                        $whyEcho = 'query option';
                     }
                 }
                 if ($queryType === 'update') {
@@ -1227,9 +1222,6 @@ class Junxa
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
         }
-        if ($echo) {
-            echo("SQL (echoed because of $whyEcho): $query <br />\n");
-        }
         $res = $this->link->query($query);
         if ($res) {
             if ($insertIgnore && $this->getAffectedRows() <= 0) {
@@ -1245,7 +1237,7 @@ class Junxa
             if ($errno == 2006 || $errno == 2013) {
                 usleep(1000);
                 $this->connect();
-                return $this->query($query, $mode, $echo, $emptyOkay);
+                return $this->query($query, $mode, $emptyOkay);
             }
             $this->queryStatus = self::RESULT_FAILURE;
             if (!$errorOkay) {
