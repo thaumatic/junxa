@@ -12,10 +12,15 @@ use Thaumatic\Junxa\Row;
  * This class essentially functions as a switchboard for generating
  * query element models, as an alternative or supplement to the
  * fluent interface methods supported by the query builder.  All
- * methods are static factory methods.
+ * public methods are static factory methods.
  */
 class Query
 {
+
+    private static function processArgs(array $args)
+    {
+        return count($args) === 1 && is_array($args[0]) ? $args[0] : $args;
+    }
 
     public static function set(Column $column, $value)
     {
@@ -86,52 +91,44 @@ class Query
         }
     }
 
-    public static function paren()
+    public static function paren(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', '', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', '', self::processArgs($args));
     }
 
-    public static function andClause()
+    public static function andClause(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', 'AND', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', 'AND', self::processArgs($args));
     }
 
-    public static function orClause()
+    public static function orClause(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', 'OR', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', 'OR', self::processArgs($args));
     }
 
-    public static function xorClause()
+    public static function xorClause(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', 'XOR', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', 'XOR', self::processArgs($args));
     }
 
-    public static function add()
+    public static function add(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', '+', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', '+', self::processArgs($args));
     }
 
-    public static function subtract()
+    public static function subtract(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', '-', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', '-', self::processArgs($args));
     }
 
-    public static function multiply()
+    public static function multiply(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', '*', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', '*', self::processArgs($args));
     }
 
-    public static function divide()
+    public static function divide(...$args)
     {
-        $args = func_get_args();
-        return new Element('interleave', '/', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('interleave', '/', self::processArgs($args));
     }
 
     public static function distinct($arg)
@@ -181,10 +178,9 @@ class Query
         return new Element('joincond', 'ON', is_array($cond) ? self::andClause($cond) : $cond);
     }
 
-    public static function joinUsing()
+    public static function joinUsing(...$args)
     {
-        $args = func_get_args();
-        return new Element('joincond', 'USING', count($args) == 1 && is_array($args[0]) ? $args[0] : $args);
+        return new Element('joincond', 'USING', self::processArgs($args));
     }
 
     public static function crossJoin($table)
