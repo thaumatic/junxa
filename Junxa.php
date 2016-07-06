@@ -1234,7 +1234,7 @@ class Junxa
         } else {
             $this->queryMessage = $this->link->error;
             $errno = $this->link->errno;
-            if ($errno == 2006 || $errno == 2013) {
+            if ($errno === 2006 || $errno === 2013) {
                 usleep(1000);
                 $this->connect();
                 return $this->query($query, $mode, $emptyOkay);
@@ -1508,7 +1508,7 @@ class Junxa
             foreach ($item as $subitem) {
                 $elem[$ix++] = self::resolve($subitem, $query, $context, $column, $parent);
             }
-            if ($context == 'join') {
+            if ($context === 'join') {
                 $keys = array_keys($item);
                 $out = $elem[0];
                 for ($i = 1; $i < count($keys); $i++) {
