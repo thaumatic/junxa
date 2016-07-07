@@ -3,6 +3,7 @@
 namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
+use Thaumatic\Junxa\Events\JunxaQueryEvent;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
@@ -20,6 +21,7 @@ class JunxaTest extends DatabaseTestAbstract
         ]);
         $this->runBasicInteractionTests($db);
         $this->runInsertUpdateAndDeleteTests($db);
+        $this->runEventSystemTests($db);
     }
 
     public function testWithFluentSetup()
@@ -31,6 +33,7 @@ class JunxaTest extends DatabaseTestAbstract
         ;
         $this->runBasicInteractionTests($db);
         $this->runInsertUpdateAndDeleteTests($db);
+        $this->runEventSystemTests($db);
     }
 
     private function runBasicInteractionTests($db)
@@ -111,6 +114,34 @@ class JunxaTest extends DatabaseTestAbstract
                 $item->delete();
             }
         }
+    }
+
+    private function runEventSystemTests($db)
+    {
+        $listenedDatabase = null;
+        $listenedSql = null;
+        $listenedQueryBuilder = null;
+        $db->getEventDispatcher()->addListener(
+            JunxaQueryEvent::NAME,
+            function (JunxaQueryEvent $event) use (&$listenedDatabase, &$listenedSql, &$listenedQueryBuilder) {
+                $listenedDatabase = $event->getDatabase();
+                $listenedSql = $event->getSql();
+                $listenedQueryBuilder = $event->getQueryBuilder();
+            }
+        );
+        $showTablesQuery = 'SHOW TABLES';
+        $db->query($showTablesQuery);
+        $this->assertSame($db, $listenedDatabase);
+        $this->assertSame($showTablesQuery, $listenedSql);
+        $this->assertNull($listenedQueryBuilder);
+        $category = $db->category->row(1);
+        $this->assertNull($category);
+        $this->assertSame($db, $listenedDatabase);
+        $this->assertSame("SELECT *\n\tFROM `category`\n\tWHERE (`id` = 1)\n\tLIMIT 1", $listenedSql);
+        $this->assertInstanceOf('Thaumatic\Junxa\Query\Builder', $listenedQueryBuilder);
+        $this->assertSame([$db->category], $listenedQueryBuilder->getSelect());
+        $this->assertCount(1, $listenedQueryBuilder->getWhere());
+        $this->assertSame(1, $listenedQueryBuilder->getLimit());
     }
 
 }

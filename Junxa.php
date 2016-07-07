@@ -2,7 +2,9 @@
 
 namespace Thaumatic;
 
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Events\JunxaQueryEvent;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
@@ -160,6 +162,12 @@ class Junxa
     const RESULT_FIND_EXCESS            = 4;
 
     /**
+     * @const int query result code: the query was requested to be prevented
+     * by an event listener
+     */
+    const RESULT_PREVENTED              = 5;
+
+    /**
      * @const int query result code: the database reports an error
      */
     const RESULT_FAILURE                = -1;
@@ -247,72 +255,86 @@ class Junxa
     private $changeHandler;
 
     /**
-     * @var Thaumatic\Junxa the object to send changes to, either the same as $changeHandler or built based on it
+     * @var Thaumatic\Junxa the object to send changes to, either the same as
+     * $changeHandler or built based on it
      */
     private $changeHandlerObject;
 
     /**
-     * @var int bitmask of Thaumatic\Junxa::DB_* values for Junxa's general behavior
+     * @var int bitmask of Thaumatic\Junxa::DB_* values for Junxa's general
+     * behavior
      */
     private $options = 0;
 
     /**
-     * @var string a namespace that can be expected to be populated with column model classes that Junxa should use
+     * @var string a namespace that can be expected to be populated with
+     * column model classes that Junxa should use
      */
     private $autoColumnClassNamespace;
 
     /**
-     * @var string a namespace that can be expected to be populated with row model classes that Junxa should use
+     * @var string a namespace that can be expected to be populated with row
+     * model classes that Junxa should use
      */
     private $autoRowClassNamespace;
 
     /**
-     * @var string a namespace that can be expected to be populated with table model classes that Junxa should use
+     * @var string a namespace that can be expected to be populated with table
+     * model classes that Junxa should use
      */
     private $autoTableClassNamespace;
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for columns by name
+     * @var array<string:string> tracking array for classes to use as models
+     * for columns by name
      */
     private $columnClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for tables by name
+     * @var array<string:string> tracking array for classes to use as models
+     * for tables by name
      */
     private $tableClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for rows by name
+     * @var array<string:string> tracking array for classes to use as models
+     * for rows by name
      */
     private $rowClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for columns by regexp pattern
+     * @var array<string:string> tracking array for classes to use as models
+     * for columns by regexp pattern
      */
     private $regexpColumnClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for rows by regexp pattern
+     * @var array<string:string> tracking array for classes to use as models
+     * for rows by regexp pattern
      */
     private $regexpRowClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models for tables by regexp pattern
+     * @var array<string:string> tracking array for classes to use as models
+     * for tables by regexp pattern
      */
     private $regexpTableClasses = [];
 
     /**
-     * @var string the name of the default class to use for column models if one is not otherwise found
+     * @var string the name of the default class to use for column models if
+     * one is not otherwise found
      */
     private $defaultColumnClass;
 
     /**
-     * @var string the name of the default class to use for row models if one is not otherwise found
+     * @var string the name of the default class to use for row models if
+     * one is not otherwise found
      */
     private $defaultRowClass;
 
     /**
-     * @var string the name of the default class to use for table models if one is not otherwise found
+     * @var string the name of the default class to use for table models if
+     * one is not otherwise found
      */
     private $defaultTableClass;
 
@@ -347,19 +369,28 @@ class Junxa
     private $queryStatus;
 
     /**
-     * @var array<string:int> per-instance statistical array of how many times a given query is run
+     * @var array<string:int> per-instance statistical array of how many
+     * times a given query is run
      */
     private $queryStatistics = [];
 
     /**
-     * @var array<string:int> class-general statistical array of how many times a given query is run
+     * @var Symfony\Component\EventDispatcher\EventDispatcher the database
+     * model's demand-loaded event dispatcher
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var array<string:int> class-general statistical array of how many
+     * times a given query is run
      */
     private static $overallQueryStatistics = [];
 
     /**
      * Static factory method.
      *
-     * @param array<string:mixed> array of configuration parameters; see set functions for each for details
+     * @param array<string:mixed> array of configuration parameters; see set
+     * functions for each for details
      */
     public static function make(array $def = null)
     {
@@ -369,7 +400,8 @@ class Junxa
     /**
      * Constructor.
      *
-     * @param array<string:mixed> array of configuration parameters; see set functions for each for details
+     * @param array<string:mixed> array of configuration parameters; see set
+     * functions for each for details
      */
     public function __construct(array $def = null)
     {
@@ -433,11 +465,13 @@ class Junxa
     }
 
     /**
-     * To be called when the object is fully configured.  Called automatically
-     * from the constructor when configuring via an array specification; needs
-     * to be called explicitly when configuring in fluent mode.
+     * To be called when the database model is fully configured.  Called
+     * automatically from the constructor when configuring via an array
+     * specification; needs to be called explicitly when configuring in
+     * fluent mode.
      *
-     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
+     * database model's configuration is invalid
      * @return $this
      */
     public function ready()
@@ -1152,6 +1186,7 @@ class Junxa
         $insertIgnore = false;
         $update = false;
         $errorOkay = false;
+        $queryBuilder = null;
         switch (gettype($query)) {
             case 'string':
                 if (preg_match('/^\s*(SELECT|SHOW)\s*/is', $query)) {
@@ -1178,11 +1213,13 @@ class Junxa
                 // fallthrough
             case 'object':
                 if (!($query instanceof QueryBuilder)) {
-                } new JunxaInvalidQueryException(
-                    'object query must be a '
-                    . 'Thaumatic\Junxa\Query\Builder, '
-                    . ' got ' . get_class($query)
-                );
+                    throw new JunxaInvalidQueryException(
+                        'object query must be a '
+                        . 'Thaumatic\Junxa\Query\Builder, '
+                        . ' got ' . get_class($query)
+                    );
+                }
+                $queryBuilder = $query;
                 $query->validate();
                 if ($mode === 0) {
                     $mode = $query->getMode();
@@ -1222,6 +1259,25 @@ class Junxa
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
         }
+        if (!$mode) {
+            $mode = $isResult ? self::QUERY_OBJECTS : self::QUERY_FORGET;
+        }
+        if ($this->isEventDispatcherLoaded()) {
+            $event = new JunxaQueryEvent($this, $query, $queryBuilder);
+            $this->getEventDispatcher()->dispatch(JunxaQueryEvent::NAME, $event);
+            if ($event->getPreventQuery()) {
+                $this->queryStatus = self::RESULT_PREVENTED;
+                switch ($mode) {
+                    case self::QUERY_SINGLE_ASSOC:
+                    case self::QUERY_SINGLE_ARRAY:
+                    case self::QUERY_SINGLE_OBJECT:
+                    case self::QUERY_SINGLE_CELL:
+                        return null;
+                    default:
+                        return [];
+                }
+            }
+        }
         $res = $this->link->query($query);
         if ($res) {
             if ($insertIgnore && $this->getAffectedRows() <= 0) {
@@ -1246,9 +1302,6 @@ class Junxa
         }
         if (!$isResult && preg_match('/^\s*(INSERT|REPLACE)\b/i', $query)) {
             $this->insertId = $this->link->insert_id;
-        }
-        if (!$mode) {
-            $mode = $isResult ? self::QUERY_OBJECTS : self::QUERY_FORGET;
         }
         if (!$res || !$isResult) {
             switch ($mode) {
@@ -1449,8 +1502,9 @@ class Junxa
     }
 
     /**
-     * Retrieves the object-specific statistical array of how many times a given query is run.
-     * This is only populated by Junxa instances with Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
+     * Retrieves the database-model-specific statistical array of how many
+     * times a given query is run.  This is only populated by database models
+     * with the option Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
      *
      * @return array<string:int>
      */
@@ -1460,8 +1514,9 @@ class Junxa
     }
 
     /**
-     * Retrieves the class-general statistical array of how many times a given query is run.
-     * This is only populated by Junxa instances with Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
+     * Retrieves the class-general statistical array of how many times a given
+     * query is run.  This is only populated by database models with the
+     * option Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
      *
      * @return array<string:int>
      */
@@ -1471,14 +1526,40 @@ class Junxa
     }
 
     /**
-     * Retrieves the class-general statistical array of how many times a given query is run.
-     * This is only populated by Junxa instances with Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
+     * Retrieves the class-general statistical array of how many times a given
+     * query is run.  This is only populated by database models with the option
+     * Junxa::DB_COLLECT_QUERY_STATISTICS enabled.
      *
      * @return array<string:int>
      */
     public static function getOverallQueryStatistics()
     {
         return self::$overallQueryStatistics;
+    }
+
+    /**
+     * Retrieves (instancing if necessary) the database model's event
+     * dispatcher.
+     *
+     * @return Symfony\Component\EventDispatcher\EventDispatcher
+     */
+    public function getEventDispatcher()
+    {
+        if (!$this->eventDispatcher) {
+            $this->eventDispatcher = new EventDispatcher;
+        }
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * Returns whether the database currently has an instanced event
+     * dispatcher.
+     *
+     * @return bool
+     */
+    public function isEventDispatcherLoaded()
+    {
+        return $this->eventDispatcher !== null;
     }
 
     /**
@@ -1497,7 +1578,8 @@ class Junxa
      * @param mixed the data to be resolved
      * @param Thaumatic\Junxa\Query\Builder the current query builder object
      * @param string the statement context in which the data is being resolved
-     * @param Thaumatic\Junxa\Column the column, if any, which the data is being prepared for
+     * @param Thaumatic\Junxa\Column the column, if any, which the data is
+     * being prepared for
      * @param Thaumatic\Junxa\Query\Builder the parent query, if any
      */
     public static function resolve($item, QueryBuilder $query, $context, $column, $parent)
@@ -1557,13 +1639,16 @@ class Junxa
         if (is_bool($data)) {
             return $data ? 1 : 0;
         }
+        if (is_object($data) && method_exists($data, '__toString')) {
+            $data = strval($data);
+        }
         if (!is_string($data)) {
             throw new JunxaInvalidQueryException(
                 'cannot use ' . gettype($data) . ' as raw data'
             );
         }
-            $data = $link->real_escape_string($data);
-            return "'" . $data . "'";
+        $data = $link->real_escape_string($data);
+        return "'" . $data . "'";
     }
 
     /**
