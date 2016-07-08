@@ -1619,7 +1619,7 @@ class Junxa
      * @param mixed the data to escape
      * @return string|numeric
      */
-    public static function quote($data)
+    public function quote($data)
     {
         if (!isset($data)) {
             return 'NULL';
@@ -1647,7 +1647,7 @@ class Junxa
                 'cannot use ' . gettype($data) . ' as raw data'
             );
         }
-        $data = $link->real_escape_string($data);
+        $data = $this->link->real_escape_string($data);
         return "'" . $data . "'";
     }
 
