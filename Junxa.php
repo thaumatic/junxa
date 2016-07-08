@@ -8,6 +8,7 @@ use Thaumatic\Junxa\Events\JunxaQueryEvent;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
+use Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Table;
