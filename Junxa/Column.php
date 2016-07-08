@@ -28,6 +28,7 @@ class Column
     const MYSQL_FLAG_UNIQUE         = 0x00010000;
 
     private $default;
+    private $defaultValue;
     private $dynamicAlias;
     private $flags;
     private $fullType;
@@ -113,6 +114,9 @@ class Column
             default:
                 $this->typeClass = 'text';
                 break;
+        }
+        if ($this->default !== null) {
+            $this->defaultValue = $this->import($this->default);
         }
         $this->init();
     }
@@ -247,6 +251,36 @@ class Column
     public function getFullType()
     {
         return $this->fullType;
+    }
+
+    /**
+     * Retrieves the specification of the column's default value.
+     *
+     * @return string|null
+     */
+    public function getDefault()
+    {
+        return $this->default;
+    }
+
+    /**
+     * Retrieves whether the column has a default value.
+     *
+     * @return bool
+     */
+    public function hasDefault()
+    {
+        return $this->default !== null;
+    }
+
+    /**
+     * Retrieves the PHP native version of the column's default value.
+     *
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->defaultValue;
     }
 
     public function contextNull($query, $context)
