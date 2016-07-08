@@ -22,6 +22,7 @@ class JunxaTest extends DatabaseTestAbstract
         $this->runBasicInteractionTests($db);
         $this->runInsertUpdateAndDeleteTests($db);
         $this->runEventSystemTests($db);
+        $this->runStringIntegrityTests($db);
     }
 
     public function testWithFluentSetup()
@@ -34,6 +35,7 @@ class JunxaTest extends DatabaseTestAbstract
         $this->runBasicInteractionTests($db);
         $this->runInsertUpdateAndDeleteTests($db);
         $this->runEventSystemTests($db);
+        $this->runStringIntegrityTests($db);
     }
 
     private function runBasicInteractionTests($db)
@@ -45,9 +47,6 @@ class JunxaTest extends DatabaseTestAbstract
         $itemTable = $db->item;
         $this->assertInstanceOf('Thaumatic\Junxa\Table', $itemTable);
         $this->assertSame('item', $itemTable->getName());
-        $categoryTableIdColumn = $categoryTable->id;
-        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryTableIdColumn);
-        $this->assertSame('id', $categoryTableIdColumn->getName());
     }
 
     private function runInsertUpdateAndDeleteTests($db)
@@ -142,6 +141,36 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertSame([$db->category], $listenedQueryBuilder->getSelect());
         $this->assertCount(1, $listenedQueryBuilder->getWhere());
         $this->assertSame(1, $listenedQueryBuilder->getLimit());
+    }
+
+    private function runStringIntegrityTests($db)
+    {
+        try {
+            $category = $db->category->row();
+            $category->name = 'Start';
+            $category->created_at = Q::func('NOW');
+            $category->insert();
+            srand(1);
+            for($i = $db->category->name->getLength() / 10; $i >= 0; $i--) {
+                $name = '';
+                for($j = $db->category->name->getLength() - $i - 1; $j >= 0; $j--) {
+                    $name .= self::unichr(rand(1, 10000));
+                }
+                $category->name = $name;
+                $category->save();
+                $this->assertEquals($name, $category->name);
+                $categoryAlt = $db->category->row($category->id);
+                $this->assertEquals($name, $categoryAlt->name);
+            }
+        } finally {
+            if (isset($category) && $category->id !== null) {
+                $category->delete();
+            }
+        }
+    }
+
+    private static function unichr($code) {
+        return mb_convert_encoding('&#' . intval($code) . ';', 'UTF-8', 'HTML-ENTITIES');
     }
 
 }
