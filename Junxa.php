@@ -1647,8 +1647,18 @@ class Junxa
                 'cannot use ' . gettype($data) . ' as raw data'
             );
         }
-        $data = $this->link->real_escape_string($data);
-        return "'" . $data . "'";
+        return "'" . $this->escapeString($data) . "'";
+    }
+
+    /**
+     * Escapes text presentation to the database engine, without quoting.
+     *
+     * @param string the text to escape
+     * @return string
+     */
+    public function escapeString($text)
+    {
+        return $this->link->real_escape_string($text);
     }
 
     /**
