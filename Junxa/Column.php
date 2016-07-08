@@ -28,7 +28,7 @@ class Column
     const MYSQL_FLAG_UNIQUE         = 0x00010000;
 
     private $default;
-    private $dynalias;
+    private $dynamicAlias;
     private $flags;
     private $fullType;
     private $length;
@@ -40,20 +40,20 @@ class Column
     private $typeClass;
     private $values;
 
-    public function __construct($table, $name, $info, $colinfo, $dynalias)
+    public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
     {
         $this->table = $table;
         $this->name = $name;
-        $this->dynalias = $dynalias;
+        $this->dynamicAlias = $dynamicAlias;
         $this->flags = $info->flags;
         $this->default = $colinfo->Default;
         $this->fullType = $colinfo->Type;
         if ($colinfo->Null === 'YES') {
-            if ($this->flag(self::MYSQL_FLAG_NOT_NULL)) {
+            if ($this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
                 throw new JunxaDatabaseModelingException('nullability mismatch');
             }
         } else {
-            if (!$this->flag(self::MYSQL_FLAG_NOT_NULL)) {
+            if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
                 throw new JunxaDatabaseModelingException('nullability mismatch');
             }
         }
@@ -62,7 +62,7 @@ class Column
         } else {
             $this->type = $this->fullType;
         }
-        if ($this->flag(self::MYSQL_FLAG_ENUM) || $this->flag(self::MYSQL_FLAG_SET)) {
+        if ($this->getFlag(self::MYSQL_FLAG_ENUM) || $this->getFlag(self::MYSQL_FLAG_SET)) {
             if (!preg_match('/\(.*\)$/', $this->fullType, $match)) {
                 throw new JunxaDatabaseModelingException('unparseable enum/set');
             }
@@ -71,7 +71,7 @@ class Column
             for ($i = 0; $i < count($this->values); $i++) {
                 $this->values[$i] = preg_replace("/''/", "'", $this->values[$i]);
             }
-            if (!$this->flag(self::MYSQL_FLAG_NOT_NULL) && $this->flag(self::MYSQL_FLAG_ENUM)) {
+            if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL) && $this->getFlag(self::MYSQL_FLAG_ENUM)) {
                 array_unshift($this->values, null);
             }
         } else {
@@ -125,13 +125,18 @@ class Column
     {
     }
 
-    public function db()
+    /**
+     * Retrieves the model of the database this column is part of.
+     *
+     * @return Thaumatic\Junxa
+     */
+    public function getDatabase()
     {
-        return $this->table->db();
+        return $this->table->getDatabase();
     }
 
     /**
-     * Retrieves the table this column is part of.
+     * Retrieves the model of the table this column is part of.
      *
      * @return Thaumatic\Junxa\Table actual class will be as defined by
      * Junxa::getTableClass()
@@ -141,29 +146,52 @@ class Column
         return $this->table;
     }
 
+    /**
+     * Retrieves the column name.
+     *
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * Retrieves whether this is a dynamic column (no corresponding database
+     * column, constructed at row retrieval with SQL).
+     *
+     * @return bool
+     */
     public function isDynamic()
     {
-        return $this->dynalias ? true : false;
+        return $this->dynamicAlias ? true : false;
     }
 
-    public function dynamicInfo()
+    /**
+     * Retrieves the dynamic alias model for this column (a query element
+     * defining the column's name and how it's constructed), if any.
+     *
+     * @return Thaumatic\Junxa\Query\Element|null
+     */
+    public function getDynamicAlias()
     {
-        return $this->dynalias;
+        return $this->dynamicAlias;
     }
 
-    public function flag($flag)
+    /**
+     * Retrieves whether a specified Column::MYSQL_FLAG_* is enabled on
+     * the column.
+     *
+     * @return bool
+     */
+    public function getFlag($flag)
     {
         return (bool) ($this->flags & $flag);
     }
 
     public function contextNull($query, $context)
     {
-        if (!$this->flag(self::MYSQL_FLAG_NOT_NULL)) {
+        if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
             return true;
         }
         if ($context !== 'join' && $query && !empty($query->isNullTable($this->table->getName()))) {
@@ -182,28 +210,37 @@ class Column
             case 'date':
             case 'datetime':
             case 'time':
-                return "'" . $value . "'";
+                return "'" . $this->getDatabase()->escapeString($value) . "'";
             case 'array':
-                return "'" . join(',', $value) . "'";
+                return
+                    "'"
+                    . join(
+                        ',',
+                        array_map(
+                            $value,
+                            [$this->getDatabase(), 'escapeString']
+                        )
+                    )
+                    . "'";
             case 'int':
                 switch ($this->type) {
                     case 'bigint':
                         return preg_replace('/[^0-9-]+/', '', $value);
                     case 'int':
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             return preg_replace('/[^0-9-]+/', '', $value);
                         }
-                        if ($this->flag(self::MYSQL_FLAG_UNSIGNED)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_UNSIGNED)) {
                             return preg_replace('/\D+/', '', $value);
                         }
                         return intval($value);
                     case 'tinyint':
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             return preg_replace('/[^0-9-]+/', '', $value);
                         }
                         return intval($value);
                     default:
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             return preg_replace('/[^0-9-]+/', '', $value);
                         }
                         return intval($value);
@@ -218,14 +255,14 @@ class Column
 
     public function import($value)
     {
-        if (($value === null) && !$this->flag(self::MYSQL_FLAG_NOT_NULL)) {
+        if (($value === null) && !$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
             return null;
         }
         switch ($this->typeClass) {
             case 'int':
                 switch ($this->type) {
                     case 'bigint':
-                        if ($this->flag(self::MYSQL_FLAG_UNSIGNED)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_UNSIGNED)) {
                             // bizarre that this works but it does
                             if (PHP_INT_MAX < 18446744073709551615) {
                                 break;
@@ -237,18 +274,18 @@ class Column
                         }
                         return intval($value);
                     case 'int':
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             break;
                         }
-                        if ($this->flag(self::MYSQL_FLAG_UNSIGNED)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_UNSIGNED)) {
                             break;
                         }
                         return intval($value);
                     case 'tinyint':
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             break;
                         }
-                        if ($this->length === 1 && !$this->flag(self::MYSQL_FLAG_UNSIGNED)) {
+                        if ($this->length === 1 && !$this->getFlag(self::MYSQL_FLAG_UNSIGNED)) {
                             // interpret as bool
                             if ($value === '1') {
                                 return true;
@@ -257,7 +294,7 @@ class Column
                         } false;
                         return intval($value);
                     default:
-                        if ($this->flag(self::MYSQL_FLAG_ZEROFILL)) {
+                        if ($this->getFlag(self::MYSQL_FLAG_ZEROFILL)) {
                             break;
                         }
                         return intval($value);
@@ -297,8 +334,8 @@ class Column
 
     public function express($query, $context, $column, $parent)
     {
-        if ($this->dynalias) {
-            return $this->dynalias->express($query, $context, $column, $parent);
+        if ($this->dynamicAlias) {
+            return $this->dynamicAlias->express($query, $context, $column, $parent);
         } elseif ($query->isMultitable()) {
             return '`' . $this->table->getName() . '`.`' . $this->getName() . '`';
         } else {
