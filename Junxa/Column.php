@@ -189,6 +189,66 @@ class Column
         return (bool) ($this->flags & $flag);
     }
 
+    /**
+     * Retrieves the columns Column::MYSQL_FLAG_* bitmask.
+     *
+     * @return int
+     */
+    public function getFlags()
+    {
+        return $this->flags;
+    }
+
+    /**
+     * Retrieves the column's length specification, if any.
+     *
+     * @return int|null
+     */
+    public function getLength()
+    {
+        return $this->length;
+    }
+
+    /**
+     * Retrieves the column's precision specification, if any.
+     *
+     * @return int|null
+     */
+    public function getPrecision()
+    {
+        return $this->precision;
+    }
+
+    /**
+     * Retrieves the column's type class.
+     *
+     * @return string
+     */
+    public function getTypeClass()
+    {
+        return $this->typeClass;
+    }
+
+    /**
+     * Retrieves the column's type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Retrieves the column's full type specification.
+     *
+     * @return string
+     */
+    public function getFullType()
+    {
+        return $this->fullType;
+    }
+
     public function contextNull($query, $context)
     {
         if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
