@@ -215,7 +215,7 @@ class Row
 
     public function checkCaching($uncache = false)
     {
-        if ($this->table->db()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
+        if ($this->table->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
             $key = $this->cacheKey();
             if ($uncache) {
                 $this->table->removeCacheKey($key);
@@ -257,7 +257,7 @@ class Row
         if (count($cond)) {
             $query['where'] = $cond;
         }
-        $rows = $this->table->db()->query($query, Junxa::QUERY_ARRAYS);
+        $rows = $this->table->getDatabase()->query($query, Junxa::QUERY_ARRAYS);
         switch (count($rows)) {
             case 0:
                 return Junxa::RESULT_FIND_FAIL;
@@ -298,10 +298,10 @@ class Row
             return Junxa::RESULT_REFRESH_FAIL;
         }
         $target = $this->table->getSelectTarget();
-        if ($this->table->db()->getChangeHandlerObject()) {
+        if ($this->table->getDatabase()->getChangeHandlerObject()) {
             usleep(200000);
         }
-        $row = $this->table->db()->query([
+        $row = $this->table->getDatabase()->query([
             'select'    => $target,
             'where'     => $cond,
         ], Junxa::QUERY_SINGLE_ARRAY);
@@ -403,8 +403,8 @@ class Row
         foreach ($cond as $item) {
             $queryDef->where($item);
         }
-        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->getQueryStatus();
+        $this->table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->getDatabase()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
 
@@ -451,14 +451,14 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_INSERT_NOOP;
         }
-        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->getQueryStatus();
+        $this->table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->table->getAutoIncrementPrimary()) {
-                $this->fields[$field] = $this->table->db()->getInsertId();
+                $this->fields[$field] = $this->table->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
@@ -516,14 +516,14 @@ class Row
         if (!$foundUniqueKeyMember) {
             return Junxa::RESULT_MERGE_NOKEY;
         }
-        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->getQueryStatus();
+        $this->table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->table->getAutoIncrementPrimary()) {
-                if ($id = $this->table->db()->getInsertId()) {
+                if ($id = $this->table->getDatabase()->getInsertId()) {
                     $this->fields[$field] = $id;
                 }
             }
@@ -580,14 +580,14 @@ class Row
         if (!$queryDef->getReplace()) {
             return Junxa::RESULT_REPLACE_NOOP;
         }
-        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->getQueryStatus();
+        $this->table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->table->getAutoIncrementPrimary()) {
-                $this->fields[$field] = $this->table->db()->getInsertId();
+                $this->fields[$field] = $this->table->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
@@ -669,8 +669,8 @@ class Row
             $queryDef->where($item);
         }
         $queryDef->delete($this->table);
-        $this->table->db()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->table->db()->getQueryStatus();
+        $this->table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->table->getDatabase()->getQueryStatus();
         if (Junxa::OK($res)) {
             $this->deleted = true;
             $this->checkCaching(true);

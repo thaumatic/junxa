@@ -130,7 +130,13 @@ class Column
         return $this->table->db();
     }
 
-    public function table()
+    /**
+     * Retrieves the table this column is part of.
+     *
+     * @return Thaumatic\Junxa\Table actual class will be as defined by
+     * Junxa::getTableClass()
+     */
+    public function getTable()
     {
         return $this->table;
     }

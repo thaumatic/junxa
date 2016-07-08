@@ -20,7 +20,7 @@ class Table
     /**
      * @var Thaumatic\Junxa the database model this table is attached to
      */
-    private $db;
+    private $database;
 
     /**
      * @var string the name of the table
@@ -80,9 +80,9 @@ class Table
      * @param array<stdClass> if available, field info objects for the table's
      * columns, as returned by mysqli::fetch_field()
      */
-    public function __construct(Junxa $db, $name, $columnCount = null, array $fields = [])
+    public function __construct(Junxa $database, $name, $columnCount = null, array $fields = [])
     {
-        $this->db = $db;
+        $this->database = $database;
         $this->name = $name;
         $this->determineColumns($columnCount, $fields);
         $this->init();
@@ -106,12 +106,12 @@ class Table
     private function determineColumns($columnCount = null, $fields = [])
     {
         $index = 0;
-        foreach ($this->db->query('SHOW COLUMNS FROM ' . $this->getName()) as $row) {
+        foreach ($this->database->query('SHOW COLUMNS FROM ' . $this->getName()) as $row) {
             $colinfo[$index++] = $row;
         }
         if ($columnCount === null) {
             $fields = [];
-            $res = $this->db->query("SELECT *\n\tFROM " . $this->getName() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
+            $res = $this->database->query("SELECT *\n\tFROM " . $this->getName() . "\n\tLIMIT 0", Junxa::QUERY_RAW);
             $columnCount = $res->field_count;
             for ($i = 0; $i < $columnCount; $i++) {
                 $fields[] = $res->fetch_field();
@@ -124,7 +124,7 @@ class Table
             $column = $field->name;
             $this->columns[] = $column;
             $this->staticColumns[] = $column;
-            $class = $this->db->columnClass($this->name);
+            $class = $this->database->columnClass($this->name);
             $columnModel = new $class($this, $column, $field, $colinfo[$i], null);
             $this->columnModels[$column] = $columnModel;
             if ($columnModel->flag(Column::MYSQL_FLAG_PRI_KEY)) {
@@ -159,8 +159,8 @@ class Table
         $alias = Q::alias($content, $name);
         $this->columns[] = $name;
         $this->dynamicColumns[] = $alias;
-        $res = $this->db->query(['select' => $alias, 'limit' => 0], Junxa::QUERY_RAW);
-        $class = $this->db->columnClass($this->name);
+        $res = $this->database->query(['select' => $alias, 'limit' => 0], Junxa::QUERY_RAW);
+        $class = $this->database->columnClass($this->name);
         $columnModel = new $class($this, $name, $res->fetch_field(), $res->fetch_field_direct(0), null, $alias);
         $this->columnModels[$name] = $columnModel;
         $res->free();
@@ -232,9 +232,9 @@ class Table
      *
      * @return Thaumatic\Junxa
      */
-    public function db()
+    public function getDatabase()
     {
-        return $this->db;
+        return $this->database;
     }
 
     /**
@@ -396,7 +396,7 @@ class Table
         if (array_key_exists($key, $this->cache)) {
             return $this->cache[$key];
         }
-        if (!$this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
+        if (!$this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             throw new JunxaConfigurationException('DB_CACHE_TABLE_ROWS option not enabled');
         }
     }
@@ -432,7 +432,7 @@ class Table
     {
         $args = func_get_args();
         $argc = count($args);
-        $class = $this->db->rowClass($this->name);
+        $class = $this->database->rowClass($this->name);
         if (!$argc) {
             return new $class($this, null);
         }
@@ -460,7 +460,7 @@ class Table
                     'row must be identified by same number of arguments as columns in primary key'
                 );
             }
-            if ($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
+            if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
                 $key = self::argsCacheKey($args);
                 if (!empty($this->cache[$key])) {
                     return $this->cache[$key];
@@ -478,12 +478,12 @@ class Table
             ->option('emptyOkay', true)
             ->setMode(Junxa::QUERY_SINGLE_ARRAY)
         ;
-        $row = $this->db->query($query);
+        $row = $this->database->query($query);
         if (!$row) {
             return null;
         }
         $out = new $class($this, $row);
-        if ($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
+        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             if (!isset($key)) {
                 $key = $out->cacheKey();
             }
@@ -561,10 +561,10 @@ class Table
             ->select($this->selectTarget())
             ->setMode(Junxa::QUERY_ARRAYS)
         ;
-        $class = $this->db->rowClass($this->name);
-        $rows = $this->db->query($query);
+        $class = $this->database->rowClass($this->name);
+        $rows = $this->database->query($query);
         $out = [];
-        if ($this->db->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->primary) && !$query->option('nocache')) {
+        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->primary) && !$query->option('nocache')) {
             foreach ($rows as $data) {
                 $row = new $class($this, $data);
                 $key = $row->cacheKey();
@@ -586,7 +586,7 @@ class Table
      */
     public function optimize()
     {
-        $this->db->query('OPTIMIZE TABLE `' . $this->getName() . '`', Junxa::QUERY_FORGET);
+        $this->database->query('OPTIMIZE TABLE `' . $this->getName() . '`', Junxa::QUERY_FORGET);
     }
 
     /**
@@ -627,7 +627,7 @@ class Table
             $query->select()->func('COUNT', $this);
         }
         $query->setMode(Junxa::QUERY_SINGLE_CELL);
-        return $this->db->query($query);
+        return $this->database->query($query);
     }
 
     public function tableScan(&$tables, &$null)
@@ -678,7 +678,7 @@ class Table
      */
     public function query(array $def = null)
     {
-        return QueryBuilder::make($this->db, $this, $def);
+        return QueryBuilder::make($this->database, $this, $def);
     }
 
     /**
