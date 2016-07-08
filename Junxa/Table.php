@@ -161,7 +161,7 @@ class Table
         $this->dynamicColumns[] = $alias;
         $res = $this->database->query(['select' => $alias, 'limit' => 0], Junxa::QUERY_RAW);
         $class = $this->database->columnClass($this->name);
-        $columnModel = new $class($this, $name, $res->fetch_field(), $res->fetch_field_direct(0), null, $alias);
+        $columnModel = new $class($this, $name, $res->fetch_field(), $res->fetch_field_direct(0), $alias);
         $this->columnModels[$name] = $columnModel;
         $res->free();
     }
