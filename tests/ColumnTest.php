@@ -71,6 +71,20 @@ class ColumnTest extends DatabaseTestAbstract
             $flagsProp->setValue($column, $flags);
             $this->assertSame($names, $column->getFlagNames());
         }
+        $flagsProp->setValue(
+            $column,
+            Column::MYSQL_FLAG_NOT_NULL | 
+            Column::MYSQL_FLAG_MULTIPLE_KEY | 
+            Column::MYSQL_FLAG_PART_KEY
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'PART_KEY',
+            ],
+            $column->getFlagNames()
+        );
     }
 
 }
