@@ -10,38 +10,38 @@ use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 class Column
 {
 
-    const OPTION_MERGE_NO_UPDATE    = 0x00000001;
+    const OPTION_MERGE_NO_UPDATE            = 0x00000001;
 
-    const MYSQL_FLAG_NOT_NULL       = 0x00000001;
-    const MYSQL_FLAG_PRI_KEY        = 0x00000002;
-    const MYSQL_FLAG_UNIQUE_KEY     = 0x00000004;
-    const MYSQL_FLAG_BLOB           = 0x00000010;
-    const MYSQL_FLAG_UNSIGNED       = 0x00000020;
-    const MYSQL_FLAG_ZEROFILL       = 0x00000040;
-    const MYSQL_FLAG_BINARY         = 0x00000080;
-    const MYSQL_FLAG_ENUM           = 0x00000100;
-    const MYSQL_FLAG_AUTO_INCREMENT = 0x00000200;
-    const MYSQL_FLAG_TIMESTAMP      = 0x00000400;
-    const MYSQL_FLAG_SET            = 0x00000800;
-    const MYSQL_FLAG_PART_KEY       = 0x00004000;
-    const MYSQL_FLAG_NUM            = 0x00008000;
-    const MYSQL_FLAG_UNIQUE         = 0x00010000;
+    const MYSQL_FLAG_NOT_NULL               = 0x00000001;
+    const MYSQL_FLAG_PRI_KEY                = 0x00000002;
+    const MYSQL_FLAG_UNIQUE_KEY             = 0x00000004;
+    const MYSQL_FLAG_BLOB                   = 0x00000010;
+    const MYSQL_FLAG_UNSIGNED               = 0x00000020;
+    const MYSQL_FLAG_ZEROFILL               = 0x00000040;
+    const MYSQL_FLAG_BINARY                 = 0x00000080;
+    const MYSQL_FLAG_ENUM                   = 0x00000100;
+    const MYSQL_FLAG_AUTO_INCREMENT         = 0x00000200;
+    const MYSQL_FLAG_TIMESTAMP              = 0x00000400;
+    const MYSQL_FLAG_SET                    = 0x00000800;
+    const MYSQL_FLAG_PART_KEY               = 0x00004000;
+    const MYSQL_FLAG_NUM                    = 0x00008000;
+    const MYSQL_FLAG_UNIQUE                 = 0x00010000;
 
-    const MYSQL_FLAG_NAMES          = [
-        MYSQL_FLAG_NOT_NULL         => 'NOT_NULL',
-        MYSQL_FLAG_PRI_KEY          => 'PRI_KEY',
-        MYSQL_FLAG_UNIQUE_KEY       => 'UNIQUE_KEY',
-        MYSQL_FLAG_BLOB             => 'BLOB',
-        MYSQL_FLAG_UNSIGNED         => 'UNSIGNED',
-        MYSQL_FLAG_ZEROFILL         => 'ZEROFILL',
-        MYSQL_FLAG_BINARY           => 'BINARY',
-        MYSQL_FLAG_ENUM             => 'ENUM',
-        MYSQL_FLAG_AUTO_INCREMENT   => 'AUTO_INCREMENT',
-        MYSQL_FLAG_TIMESTAMP        => 'TIMESTAMP',
-        MYSQL_FLAG_SET              => 'SET',
-        MYSQL_FLAG_PART_KEY         => 'PART_KEY',
-        MYSQL_FLAG_NUM              => 'NUM',
-        MYSQL_FLAG_UNIQUE           => 'UNIQUE',
+    const MYSQL_FLAG_NAMES                  = [
+        self::MYSQL_FLAG_NOT_NULL           => 'NOT_NULL',
+        self::MYSQL_FLAG_PRI_KEY            => 'PRI_KEY',
+        self::MYSQL_FLAG_UNIQUE_KEY         => 'UNIQUE_KEY',
+        self::MYSQL_FLAG_BLOB               => 'BLOB',
+        self::MYSQL_FLAG_UNSIGNED           => 'UNSIGNED',
+        self::MYSQL_FLAG_ZEROFILL           => 'ZEROFILL',
+        self::MYSQL_FLAG_BINARY             => 'BINARY',
+        self::MYSQL_FLAG_ENUM               => 'ENUM',
+        self::MYSQL_FLAG_AUTO_INCREMENT     => 'AUTO_INCREMENT',
+        self::MYSQL_FLAG_TIMESTAMP          => 'TIMESTAMP',
+        self::MYSQL_FLAG_SET                => 'SET',
+        self::MYSQL_FLAG_PART_KEY           => 'PART_KEY',
+        self::MYSQL_FLAG_NUM                => 'NUM',
+        self::MYSQL_FLAG_UNIQUE             => 'UNIQUE',
     ];
 
     private $default;
