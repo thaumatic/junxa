@@ -306,7 +306,7 @@ class Column
             case 'time':
                 return "'" . $this->getDatabase()->escapeString($value) . "'";
             case 'array':
-                return
+                return (
                     "'"
                     . join(
                         ',',
@@ -315,7 +315,8 @@ class Column
                             [$this->getDatabase(), 'escapeString']
                         )
                     )
-                    . "'";
+                    . "'"
+                );
             case 'int':
                 switch ($this->type) {
                     case 'bigint':
