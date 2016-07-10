@@ -15,6 +15,7 @@ class Column
     const MYSQL_FLAG_NOT_NULL               = 0x00000001;
     const MYSQL_FLAG_PRI_KEY                = 0x00000002;
     const MYSQL_FLAG_UNIQUE_KEY             = 0x00000004;
+    const MYSQL_FLAG_MULTIPLE_KEY           = 0x00000008;
     const MYSQL_FLAG_BLOB                   = 0x00000010;
     const MYSQL_FLAG_UNSIGNED               = 0x00000020;
     const MYSQL_FLAG_ZEROFILL               = 0x00000040;
@@ -23,14 +24,20 @@ class Column
     const MYSQL_FLAG_AUTO_INCREMENT         = 0x00000200;
     const MYSQL_FLAG_TIMESTAMP              = 0x00000400;
     const MYSQL_FLAG_SET                    = 0x00000800;
+    const MYSQL_FLAG_NO_DEFAULT_VALUE       = 0x00001000;
+    const MYSQL_FLAG_ON_UPDATE_NOW          = 0x00002000;
     const MYSQL_FLAG_PART_KEY               = 0x00004000;
     const MYSQL_FLAG_NUM                    = 0x00008000;
     const MYSQL_FLAG_UNIQUE                 = 0x00010000;
+    const MYSQL_FLAG_BINCMP                 = 0x00020000;
+    const MYSQL_FLAG_GET_FIXED_FIELDS       = 0x00040000;
+    const MYSQL_FLAG_FIELD_IN_PART_FUNC     = 0x00080000;
 
     const MYSQL_FLAG_NAMES                  = [
         self::MYSQL_FLAG_NOT_NULL           => 'NOT_NULL',
         self::MYSQL_FLAG_PRI_KEY            => 'PRI_KEY',
         self::MYSQL_FLAG_UNIQUE_KEY         => 'UNIQUE_KEY',
+        self::MYSQL_FLAG_MULTIPLE_KEY       => 'MULTIPLE_KEY',
         self::MYSQL_FLAG_BLOB               => 'BLOB',
         self::MYSQL_FLAG_UNSIGNED           => 'UNSIGNED',
         self::MYSQL_FLAG_ZEROFILL           => 'ZEROFILL',
@@ -39,9 +46,14 @@ class Column
         self::MYSQL_FLAG_AUTO_INCREMENT     => 'AUTO_INCREMENT',
         self::MYSQL_FLAG_TIMESTAMP          => 'TIMESTAMP',
         self::MYSQL_FLAG_SET                => 'SET',
+        self::MYSQL_FLAG_NO_DEFAULT_VALUE   => 'NO_DEFAULT_VALUE',
+        self::MYSQL_FLAG_ON_UPDATE_NOW      => 'ON_UPDATE_NOW',
         self::MYSQL_FLAG_PART_KEY           => 'PART_KEY',
         self::MYSQL_FLAG_NUM                => 'NUM',
         self::MYSQL_FLAG_UNIQUE             => 'UNIQUE',
+        self::MYSQL_FLAG_BINCMP             => 'BINCMP',
+        self::MYSQL_FLAG_GET_FIXED_FIELDS   => 'GET_FIXED_FIELDS',
+        self::MYSQL_FLAG_FIELD_IN_PART_FUNC => 'FIELD_IN_PART_FUNC',
     ];
 
     private $default;
