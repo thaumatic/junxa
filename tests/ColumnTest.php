@@ -9,28 +9,9 @@ use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 class ColumnTest extends DatabaseTestAbstract
 {
 
-    public function testWithArraySetup()
+    public function testColumnConfiguration()
     {
-        $db = new Junxa([
-            'hostname'  => 'localhost',
-            'database'  => DatabaseTestAbstract::TEST_DATABASE_NAME,
-        ]);
-        $this->runColumnConfigurationTests($db);
-    }
-
-    public function testWithFluentSetup()
-    {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->ready()
-        ;
-        $this->runColumnConfigurationTests($db);
-    }
-
-    private function runColumnConfigurationTests($db)
-    {
-        $categoryIdColumn = $db->category->id;
+        $categoryIdColumn = $this->db()->category->id;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryIdColumn);
         $this->assertSame('id', $categoryIdColumn->getName());
         $this->assertSame('mediumint(8) unsigned', $categoryIdColumn->getFullType());
@@ -50,7 +31,7 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryIdColumn->getDefault());
         $this->assertFalse($categoryIdColumn->hasDefault());
         $this->assertNull($categoryIdColumn->getDefaultValue());
-        $categoryNameColumn = $db->category->name;
+        $categoryNameColumn = $this->db()->category->name;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryNameColumn);
         $this->assertSame('name', $categoryNameColumn->getName());
         $this->assertSame('varchar(250)', $categoryNameColumn->getFullType());
