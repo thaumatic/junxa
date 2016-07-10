@@ -51,4 +51,26 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryNameColumn->getDefaultValue());
     }
 
+    public function testGetFlagNames()
+    {
+        $column = $this->db()->category->changed_at;
+        $refClass = new \ReflectionClass(get_class($column));
+        $flagsProp = $refClass->getProperty('flags');
+        $flagsProp->setAccessible(true);
+        $flagsProp->setValue($column, 0);
+        $this->assertSame([], $column->getFlagNames());
+        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+            $flagsProp->setValue($column, $bit);
+            $this->assertSame([$name], $column->getFlagNames());
+        }
+        $flags = 0;
+        $names = [];
+        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+            $flags |= $bit;
+            $names[] = $name;
+            $flagsProp->setValue($column, $flags);
+            $this->assertSame($names, $column->getFlagNames());
+        }
+    }
+
 }
