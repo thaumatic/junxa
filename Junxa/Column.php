@@ -233,6 +233,7 @@ class Column
                 $out[] = $name;
             }
         }
+        return $out;
     }
 
     /**
