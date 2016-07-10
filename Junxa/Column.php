@@ -27,6 +27,23 @@ class Column
     const MYSQL_FLAG_NUM            = 0x00008000;
     const MYSQL_FLAG_UNIQUE         = 0x00010000;
 
+    const MYSQL_FLAG_NAMES          = [
+        MYSQL_FLAG_NOT_NULL         => 'NOT_NULL',
+        MYSQL_FLAG_PRI_KEY          => 'PRI_KEY',
+        MYSQL_FLAG_UNIQUE_KEY       => 'UNIQUE_KEY',
+        MYSQL_FLAG_BLOB             => 'BLOB',
+        MYSQL_FLAG_UNSIGNED         => 'UNSIGNED',
+        MYSQL_FLAG_ZEROFILL         => 'ZEROFILL',
+        MYSQL_FLAG_BINARY           => 'BINARY',
+        MYSQL_FLAG_ENUM             => 'ENUM',
+        MYSQL_FLAG_AUTO_INCREMENT   => 'AUTO_INCREMENT',
+        MYSQL_FLAG_TIMESTAMP        => 'TIMESTAMP',
+        MYSQL_FLAG_SET              => 'SET',
+        MYSQL_FLAG_PART_KEY         => 'PART_KEY',
+        MYSQL_FLAG_NUM              => 'NUM',
+        MYSQL_FLAG_UNIQUE           => 'UNIQUE',
+    ];
+
     private $default;
     private $defaultValue;
     private $dynamicAlias;
@@ -201,6 +218,21 @@ class Column
     public function getFlags()
     {
         return $this->flags;
+    }
+
+    /**
+     * Retrieves an array of the names of the flags set on the column.
+     *
+     * return array<string>
+     */
+    public function getFlagNames()
+    {
+        $out = [];
+        foreach (self::MYSQL_FLAG_NAMES as $bit => $name) {
+            if ($this->flags & $bit) {
+                $out[] = $name;
+            }
+        }
     }
 
     /**
