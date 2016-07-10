@@ -13,6 +13,8 @@ class ColumnTest extends DatabaseTestAbstract
     {
         $categoryIdColumn = $this->db()->category->id;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryIdColumn);
+        $this->assertSame($this->db(), $categoryIdColumn->getDatabase());
+        $this->assertSame($this->db()->category, $categoryIdColumn->getTable());
         $this->assertSame('id', $categoryIdColumn->getName());
         $this->assertSame('mediumint(8) unsigned', $categoryIdColumn->getFullType());
         $this->assertSame('mediumint', $categoryIdColumn->getType());
@@ -33,6 +35,8 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryIdColumn->getDefaultValue());
         $categoryNameColumn = $this->db()->category->name;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryNameColumn);
+        $this->assertSame($this->db(), $categoryNameColumn->getDatabase());
+        $this->assertSame($this->db()->category, $categoryNameColumn->getTable());
         $this->assertSame('name', $categoryNameColumn->getName());
         $this->assertSame('varchar(250)', $categoryNameColumn->getFullType());
         $this->assertSame('varchar', $categoryNameColumn->getType());
