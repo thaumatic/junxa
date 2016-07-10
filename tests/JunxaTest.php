@@ -151,9 +151,9 @@ class JunxaTest extends DatabaseTestAbstract
             $category->created_at = Q::func('NOW');
             $category->insert();
             srand(1);
-            for($i = $db->category->name->getLength() / 10; $i >= 0; $i--) {
+            for ($i = $db->category->name->getLength() / 10; $i >= 0; $i--) {
                 $name = '';
-                for($j = $db->category->name->getLength() - $i - 1; $j >= 0; $j--) {
+                for ($j = $db->category->name->getLength() - $i - 1; $j >= 0; $j--) {
                     $name .= self::unichr(rand(1, 10000));
                 }
                 $category->name = $name;
@@ -169,7 +169,8 @@ class JunxaTest extends DatabaseTestAbstract
         }
     }
 
-    private static function unichr($code) {
+    private static function unichr($code)
+    {
         return mb_convert_encoding('&#' . intval($code) . ';', 'UTF-8', 'HTML-ENTITIES');
     }
 
