@@ -564,7 +564,7 @@ class Table
         $class = $this->database->rowClass($this->name);
         $rows = $this->database->query($query);
         $out = [];
-        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->primary) && !$query->option('nocache')) {
+        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->primary && !$query->option('nocache')) {
             foreach ($rows as $data) {
                 $row = new $class($this, $data);
                 $key = $row->cacheKey();
