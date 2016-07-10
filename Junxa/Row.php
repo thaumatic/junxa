@@ -215,7 +215,7 @@ class Row
 
     public function checkCaching($uncache = false)
     {
-        if ($this->table->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && count($this->table->getPrimaryKey())) {
+        if ($this->table->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->getPrimaryKey()) {
             $key = $this->cacheKey();
             if ($uncache) {
                 $this->table->removeCacheKey($key);
