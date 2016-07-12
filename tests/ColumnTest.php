@@ -77,8 +77,8 @@ class ColumnTest extends DatabaseTestAbstract
         }
         $flagsProp->setValue(
             $column,
-            Column::MYSQL_FLAG_NOT_NULL | 
-            Column::MYSQL_FLAG_MULTIPLE_KEY | 
+            Column::MYSQL_FLAG_NOT_NULL |
+            Column::MYSQL_FLAG_MULTIPLE_KEY |
             Column::MYSQL_FLAG_PART_KEY
         );
         $this->assertSame(
