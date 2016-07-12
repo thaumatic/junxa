@@ -1753,7 +1753,7 @@ class Junxa
      * Returns whether the result code passed as its argument indicates a
      * successful query.  Since there are several result codes which indicate
      * "success" along with other result information, this function should be
-     * used as a general "okayness"* check.
+     * used as a general "okayness" check.
      *
      *      if (!Junxa::OK($row->insert())) {
      *          throw new Exception('insert failed');
