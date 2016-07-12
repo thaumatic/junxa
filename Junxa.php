@@ -409,57 +409,83 @@ class Junxa
         if ($def !== null) {
             if (array_key_exists('hostname', $def)) {
                 $this->setHostname($def['hostname']);
+                unset($def['hostname']);
             }
             if (array_key_exists('database', $def)) {
                 $this->setDatabase($def['database']);
+                unset($def['database']);
             }
             if (array_key_exists('username', $def)) {
                 $this->setUsername($def['username']);
+                unset($def['username']);
             }
             if (array_key_exists('password', $def)) {
                 $this->setPassword($def['password']);
+                unset($def['password']);
             }
             if (array_key_exists('options', $def)) {
                 $this->setOptions($def['options']);
+                unset($def['options']);
             }
             if (array_key_exists('defaultTableClass', $def)) {
                 $this->setDefaultTableClass($def['defaultTableClass']);
+                unset($def['defaultTableClass']);
             }
             if (array_key_exists('defaultColumnClass', $def)) {
                 $this->setDefaultColumnClass($def['defaultColumnClass']);
+                unset($def['defaultColumnClass']);
             }
             if (array_key_exists('defaultRowClass', $def)) {
                 $this->setDefaultRowClass($def['defaultRowClass']);
+                unset($def['defaultRowClass']);
             }
             if (array_key_exists('autoTableClassNamespace', $def)) {
                 $this->setAutoTableClassNamespace($def['autoTableClassNamespace']);
+                unset($def['autoTableClassNamespace']);
             }
             if (array_key_exists('autoColumnClassNamespace', $def)) {
                 $this->setAutoColumnClassNamespace($def['autoColumnClassNamespace']);
+                unset($def['autoColumnClassNamespace']);
             }
             if (array_key_exists('autoRowClassNamespace', $def)) {
                 $this->setAutoRowClassNamespace($def['autoRowClassNamespace']);
+                unset($def['autoRowClassNamespace']);
             }
             if (array_key_exists('regexpTableClasses', $def)) {
                 $this->setRegexpTableClasses($def['regexpTableClasses']);
+                unset($def['regexpTableClasses']);
             }
             if (array_key_exists('regexpColumnClasses', $def)) {
                 $this->setRegexpColumnClasses($def['regexpColumnClasses']);
+                unset($def['regexpColumnClasses']);
             }
             if (array_key_exists('regexpRowClasses', $def)) {
                 $this->setRegexpRowClasses($def['regexpRowClasses']);
+                unset($def['regexpRowClasses']);
             }
             if (array_key_exists('tableClasses', $def)) {
                 $this->setTableClasses($def['tableClasses']);
+                unset($def['tableClasses']);
             }
             if (array_key_exists('columnClasses', $def)) {
                 $this->setColumnClasses($def['columnClasses']);
+                unset($def['columnClasses']);
             }
             if (array_key_exists('rowClasses', $def)) {
                 $this->setRowClasses($def['rowClasses']);
+                unset($def['rowClasses']);
             }
             if (array_key_exists('changeHandler', $def)) {
                 $this->setChangeHandler($def['changeHandler']);
+                unset($def['changeHandler']);
+            }
+            if ($def) {
+                throw new JunxaConfigurationException(
+                    'unsupported configuration '
+                    . (count($def) === 1 ? 'setting' : 'settings')
+                    . ': '
+                    . join(array_keys($def))
+                );
             }
             $this->ready();
         }
@@ -657,6 +683,30 @@ class Junxa
     public function getDefaultTableClass()
     {
         return $this->defaultTableClass;
+    }
+
+    /**
+     * Sets the class to use as the column model when no more specific column
+     * model is found.
+     *
+     * @param string class name
+     * @return $this
+     */
+    public function setDefaultColumnClass($val)
+    {
+        $this->defaultColumnClass = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the class used as the column model when no more specific
+     * column model is found.
+     *
+     * @return string
+     */
+    public function getDefaultColumnClass()
+    {
+        return $this->defaultColumnClass;
     }
 
     /**
