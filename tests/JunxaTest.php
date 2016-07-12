@@ -24,6 +24,86 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertSame('item', $itemTable->getName());
     }
 
+    public function testConfigurationModes()
+    {
+        $db1 = new Junxa([
+            'hostname'                  => 'localhost',
+            'database'                  => DatabaseTestAbstract::TEST_DATABASE_NAME,
+            'username'                  => 'testUsername',
+            'password'                  => '',
+            'options'                   => Junxa::DB_PRELOAD_TABLES | Junxa::DB_PERSISTENT_CONNECTION,
+            'defaultTableClass'         => 'FakeTableClass',
+            'defaultColumnClass'        => 'FakeColumnClass',
+            'defaultRowClass'           => 'FakeRowClass',
+            'tableClasses'              => [
+                'fake_table'            => 'FakeTableSpecificClass',
+            ],
+            'columnClasses'             => [
+                'fake_column'           => 'FakeColumnSpecificClass',
+            ],
+            'rowClasses'                => [
+                'fake_row'              => 'FakeRowSpecificClass',
+            ],
+            'regexpTableClasses'        => [
+                '/fake_table_pattern/'  => 'FakeTableSetClass',
+            ],
+            'regexpColumnClasses'       => [
+                '/fake_column_pattern/' => 'FakeColumnSetClass',
+            ],
+            'regexpRowClasses'          => [
+                '/fake_row_pattern/'    => 'FakeRowSetClass',
+            ],
+            'autoTableClassNamespace'   => 'FakeTableNamespace',
+            'autoColumnClassNamespace'  => 'FakeColumnNamespace',
+            'autoRowClassNamespace'     => 'FakeRowNamespace',
+            'changeHandler'             => [
+                'hostname'              => 'localhost',
+                'database'              => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
+                'username'              => 'unusableUsername',
+                'password'              => 'unusablePassword',
+            ],
+        ]);
+        $db2 = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setOption(Junxa::DB_PRELOAD_TABLES, true)
+            ->setOption(Junxa::DB_PERSISTENT_CONNECTION, true)
+            ->setDefaultTableClass('FakeTableClass')
+            ->setDefaultColumnClass('FakeColumnClass')
+            ->setDefaultRowClass('FakeRowClass')
+            ->setTableClasses([
+                'fake_table'            => 'FakeTableSpecificClass',
+            ])
+            ->setColumnClasses([
+                'fake_column'           => 'FakeColumnSpecificClass',
+            ])
+            ->setRowClasses([
+                'fake_row'              => 'FakeRowSpecificClass',
+            ])
+            ->setRegexpTableClasses([
+                '/fake_table_pattern/'  => 'FakeTableSetClass',
+            ])
+            ->setRegexpColumnClasses([
+                '/fake_column_pattern/' => 'FakeColumnSetClass',
+            ])
+            ->setRegexpRowClasses([
+                '/fake_row_pattern/'    => 'FakeRowSetClass',
+            ])
+            ->setAutoTableClassNamespace('FakeTableNamespace')
+            ->setAutoColumnClassNamespace('FakeColumnNamespace')
+            ->setAutoRowClassNamespace('FakeRowNamespace')
+            ->setChangeHandler([
+                'hostname'              => 'localhost',
+                'database'              => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
+                'username'              => 'unusableUsername',
+                'password'              => 'unusablePassword',
+            ])
+            ->ready();
+        $this->assertEquals($db1, $db2);
+    }
+
     public function testInsertUpdateAndDelete()
     {
         try {
