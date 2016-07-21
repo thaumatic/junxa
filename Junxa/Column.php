@@ -10,29 +10,120 @@ use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 class Column
 {
 
+    /**
+     * @const int column option: when performing a merge (insert on duplicate
+     * key update) query, exclude this column from being updated (but not from
+     * being inserted)
+     */
     const OPTION_MERGE_NO_UPDATE            = 0x00000001;
 
+    /**
+     * @const int MySQL flag: column is NOT NULL
+     */
     const MYSQL_FLAG_NOT_NULL               = 0x00000001;
+
+    /**
+     * @const int MySQL flag: column is part of a primary key
+     */
     const MYSQL_FLAG_PRI_KEY                = 0x00000002;
+
+    /**
+     * @const int MySQL flag: column is part of a non-primary unique key
+     */
     const MYSQL_FLAG_UNIQUE_KEY             = 0x00000004;
+
+    /**
+     * @const int MySQL flag: column is part of a non-primary non-unique key
+     */
     const MYSQL_FLAG_MULTIPLE_KEY           = 0x00000008;
+
+    /**
+     * @const int MySQL flag: column is blob-like (any kind of BLOB or TEXT)
+     */
     const MYSQL_FLAG_BLOB                   = 0x00000010;
+
+    /**
+     * @const int MySQL flag: column is UNSIGNED
+     */
     const MYSQL_FLAG_UNSIGNED               = 0x00000020;
+
+    /**
+     * @const int MySQL flag: column is ZEROFILL
+     */
     const MYSQL_FLAG_ZEROFILL               = 0x00000040;
+
+    /**
+     * @const int MySQL flag: column is marked binary
+     */
     const MYSQL_FLAG_BINARY                 = 0x00000080;
+
+    /**
+     * @const int MySQL flag: column is an ENUM
+     */
     const MYSQL_FLAG_ENUM                   = 0x00000100;
+
+    /**
+     * @const int MySQL flag: column is AUTO_INCREMENT
+     */
     const MYSQL_FLAG_AUTO_INCREMENT         = 0x00000200;
+
+    /**
+     * @const int MySQL flag: column is a TIMESTAMP
+     */
     const MYSQL_FLAG_TIMESTAMP              = 0x00000400;
+
+    /**
+     * @const int MySQL flag: column is a SET
+     */
     const MYSQL_FLAG_SET                    = 0x00000800;
+
+    /**
+     * @const int MySQL flag: column has no default value (including one
+     * provided by AUTO_INCREMENT or TIMESTAMP behavior)
+     */
     const MYSQL_FLAG_NO_DEFAULT_VALUE       = 0x00001000;
+
+    /**
+     * @const int MySQL flag: column is set to NOW() on update (i.e.
+     * TIMESTAMP behavior)
+     */
     const MYSQL_FLAG_ON_UPDATE_NOW          = 0x00002000;
+
+    /**
+     * @const int MySQL flag: column is part of any key
+     */
     const MYSQL_FLAG_PART_KEY               = 0x00004000;
+
+    /**
+     * @const int MySQL flag: column is numeric
+     */
     const MYSQL_FLAG_NUM                    = 0x00008000;
+
+    /**
+     * @const int MySQL flag: sql_yacc flag of unclear significance
+     */
     const MYSQL_FLAG_UNIQUE                 = 0x00010000;
+
+    /**
+     * @const int MySQL flag: sql_yacc flag of unclear significance
+     */
     const MYSQL_FLAG_BINCMP                 = 0x00020000;
+
+    /**
+     * @const int MySQL flag: MySQL internal use flag of unclear significance
+     */
     const MYSQL_FLAG_GET_FIXED_FIELDS       = 0x00040000;
+
+    /**
+     * @const int MySQL flag: column appears in the partitioning function of
+     * its table
+     */
     const MYSQL_FLAG_FIELD_IN_PART_FUNC     = 0x00080000;
 
+    /**
+     * @const array<numeric:string> lookup table of the names of the
+     * self::MYSQL_FLAG_* values
+     */
     const MYSQL_FLAG_NAMES                  = [
         self::MYSQL_FLAG_NOT_NULL           => 'NOT_NULL',
         self::MYSQL_FLAG_PRI_KEY            => 'PRI_KEY',
@@ -56,18 +147,75 @@ class Column
         self::MYSQL_FLAG_FIELD_IN_PART_FUNC => 'FIELD_IN_PART_FUNC',
     ];
 
+    /**
+     * @var mixed the raw version of the column's default, as provided by a
+     * SHOW COLUMNS query.
+     */
     private $default;
+
+    /**
+     * @var mixed the imported native version of the column's default
+     */
     private $defaultValue;
+
+    /**
+     * @var Junxa\Query\Element the SQL alias used to construct this column if
+     * it's virtual
+     */
     private $dynamicAlias;
+
+    /**
+     * @var int self::MYSQL_FLAG_* values, bitmasked
+     */
     private $flags;
+
+    /**
+     * @var string the "full" type information for the column as it appears in
+     * a SHOW COLUMNS query.
+     */
     private $fullType;
+
+    /**
+     * @var int the length specification for this column, if any
+     */
     private $length;
+
+    /**
+     * @var string the name of this column
+     */
     private $name;
+
+    /**
+     * @var int self::OPTION_* values, bitmasked, defining this columns'
+     * behavior
+     */
     private $options = 0;
+
+    /**
+     * @var int the precision specification for this column, if any
+     */
     private $precision;
+
+    /**
+     * @var Junxa/Table the table this column is part of
+     */
     private $table;
+
+    /**
+     * @var string the basic type information for the column, as derived from
+     * {@see $fulltype}
+     */
     private $type;
+
+    /**
+     * @var string the general class of types this columnn belongs to (int,
+     * float, datetime, date, time, array, or text).
+     */
     private $typeClass;
+
+    /**
+     * @var array<string> the possible values for this column, if a set or enum
+     */
     private $values;
 
     public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
