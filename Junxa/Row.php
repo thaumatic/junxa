@@ -501,7 +501,7 @@ class Row
         foreach ($this->table->getStaticColumns() as $column) {
             if (array_key_exists($column, $this->fields)) {
                 $columnModel = $this->table->$column;
-                if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE)) {
+                if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
                     $foundUniqueKeyMember = true;
                 }
                 $queryDef->insert($column, $this->fields[$column]);
