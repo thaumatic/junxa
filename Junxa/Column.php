@@ -3,6 +3,7 @@
 namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 
@@ -219,6 +220,22 @@ class Column
      * @var array<string> the possible values for this column, if a set or enum
      */
     private $values;
+
+    /**
+     * @var bool whether this column's status as a foreign key is known
+     */
+    private $foreignKeyKnown;
+
+    /**
+     * @var Thaumatic\Junxa\Column the column this column is a foreign key to,
+     * if any
+     */
+    private $foreignKey;
+
+    /**
+     * @var array<string> an explicit foreign key specification, if provided
+     */
+    private $foreignKeySpecification;
 
     public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
     {
@@ -763,6 +780,64 @@ class Column
             $this->options &= ~$option;
         }
         return $this;
+    }
+
+    /**
+     * Sets a foreign key specification.
+     *
+     * @param array<string> a 2-element array specifying the foreign key by
+     * table name and column name
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
+     * parameter is invalid
+     */
+    public function setForeignKeySpecification(array $info) {
+        if(count($info) !== 2) {
+            throw new JunxaConfigurationException(
+                'expected 2 elements, got ' . count($info)
+            );
+        }
+        foreach ($info as $item) {
+            if(!is_string($item)) {
+                throw new JunxaConfigurationException(
+                    'expected string elements, got ' . gettype($item)
+                );
+            }
+        }
+        $this->foreignKeySpecification = $info;
+        return $this;
+    }
+
+    /**
+     * Retrieves the column this column is a foreign key to, if any.
+     *
+     * @return Thaumatic\Junxa\Column|null
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if a table
+     * requested does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if a
+     * column requested does not exist
+     */
+    public function getForeignKey()
+    {
+        if(!$this->foreignKeyKnown) {
+            $info = $this->foreignKeySpecification;
+            if($info) {
+                $this->foreignKey = $this->getDatabase()->{$info[0]}->{$info[1]};
+            } else {
+                if(preg_match('/(.*)_id$/i', $this->getName(), $match)) {
+                    $tableName = $match[1];
+                    $db = $this->getDatabase();
+                    if($db->tableExists($tableName)) {
+                        $table = $db->$tablename;
+                        if($table->hasColumn('id')) {
+                            $this->foreignKey = $table->id;
+                        }
+                    }
+                }
+            }
+            $this->foreignKeyKnown = true;
+        }
+        return $this->foreignKey;
     }
 
 }
