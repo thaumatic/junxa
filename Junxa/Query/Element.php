@@ -6,6 +6,7 @@ use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Query;
+use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Table;
 
 /**
@@ -146,7 +147,7 @@ class Element
         }
     }
 
-    public function express($query, $context, $column, $parent)
+    public function express(QueryBuilder $query, $context, $column, $parent)
     {
         $base = $this->content;
         $refColumn = $column;

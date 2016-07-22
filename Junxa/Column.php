@@ -2,7 +2,9 @@
 
 namespace Thaumatic\Junxa;
 
+use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
+use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 
 /**
  * Models a database column.
@@ -476,20 +478,41 @@ class Column
         return $this->defaultValue;
     }
 
-    public function contextNull($query, $context)
+    /**
+     * Evaluates whether it is possible for the column to have a null
+     * value in a particular query context.
+     *
+     * @param Thaumatic\Junxa\Query\Builder query builder
+     * @param string the clause of the query that is being rendered
+     * @return bool
+     */
+    public function contextNull(QueryBuilder $query = null, $context = null)
     {
         if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
             return true;
         }
-        if ($context !== 'join' && $query && !empty($query->isNullTable($this->table->getName()))) {
+        if ($context !== 'join' && $query && $query->isNullTable($this->table->getName())) {
             return true;
         }
         return false;
     }
 
-    public function represent($value, $query, $context, $parent)
-    {
-        if (!isset($value) && $this->contextNull($query, $context)) {
+    /**
+     * Generates the appropriate database representation to use for a
+     * specified PHP value in context of this column.
+     *
+     * @param mixed the PHP value to represent
+     * @param Thaumatic\Junxa\Query\Build a query builder representing a query
+     * we are rendering, if any
+     * @param string the clause of the query that is being rendered
+     * @return mixed
+     */
+    public function represent(
+        $value,
+        QueryBuilder $query = null,
+        $context = 'select'
+    ) {
+        if ($value === null && $this->contextNull($query, $context)) {
             return 'NULL';
         }
         switch ($this->typeClass) {
@@ -541,6 +564,13 @@ class Column
         }
     }
 
+    /**
+     * Generates the appropriate PHP representation to use for a specified
+     * value obtained from the database in context of this column.
+     *
+     * @param mixed the database value to import
+     * @return mixed
+     */
     public function import($value)
     {
         if (($value === null) && !$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
@@ -594,7 +624,12 @@ class Column
         return $value;
     }
 
-    public function reportType()
+    /**
+     * Retrieves a summary of the column's type information.
+     *
+     * @return string
+     */
+    public function getTypeSummary()
     {
         $out = $this->type;
         if (isset($this->length)) {
@@ -606,22 +641,45 @@ class Column
         if (isset($this->values)) {
             $out .= ', values ';
             foreach ($this->values as $value) {
-                $out .= ' ' . $this->represent($value, $null, 'select');
+                $out .= ' ' . $this->represent($value);
             }
         }
         if (isset($this->default)) {
-            $out .= ', default ' . $this->represent($this->default, $null, 'select');
+            $out .= ', default ' . $this->represent($this->default);
         }
         return $out;
     }
 
+    /**
+     * Implements its part of a table scan, tracking the column's
+     * parent table as part of a query.
+     *
+     * @param array<string:bool> assoc of names of tables present in query
+     * @param array<string:bool> assoc of names of tables that can be all
+     * null (as with an inner/outer join)
+     * @return $this
+     */
     public function tableScan(&$tables, &$null)
     {
         $tables[$this->table->getName()] = true;
+        return $this;
     }
 
-    public function express($query, $context, $column, $parent)
-    {
+    /**
+     * Retrieves the correct SQL expression to use to refer to this column
+     * at the database level.
+     *
+     * @param Thaumatic\Junxa\Query\Builder the query being rendered
+     * @param string the clause of the query that is being rendered
+     * @param Thaumatic\Junxa\Column the column we are rendering in context of
+     * @param mixed the parent model of our current query
+     */
+    public function express(
+        QueryBuilder $query,
+        $context,
+        Column $column = null,
+        $parent = null
+    ) {
         if ($this->dynamicAlias) {
             return $this->dynamicAlias->express($query, $context, $column, $parent);
         } elseif ($query->isMultitable()) {
@@ -631,23 +689,41 @@ class Column
         }
     }
 
+    /**
+     * Provides a serialized representation of the column, allowing it to be
+     * restored (from within its full database and table model context) later.
+     *
+     * @return string
+     */
     public function serialize()
     {
         $table = $this->table();
         return 'column:' . $table->getName() . "\0" . $this->getName();
     }
 
+    /**
+     * Sets whether the treat this column as demand-only, i.e. not retrieved
+     * by default when a row is retrieved, only when specifically requested.
+     *
+     * @param bool whether to treat the column as demand-only
+     * @return $this
+     */
     public function setDemandOnly($flag)
     {
-        $table = $this->table();
-        $table->setColumnDemandOnly($this->getName(), $flag);
+        $this->table()->setColumnDemandOnly($this->getName(), $flag);
         return $this;
     }
 
+    /**
+     * Retrieves whether this column should be considered demand-only, i.e.
+     * not retrieved by default when a row is retrieved, only when
+     * specifically requested.
+     *
+     * @return bool
+     */
     public function queryDemandOnly()
     {
-        $table = $this->table();
-        return $table->queryColumnDemandOnly($this->getName());
+        return $this->table()->queryColumnDemandOnly($this->getName());
     }
 
     /**

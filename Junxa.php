@@ -1658,9 +1658,9 @@ class Junxa
         } elseif (is_object($item) && method_exists($item, 'express')) {
             return $item->express($query, $context, $column, $parent);
         } elseif ($column) {
-            return $column->represent($item, $query, $context, $parent);
+            return $column->represent($item, $query, $context);
         } else {
-            return $this->quote($item);
+            return $item->getDatabase()->quote($item);
         }
     }
 
