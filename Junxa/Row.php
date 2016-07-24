@@ -9,6 +9,7 @@ use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
+use Thaumatic\Junxa\Table;
 
 /**
  * Models a database row.
@@ -16,12 +17,34 @@ use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 class Row
 {
 
+    /**
+     * The "database values" for the columns on this row; more precisely, the
+     * import()ed version of the values obtained from the database for this
+     * row when the row was generated.  Will be null for a row generated as
+     * empty (rather than from an existing database row).
+     *
+     * @var array<string:mixed>|null
+     */
     private $data;
+
+    /**
+     * @var array<string:mixed> the "working values" for the columns on this
+     * row; when a value is set on this row after creation, it is set here
+     */
     private $fields = [];
-    private $deleted;
+
+    /**
+     * @var bool whether this row has been deleted via the delete() method
+     * being called on it
+     */
+    private $deleted = false;
+
+    /**
+     * @var Thaumatic\Junxa\Table the table this row is from
+     */
     private $table;
 
-    public function __construct($table, $data)
+    public function __construct(Table $table, array $data = null)
     {
         $this->table = $table;
         $this->data = $data;
