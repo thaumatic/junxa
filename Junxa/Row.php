@@ -195,8 +195,7 @@ class Row
     public function value($column)
     {
         if (empty($this->fields[$column])) {
-            $table = $this->table();
-            if ($table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset()) {
+            if ($this->table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset()) {
                 $this->fields[$column] = $this->backendValue($column);
             }
         }
@@ -697,7 +696,7 @@ class Row
      */
     public function getPrimaryKey()
     {
-        return $this->table()->getPrimaryKey();
+        return $this->table->getPrimaryKey();
     }
 
     /**
@@ -708,7 +707,7 @@ class Row
      */
     public function getPrimaryKeyUnset()
     {
-        foreach ($this->table()->getPrimaryKey() as $column) {
+        foreach ($this->table->getPrimaryKey() as $column) {
             if (!isset($this->fields[$column])) {
                 return true;
             }
