@@ -689,17 +689,27 @@ class Row
         return $this->deleted;
     }
 
+    /**
+     * Retrieves an array of the column names of of this row's table's primary
+     * key.
+     *
+     * @return array<string>
+     */
     public function getPrimaryKey()
     {
-        $table = $this->table();
-        return $table->getPrimaryKey();
+        return $this->table()->getPrimaryKey();
     }
 
+    /**
+     * Retrieves whether any of the primary key columns for this row's table
+     * are not set on this row.
+     *
+     * @return bool
+     */
     public function getPrimaryKeyUnset()
     {
-        $table = $this->table();
-        foreach ($table->getPrimaryKey() as $column) {
-            if (empty($this->fields[$column])) {
+        foreach ($this->table()->getPrimaryKey() as $column) {
+            if (!isset($this->fields[$column])) {
                 return true;
             }
         }
