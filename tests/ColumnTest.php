@@ -42,10 +42,10 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertSame('varchar', $categoryNameColumn->getType());
         $this->assertSame('text', $categoryNameColumn->getTypeClass());
         $this->assertSame(
-            Column::MYSQL_FLAG_NOT_NULL |
-            Column::MYSQL_FLAG_UNIQUE_KEY |
-            Column::MYSQL_FLAG_NO_DEFAULT_VALUE |
-            Column::MYSQL_FLAG_PART_KEY,
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_UNIQUE_KEY
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            | Column::MYSQL_FLAG_PART_KEY,
             $categoryNameColumn->getFlags()
         );
         $this->assertFalse($categoryNameColumn->isDynamic());
@@ -53,6 +53,34 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryNameColumn->getDefault());
         $this->assertFalse($categoryNameColumn->hasDefault());
         $this->assertNull($categoryNameColumn->getDefaultValue());
+    }
+
+    public function testColumnFlagAccess()
+    {
+        $column = $this->db()->category->id;
+        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_PRI_KEY));
+        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_AUTO_INCREMENT));
+        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_BLOB));
+        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY));
+        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($column->getEachFlag(
+            Column::MYSQL_FLAG_NUM
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_PRI_KEY
+            | Column::MYSQL_FLAG_AUTO_INCREMENT
+        ));
+        $this->assertFalse($column->getEachFlag(
+            Column::MYSQL_FLAG_NUM
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_PRI_KEY
+            | Column::MYSQL_FLAG_AUTO_INCREMENT
+            | Column::MYSQL_FLAG_BLOB
+        ));
     }
 
     public function testGetFlagNames()
