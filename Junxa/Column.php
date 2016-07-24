@@ -21,6 +21,12 @@ class Column
     const OPTION_MERGE_NO_UPDATE            = 0x00000001;
 
     /**
+     * @const int column option: never attempt to automatically determine
+     * foreign key relationships for this column
+     */
+    const OPTION_NO_AUTO_FOREIGN_KEY        = 0x00000002;
+
+    /**
      * @const int MySQL flag: column is NOT NULL
      */
     const MYSQL_FLAG_NOT_NULL               = 0x00000001;
@@ -233,9 +239,14 @@ class Column
     private $foreignKey;
 
     /**
-     * @var array<string> an explicit foreign key specification, if provided
+     * @var string the name of the table the column links to as a foreign key
      */
-    private $foreignKeySpecification;
+    private $foreignKeyTableName;
+
+    /**
+     * @var string the name of the column the column links to as a foreign key
+     */
+    private $foreignKeyColumnName;
 
     public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
     {
@@ -379,17 +390,6 @@ class Column
     }
 
     /**
-     * Retrieves whether a specified Column::MYSQL_FLAG_* is enabled on
-     * the column.
-     *
-     * @return bool
-     */
-    public function getFlag($flag)
-    {
-        return (bool) ($this->flags & $flag);
-    }
-
-    /**
      * Retrieves the columns Column::MYSQL_FLAG_* bitmask.
      *
      * @return int
@@ -413,6 +413,31 @@ class Column
             }
         }
         return $out;
+    }
+
+    /**
+     * Retrieves whether a specified Column::MYSQL_FLAG_* is enabled on
+     * the column.  If a bitmask of multiple flags is sent, returns whether
+     * any of them are enabled.
+     *
+     * @param int Thaumatic\Junxa\Column::MYSQL_FLAG_*
+     * @return bool
+     */
+    public function getFlag($flag)
+    {
+        return (bool) ($this->flags & $flag);
+    }
+
+    /**
+     * Retrieves whether every flag in a specified bitmask of
+     * Column::MYSQL_FLAG_* values is enabled on the column.
+     *
+     * @param int Thaumatic\Junxa\Column::MYSQL_FLAG_*
+     * @return bool
+     */
+    public function getEachFlag($flags)
+    {
+        return ($this->flags & $flags) === $flags;
     }
 
     /**
@@ -746,7 +771,7 @@ class Column
     /**
      * Sets the column options bitmask.
      *
-     * @param int bitmask of Thaumatic\Junxa\Column::OPTION_* values
+     * @param int Thaumatic\Junxa\Column::OPTION_*
      * @return $this
      */
     public function setOptions($val)
@@ -758,7 +783,7 @@ class Column
     /**
      * Retrieves the column options bitmask.
      *
-     * @return int bitmask of Thaumatic\Junxa\Column::OPTION_* values
+     * @return int Thaumatic\Junxa\Column::OPTION_*
      */
     public function getOptions()
     {
@@ -768,7 +793,7 @@ class Column
     /**
      * Enables or disables a column option.
      *
-     * @param Thaumatic\Junxa\Column::OPTION_* option to manipulate
+     * @param int Thaumatic\Junxa\Column::OPTION_*
      * @param bool whether we want the option on or off
      * @return $this
      */
@@ -783,29 +808,86 @@ class Column
     }
 
     /**
-     * Sets a foreign key specification.
+     * Retrieves whether a given column option is enabled.  If a bitmask of
+     * multiple options is given, returns whether any of them are enabled.
      *
-     * @param array<string> a 2-element array specifying the foreign key by
-     * table name and column name
+     * @param int Thaumatic\Junxa\Column::OPTION_*
+     * @return bool
+     */
+    public function getOption($option)
+    {
+        return (bool) ($this->options & $option);
+    }
+
+    /**
+     * Retrieves whether every option in a given bitmask of options is enabled.
+     *
+     * @param int Thaumatic\Junxa\Column::OPTION_*
+     * @return bool
+     */
+    public function getEachOption($options)
+    {
+        return ($this->options & $options) === $options;
+    }
+
+    /**
+     * Sets the name of the table this column links to as a foreign key.
+     *
+     * @param string the table name
      * @return $this
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
      * parameter is invalid
      */
-    public function setForeignKeySpecification(array $info) {
-        if(count($info) !== 2) {
+    public function setForeignKeyTableName($val)
+    {
+        if (!is_string($val)) {
             throw new JunxaConfigurationException(
-                'expected 2 elements, got ' . count($info)
+                'expected string table name, got ' . gettype($item)
             );
         }
-        foreach ($info as $item) {
-            if(!is_string($item)) {
-                throw new JunxaConfigurationException(
-                    'expected string elements, got ' . gettype($item)
-                );
-            }
-        }
-        $this->foreignKeySpecification = $info;
+        $this->foreignKeyTableName = $val;
         return $this;
+    }
+
+    /**
+     * Retrieves the name of the table this column links to as a foreign key,
+     * if any.
+     *
+     * @return string|null
+     */
+    public function getForeignKeyTableName()
+    {
+        return $this->foreignKeyTableName;
+    }
+
+    /**
+     * Sets the name of the column this column links to as a foreign key.
+     *
+     * @param string the column name
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
+     * parameter is invalid
+     */
+    public function setForeignKeyColumnName($val)
+    {
+        if (!is_string($val)) {
+            throw new JunxaConfigurationException(
+                'expected string column name, got ' . gettype($item)
+            );
+        }
+        $this->foreignKeyColumnName = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the name of the column this column links to as a foreign key,
+     * if any.
+     *
+     * @return string|null
+     */
+    public function getForeignKeyColumnName()
+    {
+        return $this->foreignKeyColumnName;
     }
 
     /**
@@ -819,21 +901,29 @@ class Column
      */
     public function getForeignKey()
     {
-        if(!$this->foreignKeyKnown) {
-            $info = $this->foreignKeySpecification;
-            if($info) {
-                $this->foreignKey = $this->getDatabase()->{$info[0]}->{$info[1]};
-            } else {
-                if(preg_match('/(.*)_id$/i', $this->getName(), $match)) {
-                    $tableName = $match[1];
-                    $db = $this->getDatabase();
-                    if($db->tableExists($tableName)) {
-                        $table = $db->$tablename;
-                        if($table->hasColumn('id')) {
-                            $this->foreignKey = $table->id;
+        if (!$this->foreignKeyKnown) {
+            if ((!$this->foreignKeyTableName || !$this->foreignKeyColumnName)
+                && !$this->getOption(self::OPTION_NO_AUTO_FOREIGN_KEY)
+            ) {
+                if (preg_match('/(.*)_id$/i', $this->getName(), $match)) {
+                    if (!$this->foreignKeyTableName) {
+                        $tableName = $match[1];
+                        if ($this->getDatabase()->tableExists($tableName)) {
+                            $this->foreignKeyTableName = $tableName;
+                        }
+                    }
+                    if (!$this->foreignKeyColumnName && $this->foreignKeyTableName) {
+                        if ($this->getDatabase()->{$this->foreignKeyTableName}->hasColumn('id')) {
+                            $this->foreignKeyColumnName = 'id';
                         }
                     }
                 }
+            }
+            if ($this->foreignKeyTableName && $this->foreignKeyColumnName) {
+                $this->foreignKey = $this->getDatabase()
+                    ->{$this->foreignKeyTableName}
+                    ->{$this->foreignKeyColumnName}
+                ;
             }
             $this->foreignKeyKnown = true;
         }
