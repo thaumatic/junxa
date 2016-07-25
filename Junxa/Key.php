@@ -187,4 +187,15 @@ class Key
         return $this->indexType;
     }
 
+    /**
+     * Retrieves whether a given column is part of this key.
+     *
+     * @param string column name
+     * @return bool whether the specified column is part of this key
+     */
+    public function isColumnInKey($columnName)
+    {
+        return isset($this->columnIndices[$columnName]);
+    }
+
 }
