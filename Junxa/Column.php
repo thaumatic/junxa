@@ -879,6 +879,7 @@ class Column
             );
         }
         $this->foreignKeyTableName = $val;
+        $this->foreignKeyKnown = false;
         return $this;
     }
 
@@ -910,6 +911,7 @@ class Column
             );
         }
         $this->foreignKeyColumnName = $val;
+        $this->foreignKeyKnown = false;
         return $this;
     }
 
