@@ -76,18 +76,38 @@ class Key
     private $indexType;
 
     /**
+     * @var string database-generated comment on the key
+     */
+    private $comment;
+
+    /**
+     * @var string user-specified comment on the key from table creation
+     */
+    private $indexComment;
+
+    /**
      * @param string the name of the key
      * @param bool whether this is a unique key
      * @param int Thaumatic\Junxa\Key::COLLATION_* type of collation used in
      * this key
      * @param int Thaumatic\Junxa\Key::INDEX_TYPE_* index type used in this key
+     * @param string database-generated comment on the key
+     * @param string used-specified comment on the key from table creation
      */
-    public function __construct($name, $unique, $collation, $indexType)
-    {
+    public function __construct(
+        $name,
+        $unique,
+        $collation,
+        $indexType,
+        $comment,
+        $indexComment
+    ) {
         $this->name = $name;
         $this->unique = $unique;
         $this->collation = $collation;
         $this->indexType = $indexType;
+        $this->comment = $comment;
+        $this->indexComment = $indexComment;
     }
 
     /**
@@ -185,6 +205,22 @@ class Key
     public function getIndexType()
     {
         return $this->indexType;
+    }
+
+    /**
+     * @return string the database-generated comment on the key
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @return string the user-specified comment on the key from table creation
+     */
+    public function getIndexComment()
+    {
+        return $this->indexComment;
     }
 
     /**
