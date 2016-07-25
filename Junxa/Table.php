@@ -5,8 +5,12 @@ namespace Thaumatic\Junxa;
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
+use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
+use Thaumatic\Junxa\Exceptions\JunxaNoSuchKeyException;
+use Thaumatic\Junxa\Key;
+use Thaumatic\Junxa\KeyPart;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Query\Element;
@@ -74,6 +78,12 @@ class Table
     private $cache = [];
 
     /**
+     * @var array<string:Thaumatic\Junxa\Key> map of the names of the keys in
+     * the table to the key models for them
+     */
+    private $keys;
+
+    /**
      * @param Thaumatic\Junxa the database model this table model is attached to
      * @param string the table name
      * @param int the number of columns in the modeled table, if known
@@ -137,6 +147,136 @@ class Table
         if ($autoIncPrimary && count($this->primary) === 1) {
             $this->autoIncrementPrimary = $this->primary[0];
         }
+    }
+
+    /**
+     * Processes raw information about the table's key configuration into key
+     * models.
+     *
+     * @throws Thaumatic\Junxa\JunxaDatabaseModelingException if unexpected
+     * data is encountered in retrieving key information
+     */
+    private function determineKeys()
+    {
+        $this->keys = [];
+        foreach ($this->database->query('SHOW KEYS FROM ' . $this->getName()) as $row) {
+            $columnName = $row->Column_name;
+            $cardinality =
+                $row->Cardinality === null
+                ? null
+                : intval($row->Cardinality)
+            ;
+            $length =
+                $row->Sub_part === null
+                ? null
+                : intval($row->Sub_part)
+            ;
+            $nulls = ($row->Null === 'YES');
+            $keyPart = new KeyPart($columnName, $cardinality, $length, $nulls);
+            $name = $row->Key_name;
+            if (isset($this->keys[$name])) {
+                $key = $this->keys[$name];
+            } else {
+                $unique = ($row->Non_unique === '0');
+                switch ($row->Collation) {
+                    case 'A':
+                        $collation = Key::COLLATION_ASCENDING;
+                        break;
+                    case null:
+                        $collation = Key::COLLATION_NONE;
+                        break;
+                    default:
+                        throw new JunxaDatabaseModelingException(
+                            'unknown collation ' . $row->Collation
+                        );
+                }
+                switch ($row->Index_type) {
+                    case 'BTREE':
+                        $indexType = Key::INDEX_TYPE_BTREE;
+                        break;
+                    case 'FULLTEXT':
+                        $indexType = Key::INDEX_TYPE_FULLTEXT;
+                        break;
+                    case 'HASH':
+                        $indexType = Key::INDEX_TYPE_HASH;
+                        break;
+                    case 'RTREE':
+                        $indexType = Key::INDEX_TYPE_RTREE;
+                        break;
+                    default:
+                        throw new JunxaDatabaseModelingException(
+                            'unknown index type ' . $row->Index_type
+                        );
+                }
+                $comment = $row->Comment;
+                $indexComment = $row->Index_comment;
+                $key = new Key(
+                    $name,
+                    $unique,
+                    $collation,
+                    $indexType,
+                    $comment,
+                    $indexComment
+                );
+                $this->keys[$name] = $key;
+            }
+            $seq = intval($row->Seq_in_index);
+            $key->addKeyPart($seq, $keyPart);
+        }
+    }
+
+    /**
+     * Ensures that key information for the table is loaded.
+     */
+    private function verifyKeys()
+    {
+        if ($this->keys === null) {
+            $this->determineKeys();
+        }
+    }
+
+    /**
+     * @return array<string:Thaumatic\Junxa\Key> map of the names of the keys
+     * in the table to the key models for them
+     */
+    public function getKeys()
+    {
+        $this->verifyKeys();
+        return $this->keys;
+    }
+
+    /**
+     * Retrieves the named key on this column.
+     *
+     * @param string key name
+     * @return Thaumatic\Junxa\Key
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchKeyException if the
+     * specified key does not exist
+     */
+    public function getKey($keyName)
+    {
+        $this->verifyKeys();
+        if (!isset($this->keys[$keyName])) {
+            throw new JunxaNoSuchKeyException($keyName);
+        }
+        return $this->keys[$keyName];
+    }
+
+    /**
+     * Retrieves the keys on this table, if any, that index the specified column.
+     *
+     * @param string column name
+     * @return array<Thaumatic\Junxa\Key> the keys that index the given column
+     */
+    public function getColumnKeys($columnName)
+    {
+        $out = [];
+        foreach ($this->getKeys() as $keyName => $key) {
+            if ($key->isColumnInKey($columnName)) {
+                $out[] = $key;
+            }
+        }
+        return $out;
     }
 
     /**
