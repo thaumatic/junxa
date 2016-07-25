@@ -831,6 +831,39 @@ class Column
     }
 
     /**
+     * If this column's foreign key configuration is not established, establish it.
+     */
+    private function determineForeignKey()
+    {
+        if (!$this->foreignKeyKnown) {
+            if ((!$this->foreignKeyTableName || !$this->foreignKeyColumnName)
+                && !$this->getOption(self::OPTION_NO_AUTO_FOREIGN_KEY)
+            ) {
+                if (preg_match('/(.*)_id$/i', $this->getName(), $match)) {
+                    if (!$this->foreignKeyTableName) {
+                        $tableName = $match[1];
+                        if ($this->getDatabase()->tableExists($tableName)) {
+                            $this->foreignKeyTableName = $tableName;
+                        }
+                    }
+                    if (!$this->foreignKeyColumnName && $this->foreignKeyTableName) {
+                        if ($this->getDatabase()->{$this->foreignKeyTableName}->hasColumn('id')) {
+                            $this->foreignKeyColumnName = 'id';
+                        }
+                    }
+                }
+            }
+            if ($this->foreignKeyTableName && $this->foreignKeyColumnName) {
+                $this->foreignKey = $this->getDatabase()
+                    ->{$this->foreignKeyTableName}
+                    ->{$this->foreignKeyColumnName}
+                ;
+            }
+            $this->foreignKeyKnown = true;
+        }
+    }
+
+    /**
      * Sets the name of the table this column links to as a foreign key.
      *
      * @param string the table name
@@ -857,6 +890,7 @@ class Column
      */
     public function getForeignKeyTableName()
     {
+        $this->determineForeignKey();
         return $this->foreignKeyTableName;
     }
 
@@ -887,6 +921,7 @@ class Column
      */
     public function getForeignKeyColumnName()
     {
+        $this->determineForeignKey();
         return $this->foreignKeyColumnName;
     }
 
@@ -899,34 +934,9 @@ class Column
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if a
      * column requested does not exist
      */
-    public function getForeignKey()
+    public function getForeignColumn()
     {
-        if (!$this->foreignKeyKnown) {
-            if ((!$this->foreignKeyTableName || !$this->foreignKeyColumnName)
-                && !$this->getOption(self::OPTION_NO_AUTO_FOREIGN_KEY)
-            ) {
-                if (preg_match('/(.*)_id$/i', $this->getName(), $match)) {
-                    if (!$this->foreignKeyTableName) {
-                        $tableName = $match[1];
-                        if ($this->getDatabase()->tableExists($tableName)) {
-                            $this->foreignKeyTableName = $tableName;
-                        }
-                    }
-                    if (!$this->foreignKeyColumnName && $this->foreignKeyTableName) {
-                        if ($this->getDatabase()->{$this->foreignKeyTableName}->hasColumn('id')) {
-                            $this->foreignKeyColumnName = 'id';
-                        }
-                    }
-                }
-            }
-            if ($this->foreignKeyTableName && $this->foreignKeyColumnName) {
-                $this->foreignKey = $this->getDatabase()
-                    ->{$this->foreignKeyTableName}
-                    ->{$this->foreignKeyColumnName}
-                ;
-            }
-            $this->foreignKeyKnown = true;
-        }
+        $this->determineForeignKey();
         return $this->foreignKey;
     }
 

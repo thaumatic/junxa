@@ -738,4 +738,20 @@ class Row
         return false;
     }
 
+    /**
+     * Retrieves the foreign row corresponding to the specified column.
+     *
+     * @param string column name
+     * @return Junxa\Row
+     * @throws Thaumatic\Junxa\NoSuchColumnException if the specified column
+     * does not exist
+     * @throws Thaumatic\Junxa\InvalidQueryException if the specified column
+     * is not a foreign key
+     */
+    public function getForeignRow($columnName)
+    {
+        $column = $this->table->$columnName;
+        $foreignColumn = $column->getForeignKey();
+    }
+
 }
