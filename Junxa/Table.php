@@ -629,6 +629,7 @@ class Table
         if (!$row) {
             return null;
         }
+        $class = $this->database->rowClass($this->name);
         $out = new $class($this, $row);
         if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             if (!isset($key)) {
