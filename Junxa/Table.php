@@ -542,10 +542,21 @@ class Table
     }
 
     /**
-     * Retrieves a row model, either an empty one (when no arguments are
-     * passed) or a populated one via either of two modes of operation.  The
-     * first mode is retrieval by primary key, in which case the function takes
-     * the same number of arguments as the number of columns in the primary key
+     * Generates and returns a new, empty row model for the table.
+     *
+     * @return Thaumatic\Junxa\Row row result, actual class will be as defined
+     * by Junxa::rowClass()
+     */
+    public function newRow()
+    {
+        $class = $this->database->rowClass($this->name);
+        return new $class($this, null);
+    }
+
+    /**
+     * Retrieves a row model via either of two modes of operation.  The first
+     * mode is retrieval by primary key, in which case the function takes the
+     * same number of arguments as the number of columns in the primary key
      * and returns the row, if any, which matches those values.  The second
      * mode is retrieval by query, where only a single argument is provided,
      * which must be a Junxa query builder, a Junxa query element, or an array,
@@ -572,10 +583,6 @@ class Table
     {
         $args = func_get_args();
         $argc = count($args);
-        $class = $this->database->rowClass($this->name);
-        if (!$argc) {
-            return new $class($this, null);
-        }
         $target = $this->getSelectTarget();
         if ($argc === 1 && !is_scalar($args[0])) {
             $what = $args[0];

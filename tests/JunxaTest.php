@@ -107,7 +107,7 @@ class JunxaTest extends DatabaseTestAbstract
     public function testInsertUpdateAndDelete()
     {
         try {
-            $category = $this->db()->category->row();
+            $category = $this->db()->category->newRow();
             $category->name = 'Uncategorized';
             $category->created_at = Q::func('NOW');
             $category->insert();
@@ -133,7 +133,7 @@ class JunxaTest extends DatabaseTestAbstract
             $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
             $this->assertTrue(Junxa::OK($result));
             //
-            $item = $this->db()->item->row();
+            $item = $this->db()->item->newRow();
             $item->category_id = $category->id;
             $item->name = 'Widget';
             $item->created_at = Q::func('NOW');
@@ -201,7 +201,7 @@ class JunxaTest extends DatabaseTestAbstract
     public function runStringIntegrityTests()
     {
         try {
-            $category = $this->db()->category->row();
+            $category = $this->db()->category->newRow();
             $category->name = 'Start';
             $category->created_at = Q::func('NOW');
             $category->insert();
