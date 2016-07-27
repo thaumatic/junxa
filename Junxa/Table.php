@@ -653,8 +653,8 @@ class Table
      * multi-part primary key
      * @return Thaumatic\Junxa\Row row result, actual class will be as defined
      * by Junxa::rowClass()
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if primary
-     * key retrieval is used and the number of arguments doesn't match
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * number of arguments does not match the size of the primary key
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if an
      * invalid query definition is provided
      */
@@ -664,6 +664,28 @@ class Table
         foreach ($args as $arg) {
             if (!is_scalar($arg)) {
                 throw new JunxaInvalidQueryException('non-scalar argument');
+            }
+        }
+        return call_user_func_array([$this, 'row'], $args);
+    }
+
+    /**
+     * Identical to row(), but only allows retrieval by primary key packed
+     * into an array.
+     *
+     * @param array<scalar> primary key values
+     * @return Thaumatic\Junxa\Row row result, actual class will be as defined
+     * by Junxa::rowClass()
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * size of the specified array does not match the size of the primary key
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if an
+     * invalid query definition is provided
+     */
+    public function rowByArrayPrimaryKey(array $args)
+    {
+        foreach ($args as $arg) {
+            if (!is_scalar($arg)) {
+                throw new JunxaInvalidQueryException('non-scalar key value');
             }
         }
         return call_user_func_array([$this, 'row'], $args);
