@@ -739,19 +739,86 @@ class Row
     }
 
     /**
-     * Retrieves the foreign row corresponding to the specified column.
+     * Retrieves the single foreign row corresponding to the specified column.
+     * This is only valid if an association with one foreign row may be
+     * expected.
      *
      * @param string column name
-     * @return Junxa\Row
+     * @return Junxa\Row|null foreign row, or null if the field value in the
+     * local row is null
      * @throws Thaumatic\Junxa\NoSuchColumnException if the specified column
      * does not exist
      * @throws Thaumatic\Junxa\InvalidQueryException if the specified column
      * is not a foreign key
+     * @throws Thaumatic\Junxa\InvalidQueryException if the foreign column is
+     * is not part of a primary key or unique key
      */
     public function getForeignRow($columnName)
     {
         $column = $this->table->$columnName;
-        $foreignColumn = $column->getForeignKey();
+        $localValue = $this->$columnName;
+        $foreignColumn = $column->getForeignColumn();
+        if (!$foreignColumn) {
+            throw new InvalidQueryException(
+                $columnName
+                . ' on '
+                . $this->table->getName()
+                . ' is not a foreign key'
+            );
+        }
+        $foreignTable = $foreignColumn->getTable();
+        $toPrimary = $foreignColumn->getFlag(Column::MYSQL_FLAG_PRI_KEY);
+        if (!$toPrimary && !$foreignColumn->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
+            throw new InvalidQueryException(
+                'foreign column '
+                . $foreignColumn->getName()
+                . ' on '
+                . $foreignColumn->getTable()->getName()
+                . ' is not part of a primary or unique key'
+            );
+        }
+        if ($toPrimary) {
+            $foreignPrimary = $foreignTable->getPrimaryKey();
+            if (count($foreignPrimary) === 1) {
+                return $foreignTable->row($localValue);
+            } else {
+                throw new InvalidQueryException(
+                    'foreign row retrieval by multipart primary key '
+                    . 'not presently supported'
+                );
+            }
+        } else {
+            $possible = [];
+            foreach ($foreignTable->getKeys() as $key) {
+                if (!$key->getUnique()) {
+                    continue;
+                }
+                if (!$key->isColumnInKey($foreignColumn->getName())) {
+                    continue;
+                }
+                if (count($key->getParts()) === 1) {
+                    return
+                        $foreignTable->query()
+                            ->where($foreignColumn->getName(), $localValue)
+                            ->row()
+                    ;
+                }
+                $possible[] = $key;
+            }
+            if ($possible) {
+                throw new InvalidQueryException(
+                    'foreign row retrieval by multipart unique key '
+                    . 'not presently supported'
+                );
+            } else {
+                throw new InvalidQueryException(
+                    'no unique key exists that would allow a foreign row from '
+                    . $foreignColumn->getTable()->getName()
+                    . ' to be retrieved based on '
+                    . $foreignColumn->getName()
+                );
+            }
+        }
     }
 
 }
