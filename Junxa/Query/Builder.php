@@ -60,6 +60,26 @@ class Builder
     }
 
     /**
+     * Retrieves the database model this query builder is attached to.
+     *
+     * @return Thaumatic\Junxa
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
+
+    /**
+     * Retrieves the table model this query builder is attached to, if any.
+     *
+     * @return Thaumatic\Junxa\Table|null
+     */
+    public function getTable()
+    {
+        return $this->table;
+    }
+
+    /**
      * Called when an alteration is made to the query definition.  Marks the
      * query builder as not validated and clears any output caching.
      */
