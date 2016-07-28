@@ -151,6 +151,7 @@ class Element
     {
         $base = $this->content;
         $refColumn = $column;
+        $db = $query->getDatabase();
         $type = $this->type;
         switch ($this->style) {
             case 'comparison':
@@ -169,7 +170,7 @@ class Element
         }
         $values = [];
         for ($i = 0; $i < count($base); $i++) {
-            $values[$i] = Junxa::resolve($base[$i], $query, $context, $refColumn, $this);
+            $values[$i] = $db->resolve($base[$i], $query, $context, $refColumn, $this);
         }
         switch ($this->style) {
             case 'interleave':

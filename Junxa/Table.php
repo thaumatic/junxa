@@ -84,6 +84,11 @@ class Table
     private $keys;
 
     /**
+     * @var bool whether any columns on the table have dynamic defaults
+     */
+    private $dynamicDefaultsPresent = false;
+
+    /**
      * @param Thaumatic\Junxa the database model this table model is attached to
      * @param string the table name
      * @param int the number of columns in the modeled table, if known
@@ -277,6 +282,24 @@ class Table
             }
         }
         return $out;
+    }
+
+    /**
+     * @param bool whether any columns on this table have dynamic defaults
+     * @return $this
+     */
+    public function setDynamicDefaultsPresent($val)
+    {
+        $this->dynamicDefaultsPresent = (bool) $val;
+        return $this;
+    }
+
+    /**
+     * @return bool whether any columns on this table have dynamic defaults
+     */
+    public function getDynamicDefaultsPresent()
+    {
+        return $this->dynamicDefaultsPresent;
     }
 
     /**
@@ -591,7 +614,7 @@ class Table
             } elseif ($what instanceof Element) {
                 $query = $this->query()->where($what);
             } elseif (is_array($what)) {
-                $query = new QueryBuilder($what, $this);
+                $query = $this->query($what);
             } else {
                 throw new JunxaInvalidQueryException(
                     'condition for table row must be a '
@@ -721,7 +744,7 @@ class Table
                 }
                 break;
             case 'array':
-                $query = new QueryBuilder($what, $this);
+                $query = $this->query($what);
                 break;
             default:
                 throw new JunxaInvalidQueryException('invalid query for table row retrieval');
@@ -771,7 +794,7 @@ class Table
         } elseif ($query instanceof Element) {
             $query = $this->query()->where($query);
         } elseif (is_array($query)) {
-            $query = new QueryBuilder($query, $this);
+            $query = $this->query($query);
         } else {
             throw new JunxaInvalidQueryException(
                 'query for rowCount() must be a '
@@ -846,9 +869,9 @@ class Table
      * @param array query definition to provide to the query builder constructor
      * @return Thaumatic\Junxa\Query\Builder
      */
-    public function query(array $def = null)
+    public function query(array $def = [])
     {
-        return QueryBuilder::make($this->database, $this, $def);
+        return new QueryBuilder($this->database, $this, $def);
     }
 
     /**

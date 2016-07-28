@@ -465,9 +465,22 @@ class Row
         } else {
             $queryDef = $this->table->query($queryDef);
         }
-        foreach ($this->table->getStaticColumns() as $column) {
-            if (array_key_exists($column, $this->fields)) {
-                $queryDef->insert($column, $this->fields[$column]);
+        if ($this->table->getDynamicDefaultsPresent()) {
+            foreach ($this->table->getStaticColumns() as $column) {
+                if (array_key_exists($column, $this->fields)) {
+                    $queryDef->insert($column, $this->fields[$column]);
+                } else {
+                    $default = $this->table->$column->getDynamicDefault();
+                    if ($default) {
+                        $queryDef->insert($column, $default);
+                    }
+                }
+            }
+        } else {
+            foreach ($this->table->getStaticColumns() as $column) {
+                if (array_key_exists($column, $this->fields)) {
+                    $queryDef->insert($column, $this->fields[$column]);
+                }
             }
         }
         if (!$queryDef->getInsert()) {
@@ -521,14 +534,19 @@ class Row
         }
         $foundUniqueKeyMember = false;
         foreach ($this->table->getStaticColumns() as $column) {
+            $columnModel = $this->table->$column;
             if (array_key_exists($column, $this->fields)) {
-                $columnModel = $this->table->$column;
                 if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
                     $foundUniqueKeyMember = true;
                 }
                 $queryDef->insert($column, $this->fields[$column]);
                 if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)) {
                     $queryDef->update($column, $this->fields[$column]);
+                }
+            } else {
+                $default = $columnModel->getDynamicDefault();
+                if ($default) {
+                    $queryDef->insert($column, $default);
                 }
             }
         }

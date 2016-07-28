@@ -6,6 +6,7 @@ use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaDatabaseModelingException;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
+use Thaumatic\Junxa\Query\Element;
 
 /**
  * Models a database column.
@@ -168,10 +169,16 @@ class Column
     private $defaultValue;
 
     /**
-     * @var Junxa\Query\Element the SQL alias used to construct this column if
-     * it's virtual
+     * @var Thaumatic\Junxa\Query\Element the SQL alias used to construct this
+     * column if it's virtual
      */
     private $dynamicAlias;
+
+    /**
+     * @var Thaumatic\Junxa\Query\Element a default to impose on the column at
+     * the application level
+     */
+    private $dynamicDefault;
 
     /**
      * @var int self::MYSQL_FLAG_* values, bitmasked
@@ -206,7 +213,7 @@ class Column
     private $precision;
 
     /**
-     * @var Junxa/Table the table this column is part of
+     * @var Thaumatic\Junxa\Table the table this column is part of
      */
     private $table;
 
@@ -387,6 +394,37 @@ class Column
     public function getDynamicAlias()
     {
         return $this->dynamicAlias;
+    }
+
+    /**
+     * Sets a default to impose on the column at the application level.
+     * Example:
+     *
+     * use Thaumatic\Junxa\Query as Q;
+     *
+     * $db = new Junxa...;
+     * // set the created_at column to default to the SQL function NOW()
+     * $db->table_name->created_at->setDynamicDefault(Q::func('NOW'));
+     *
+     * @param Thaumatic\Junxa\Query\Element expression for default
+     * @return $this
+     */
+    public function setDynamicDefault(Element $default)
+    {
+        $this->dynamicDefault = $default;
+        $this->table->setDynamicDefaultsPresent(true);
+        return $this;
+    }
+
+    /**
+     * Retrieves the default imposed on the column at the application level,
+     * if any.
+     *
+     * @return Thaumatic\Junxa\Query\Element expression for default
+     */
+    public function getDynamicDefault()
+    {
+        return $this->dynamicDefault;
     }
 
     /**

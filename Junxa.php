@@ -1229,7 +1229,7 @@ class Junxa
     public function query($query = null, $mode = 0, $emptyOkay = false)
     {
         if ($query === null) {
-            return QueryBuilder::make($this);
+            return new QueryBuilder($this);
         }
         $isResult = false;
         $this->queryStatus = self::RESULT_FAILURE;
@@ -1260,7 +1260,7 @@ class Junxa
                 }
                 break;
             case 'array':
-                $query = new QueryBuilder($query);
+                $query = new QueryBuilder($this, null, $query);
                 // fallthrough
             case 'object':
                 if (!($query instanceof QueryBuilder)) {
@@ -1633,13 +1633,13 @@ class Junxa
      * being prepared for
      * @param Thaumatic\Junxa\Query\Builder the parent query, if any
      */
-    public static function resolve($item, QueryBuilder $query, $context, $column, $parent)
+    public function resolve($item, QueryBuilder $query, $context, $column, $parent)
     {
         if (is_array($item)) {
             $elem = [];
             $ix = 0;
             foreach ($item as $subitem) {
-                $elem[$ix++] = self::resolve($subitem, $query, $context, $column, $parent);
+                $elem[$ix++] = $this->resolve($subitem, $query, $context, $column, $parent);
             }
             if ($context === 'join') {
                 $keys = array_keys($item);
@@ -1660,7 +1660,7 @@ class Junxa
         } elseif ($column) {
             return $column->represent($item, $query, $context);
         } else {
-            return $item->getDatabase()->quote($item);
+            return $this->quote($item);
         }
     }
 

@@ -17,6 +17,26 @@ use Thaumatic\Junxa\Table;
 class Builder
 {
 
+    const ARRAY_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'where',
+        'having',
+        'order',
+        'group',
+    ];
+    const DIRECT_CLAUSES = [
+        'join',
+        'delete',
+        'limit',
+        'mode',
+    ];
+    const OPTION_CLAUSES = [
+        'options',
+    ];
+
     private $type;
     private $mode = 0;
     private $database;
@@ -41,22 +61,44 @@ class Builder
     private $validated = false;
 
     /**
-     * Static factory method used by database and table models to generate attached queries.
-     *
      * @param Thaumatic\Junxa the database the generated query is to be
      * attached to
      * @param Thaumatic\Junxa\Table the table the generated query is to be
      * attached to, if any
-     * @return self
+     * @param array<string:mixed> query definition
+     * @param bool whether to skip immediate query validation on construction
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
      * is something wrong with the query
      */
-    public static function make(Junxa $database, $table = null, $def = null)
-    {
-        $out = new self($def);
-        $out->database = $database;
-        $out->table = $table;
-        return $out;
+    public function __construct(
+        Junxa $database,
+        Table $table = null,
+        array $def = [],
+        $skipValidate = false
+    ) {
+        $this->database = $database;
+        $this->table = $table;
+        if (!$def) {
+            return;
+        }
+        foreach (self::ARRAY_CLAUSES as $clause) {
+            if (isset($def[$clause]) && $def[$clause] !== []) {
+                $this->$clause = is_array($def[$clause]) ? $def[$clause] : [$def[$clause]];
+            }
+        }
+        foreach (self::DIRECT_CLAUSES as $clause) {
+            if (isset($def[$clause]) && $def[$clause] !== []) {
+                $this->$clause = $def[$clause];
+            }
+        }
+        foreach (self::OPTION_CLAUSES as $clause) {
+            if (isset($def[$clause])) {
+                $this->$clause = is_array($def[$clause]) ? $def[$clause] : [$def[$clause] => true];
+            }
+        }
+        if (!$skipValidate) {
+            $this->validate();
+        }
     }
 
     /**
@@ -87,34 +129,6 @@ class Builder
     {
         $this->outputCache = null;
         $this->validated = false;
-    }
-
-    /**
-     * @param array the query definition
-     * @param bool whether to skip validation of the query configuration
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there is something wrong with the query
-     */
-    public function __construct($def = [], $skipValidate = false)
-    {
-        if (!$def) {
-            return;
-        }
-        foreach (['select', 'insert', 'replace', 'update', 'where', 'having', 'order', 'group'] as $item) {
-            if (isset($def[$item]) && $def[$item] !== []) {
-                $this->$item = is_array($def[$item]) ? $def[$item] : [$def[$item]];
-            }
-        }
-        foreach (['join', 'delete', 'limit', 'mode'] as $item) {
-            if (isset($def[$item]) && $def[$item] !== []) {
-                $this->$item = $def[$item];
-            }
-        }
-        if (isset($def['options'])) {
-            $this->options = is_array($def['options']) ? $def['options'] : [$def['options'] => true];
-        }
-        if (!$skipValidate) {
-            $this->validate();
-        }
     }
 
     /**
@@ -994,9 +1008,9 @@ class Builder
                 if ($this->option('distinct')) {
                     $out .= 'DISTINCT ';
                 }
-                $out .= Junxa::resolve($main, $this, $type, null, $this);
+                $out .= $this->database->resolve($main, $this, $type, null, $this);
                 if ($join = $this->join) {
-                    $out .= "\n\tFROM " . Junxa::resolve($join, $this, 'join', null, $this);
+                    $out .= "\n\tFROM " . $this->database->resolve($join, $this, 'join', null, $this);
                 } elseif (count($this->tables)) {
                     $out .= "\n\tFROM `" . join('`, `', $this->tables) . '`';
                 }
@@ -1031,8 +1045,8 @@ class Builder
                             . ' list elements must be column assignments'
                         );
                     }
-                    $fields[] = Junxa::resolve($item->getColumn(), $this, $type, null, $this);
-                    $values[] = Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
+                    $fields[] = $this->database->resolve($item->getColumn(), $this, $type, null, $this);
+                    $values[] = $this->database->resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
                 }
                 $out .= ' (' . join(', ', $fields) . ")\n\tVALUES\n\t(" . join(', ', $values) . ')';
                 if ($this->update) {
@@ -1046,9 +1060,9 @@ class Builder
                             );
                         }
                         $elem[] =
-                            Junxa::resolve($item->getColumn(), $this, $type, null, $this)
+                            $this->database->resolve($item->getColumn(), $this, $type, null, $this)
                             . ' = '
-                            . Junxa::resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
+                            . $this->database->resolve($item->getValue(), $this, $type, $item->getColumn(), $this);
                     }
                     $out .= join(', ', $elem);
                 }
@@ -1072,9 +1086,9 @@ class Builder
                     $column = $item->getColumn();
                     $value = $item->getValue();
                     $elem[] =
-                        Junxa::resolve($column, $this, $type, null, $this)
+                        $this->database->resolve($column, $this, $type, null, $this)
                         . ' = '
-                        . Junxa::resolve($value, $this, $type, $column, $this);
+                        . $this->database->resolve($value, $this, $type, $column, $this);
                 }
                 $out .= join(', ', $elem);
                 break;
@@ -1091,7 +1105,7 @@ class Builder
         if ($this->where) {
             $out .=
                 "\n\tWHERE "
-                . Junxa::resolve(
+                . $this->database->resolve(
                     is_array($this->where)
                     ? (
                         count($this->where) > 1
@@ -1108,12 +1122,12 @@ class Builder
         if ($this->group) {
             $out .=
                 "\n\tGROUP BY "
-                . Junxa::resolve($this->group, $this, 'group', null, $this);
+                . $this->database->resolve($this->group, $this, 'group', null, $this);
         }
         if ($this->having) {
             $out .=
                 "\n\tHAVING "
-                . Junxa::resolve(
+                . $this->database->resolve(
                     is_array($this->having)
                     ? (
                         count($this->having) > 1
@@ -1130,7 +1144,7 @@ class Builder
         if ($this->order) {
             $out .=
                 "\n\tORDER BY "
-                . Junxa::resolve($this->order, $this, 'order', null, $this);
+                . $this->database->resolve($this->order, $this, 'order', null, $this);
         }
         if (isset($this->limit)) {
             $out .= "\n\tLIMIT " . $this->limit;

@@ -4,6 +4,7 @@ namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 
 class ColumnTest extends DatabaseTestAbstract
@@ -149,6 +150,26 @@ class ColumnTest extends DatabaseTestAbstract
             ],
             $column->getFlagNames()
         );
+    }
+
+    public function testDynamicDefaults()
+    {
+        $table = $this->db()->category;
+        $table->created_at->setDynamicDefault(Q::func('NOW'));
+        $row1 = $table->newRow();
+        $row1->name = 'Arbitrary';
+        $row1->save();
+        $this->assertNotNull($row1->created_at);
+        $this->assertNotSame('0000-00-00 00:00:00', $row1->created_at);
+        $this->assertGreaterThan(time() - 1, strtotime($row1->created_at));
+        $table->name->setDynamicDefault(Q::func('CONCAT', Q::func('DATABASE'), 'X'));
+        $row2 = $table->newRow();
+        $row2->save();
+        $this->assertNotEquals($row1->id, $row2->id);
+        $this->assertEquals(DatabaseTestAbstract::TEST_DATABASE_NAME . 'X', $row2->name);
+        $this->assertNotNull($row2->created_at);
+        $this->assertNotSame('0000-00-00 00:00:00', $row2->created_at);
+        $this->assertGreaterThan(time() - 1, strtotime($row2->created_at));
     }
 
 }
