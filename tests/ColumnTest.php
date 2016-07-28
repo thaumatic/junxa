@@ -170,6 +170,12 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNotNull($row2->created_at);
         $this->assertNotSame('0000-00-00 00:00:00', $row2->created_at);
         $this->assertGreaterThan(time() - 1, strtotime($row2->created_at));
+        $row3 = $table->newRow();
+        $row3->name = 'Undefaulted';
+        $row3->created_at = '2001-01-01 12:00:00';
+        $row3->save();
+        $this->assertSame('Undefaulted', $row3->name);
+        $this->assertSame('2001-01-01 12:00:00', $row3->created_at);
     }
 
 }
