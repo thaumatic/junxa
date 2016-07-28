@@ -1052,23 +1052,23 @@ class Junxa
     }
 
     /**
-     * Retrieves the class to use as the column model for a given table.
+     * Retrieves the class to use as the column model for a given column.
      *
-     * @param string the table name
+     * @param string the column name
      * @return string
      */
-    public function columnClass($table)
+    public function columnClass($column)
     {
-        if (!empty($this->columnClasses[$table])) {
-            return $this->columnClasses[$table];
+        if (!empty($this->columnClasses[$column])) {
+            return $this->columnClasses[$column];
         }
         foreach ($this->regexpColumnClasses as $name => $class) {
-            if (preg_match($name, $table)) {
+            if (preg_match($name, $column)) {
                 return $class;
             }
         }
         if (!empty($this->autoColumnClassNamespace)) {
-            $name = $this->autoColumnClassNamespace . '\\' . self::pascalCase($table);
+            $name = $this->autoColumnClassNamespace . '\\' . self::pascalCase($column);
             if (class_exists($name)) {
                 return $name;
             }

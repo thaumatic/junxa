@@ -134,7 +134,7 @@ class Table
             $column = $field->name;
             $this->columns[] = $column;
             $this->staticColumns[] = $column;
-            $class = $this->database->columnClass($this->name);
+            $class = $this->database->columnClass($column);
             $columnModel = new $class($this, $column, $field, $colinfo[$i], null);
             $this->columnModels[$column] = $columnModel;
             if ($columnModel->getFlag(Column::MYSQL_FLAG_PRI_KEY)) {
