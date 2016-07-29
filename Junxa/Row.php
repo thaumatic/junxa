@@ -164,9 +164,6 @@ class Row
      */
     public function getColumn($column)
     {
-        if (!in_array($column, $this->table->columns)) {
-            throw new JunxaNoSuchColumnException($column);
-        }
         return $this->table->$column;
     }
 
