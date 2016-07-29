@@ -162,7 +162,7 @@ class Row
      * defined by Junxa::columnClass()
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException
      */
-    public function column($column)
+    public function getColumn($column)
     {
         if (!in_array($column, $this->table->columns)) {
             throw new JunxaNoSuchColumnException($column);
@@ -177,44 +177,44 @@ class Row
 
     public function type($column)
     {
-        return $this->column($column)->type;
+        return $this->getColumn($column)->type;
     }
 
     public function fullType($column)
     {
-        return $this->column($column)->fullType;
+        return $this->getColumn($column)->fullType;
     }
 
     public function typeClass($column)
     {
-        return $this->column($column)->typeClass;
+        return $this->getColumn($column)->typeClass;
     }
 
     public function length($column)
     {
-        return $this->column($column)->length;
+        return $this->getColumn($column)->length;
     }
 
     public function precision($column)
     {
-        return $this->column($column)->precision;
+        return $this->getColumn($column)->precision;
     }
 
     public function flags($column)
     {
-        return $this->column($column)->flags;
+        return $this->getColumn($column)->flags;
     }
 
     public function values($column)
     {
-        $col = $this->column($column);
+        $col = $this->getColumn($column);
         return $col->values;
     }
 
     public function backendValue($column)
     {
         $row = $this->getDatabase()->query([
-            'select'     => $this->column($column),
+            'select'     => $this->getColumn($column),
             'where'      => $this->getMatchCondition(),
         ], Junxa::QUERY_SINGLE_ARRAY);
         return $this->table->$column->import($row[0]);
