@@ -391,9 +391,7 @@ class Table
     }
 
     /**
-     * Retrieves the Junxa database model this table is attached to.
-     *
-     * @return Thaumatic\Junxa
+     * @return Thaumatic\Junxa the Junxa database model this table is attached to
      */
     public function getDatabase()
     {
@@ -401,9 +399,7 @@ class Table
     }
 
     /**
-     * Retrieves the list of column names for this table.
-     *
-     * @return array<string>
+     * @return array<string> the list of column name sfor this table
      */
     public function getColumns()
     {
@@ -411,10 +407,8 @@ class Table
     }
 
     /**
-     * Retrieves whether the table has a column of a given name.
-     *
      * @param string column name
-     * @return bool
+     * @return bool whether the table has a column of a given name
      */
     public function hasColumn($name)
     {
@@ -422,9 +416,8 @@ class Table
     }
 
     /**
-     * Retrieves the list of non-dynamic (i.e. referencing an actual database column) column names for this table.
-     *
-     * @return array<string>
+     * @return array<string> the list of non-dynamic (i.e. referencing an
+     * actual database column) column names for this table
      */
     public function getStaticColumns()
     {
@@ -432,9 +425,8 @@ class Table
     }
 
     /**
-     * Retrieves the list of dynamic (i.e. constructed virtually from SQL) column names for this table.
-     *
-     * @return array<string>
+     * @return array<string> the list of dynamic (i.e. constructed virtually from
+     * SQL) column names for this table
      */
     public function getDynamicColumns()
     {
@@ -442,9 +434,7 @@ class Table
     }
 
     /**
-     * Retrieves the list of demand-only columns for this table.
-     *
-     * @return array<string>
+     * @return array<string> the list of demand-only columns for this table
      */
     public function getDemandOnlyColumns()
     {
@@ -452,9 +442,7 @@ class Table
     }
 
     /**
-     * Retrieve the table name.
-     *
-     * @return string
+     * @return string the table name
      */
     public function getName()
     {
@@ -462,7 +450,7 @@ class Table
     }
 
     /**
-     * Returns the names of the columns in the table's primary key.  If there
+     * Retrieves the names of the columns in the table's primary key.  If there
      * is no primary key, returns an empty array.
      *
      * @return array<string>
