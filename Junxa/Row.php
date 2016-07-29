@@ -138,12 +138,18 @@ class Row
         }
     }
 
-    public function db()
+    /**
+     * @return Thaumatic\Junxa the database model this row is attached to
+     */
+    public function getDatabase()
     {
-        return $this->table->db;
+        return $this->table->getDatabase();
     }
 
-    public function table()
+    /**
+     * @return Thaumatic\Junxa\Table the table model this row is attached to
+     */
+    public function getTable()
     {
         return $this->table;
     }
@@ -207,8 +213,7 @@ class Row
 
     public function backendValue($column)
     {
-        $db = $this->db();
-        $row = $db->query([
+        $row = $this->getDatabase()->query([
             'select'     => $this->column($column),
             'where'      => $this->getMatchCondition(),
         ], Junxa::QUERY_SINGLE_ARRAY);
@@ -762,8 +767,8 @@ class Row
      * expected.
      *
      * @param string column name
-     * @return Junxa\Row|null foreign row, or null if the field value in the
-     * local row is null
+     * @return Thaumatic\Junxa\Row|null foreign row, or null if the field value
+     * in the local row is null
      * @throws Thaumatic\Junxa\NoSuchColumnException if the specified column
      * does not exist
      * @throws Thaumatic\Junxa\InvalidQueryException if the specified column
