@@ -211,20 +211,38 @@ class Row
         return $col->values;
     }
 
-    public function backendValue($column)
+    /**
+     * Retrieves the value for the specified column on this row.  This is
+     * the mechanism intended to be used for obtaining the values of
+     * demand-only columns.
+     *
+     * @param string column name
+     * @return mixed
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if this
+     * row cannot be identified by primary key such that values can be
+     * retrieved for it
+     */
+    public function getStoredValue($column)
     {
-        $row = $this->getDatabase()->query([
-            'select'     => $this->getColumn($column),
-            'where'      => $this->getMatchCondition(),
-        ], Junxa::QUERY_SINGLE_ARRAY);
-        return $this->table->$column->import($row[0]);
+        $column = $this->getColumn($column);
+        $cond = $this->getMatchCondition();
+        if (!$cond) {
+            throw new JunxaInvalidQueryException(
+                'cannot generate match condition for ' . $this->table->getName()
+            );
+        }
+        $value = $this->getDatabase()->query([
+            'select'     => $column,
+            'where'      => $cond,
+        ], Junxa::QUERY_SINGLE_CELL);
+        return $column->import($value);
     }
 
     public function value($column)
     {
         if (empty($this->fields[$column])) {
             if ($this->table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset()) {
-                $this->fields[$column] = $this->backendValue($column);
+                $this->fields[$column] = $this->getStoredValue($column);
             }
         }
         return isset($this->fields[$column]) ? $this->fields[$column] : null;
@@ -256,12 +274,12 @@ class Row
     {
         $key = $this->table->getPrimaryKey();
         if (!$key) {
-            return 0;
+            return null;
         }
         $what = [];
         foreach ($key as $column) {
-            if (empty($this->fields[$column])) {
-                return 0;
+            if (!isset($this->fields[$column])) {
+                return null;
             }
             $what[] = Q::eq($this->table->$column, $this->fields[$column]);
         }
@@ -400,7 +418,7 @@ class Row
                 }
             }
             foreach ($demandOnlyColumns as $column) {
-                $value = $this->backendValue($column);
+                $value = $this->getStoredValue($column);
                 if ($this->fields[$column] !== $value
                     && (
                         !is_numeric($value)
@@ -651,7 +669,7 @@ class Row
         $demandOnlyColumns = $table->getDemandOnlyColumns();
         if ($demandOnlyColumns) {
             foreach ($demandOnlyColumns as $column) {
-                if ($this->fields[$column] !== $this->backendValue($column)) {
+                if ($this->fields[$column] !== $this->getStoredValue($column)) {
                     return true;
                 }
             }
