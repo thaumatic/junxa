@@ -399,7 +399,7 @@ class Table
     }
 
     /**
-     * @return array<string> the list of column name sfor this table
+     * @return array<string> the list of column names for this table
      */
     public function getColumns()
     {
