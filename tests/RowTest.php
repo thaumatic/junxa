@@ -27,4 +27,25 @@ class RowTest extends DatabaseTestAbstract
         $this->assertEquals('Uncategorized', $categoryRow->name);
     }
 
+    public function testGetColumns()
+    {
+        $categoryRow = $this->db()->category->newRow();
+        $this->assertSame([
+            'id',
+            'name',
+            'active',
+            'created_at',
+            'changed_at',
+        ], $categoryRow->getColumns());
+        $itemRow = $this->db()->item->newRow();
+        $this->assertSame([
+            'id',
+            'category_id',
+            'name',
+            'active',
+            'created_at',
+            'changed_at',
+        ], $itemRow->getColumns());
+    }
+
 }
