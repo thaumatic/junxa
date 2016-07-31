@@ -247,6 +247,17 @@ class Row
 
     /**
      * @param string column name
+     * @return array<string> the names of the flags on the specified column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnFlagNames($column)
+    {
+        return $this->getColumn($column)->getFlagNames();
+    }
+
+    /**
+     * @param string column name
      * @param int Thaumatic\Junxa\Column\MYSQL_FLAG_*
      * @return bool whether the specified flag is enabled on the specified
      * column, or if a bitmask of multiple flags is sent, whether any of
