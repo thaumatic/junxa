@@ -788,7 +788,7 @@ class RowTest extends DatabaseTestAbstract
         );
         $this->assertFalse(
             $category->getColumnEachFlag(
-                'created_at',
+                'changed_at',
                 Column::MYSQL_FLAG_UNSIGNED
                 | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
@@ -902,7 +902,7 @@ class RowTest extends DatabaseTestAbstract
         );
         $this->assertFalse(
             $item->getColumnEachFlag(
-                'created_at',
+                'changed_at',
                 Column::MYSQL_FLAG_UNSIGNED
                 | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
