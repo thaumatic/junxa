@@ -181,6 +181,24 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('datetime', $item->getColumnTypeClass('changed_at'));
     }
 
+    public function testGetColumnLength()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame(8, $category->getColumnLength('id'));
+        $this->assertSame(250, $category->getColumnLength('name'));
+        $this->assertNull($category->getColumnLength('type'));
+        $this->assertSame(1, $category->getColumnLength('active'));
+        $this->assertNull($category->getColumnLength('created_at'));
+        $this->assertNull($category->getColumnLength('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertSame(8, $item->getColumnLength('id'));
+        $this->assertSame(8, $item->getColumnLength('category_id'));
+        $this->assertSame(250, $item->getColumnLength('name'));
+        $this->assertSame(1, $category->getColumnLength('active'));
+        $this->assertNull($item->getColumnLength('created_at'));
+        $this->assertNull($item->getColumnLength('changed_at'));
+    }
+
     public function testGetForeignRow()
     {
         try {
