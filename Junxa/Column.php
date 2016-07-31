@@ -290,10 +290,10 @@ class Column
                 array_unshift($this->values, null);
             }
         } else {
-            if (preg_match("/\((\d+),(\d+)\)$/", $this->fullType, $match)) {
+            if (preg_match('/\((\d+),(\d+)\)/', $this->fullType, $match)) {
                 $this->length = intval($match[1]);
                 $this->precision = intval($match[2]);
-            } elseif (preg_match("/\((\d+)\)$/", $this->fullType, $match)) {
+            } elseif (preg_match('/\((\d+)\)/', $this->fullType, $match)) {
                 $this->length = intval($match[1]);
             }
         }
