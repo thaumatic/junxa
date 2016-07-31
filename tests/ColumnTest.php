@@ -20,15 +20,6 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertSame('mediumint(8) unsigned', $categoryIdColumn->getFullType());
         $this->assertSame('mediumint', $categoryIdColumn->getType());
         $this->assertSame('int', $categoryIdColumn->getTypeClass());
-        $this->assertSame(
-            Column::MYSQL_FLAG_NUM
-            | Column::MYSQL_FLAG_UNSIGNED
-            | Column::MYSQL_FLAG_NOT_NULL
-            | Column::MYSQL_FLAG_PRI_KEY
-            | Column::MYSQL_FLAG_PART_KEY
-            | Column::MYSQL_FLAG_AUTO_INCREMENT,
-            $categoryIdColumn->getFlags()
-        );
         $this->assertFalse($categoryIdColumn->isDynamic());
         $this->assertNull($categoryIdColumn->getDynamicAlias());
         $this->assertNull($categoryIdColumn->getDefault());
@@ -42,46 +33,11 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertSame('varchar(250)', $categoryNameColumn->getFullType());
         $this->assertSame('varchar', $categoryNameColumn->getType());
         $this->assertSame('text', $categoryNameColumn->getTypeClass());
-        $this->assertSame(
-            Column::MYSQL_FLAG_NOT_NULL
-            | Column::MYSQL_FLAG_UNIQUE_KEY
-            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
-            | Column::MYSQL_FLAG_PART_KEY,
-            $categoryNameColumn->getFlags()
-        );
         $this->assertFalse($categoryNameColumn->isDynamic());
         $this->assertNull($categoryNameColumn->getDynamicAlias());
         $this->assertNull($categoryNameColumn->getDefault());
         $this->assertFalse($categoryNameColumn->hasDefault());
         $this->assertNull($categoryNameColumn->getDefaultValue());
-    }
-
-    public function testColumnFlagAccess()
-    {
-        $column = $this->db()->category->id;
-        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_NUM));
-        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_UNSIGNED));
-        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_NOT_NULL));
-        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_PRI_KEY));
-        $this->assertTrue($column->getFlag(Column::MYSQL_FLAG_AUTO_INCREMENT));
-        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_BLOB));
-        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY));
-        $this->assertFalse($column->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
-        $this->assertTrue($column->getEachFlag(
-            Column::MYSQL_FLAG_NUM
-            | Column::MYSQL_FLAG_UNSIGNED
-            | Column::MYSQL_FLAG_NOT_NULL
-            | Column::MYSQL_FLAG_PRI_KEY
-            | Column::MYSQL_FLAG_AUTO_INCREMENT
-        ));
-        $this->assertFalse($column->getEachFlag(
-            Column::MYSQL_FLAG_NUM
-            | Column::MYSQL_FLAG_UNSIGNED
-            | Column::MYSQL_FLAG_NOT_NULL
-            | Column::MYSQL_FLAG_PRI_KEY
-            | Column::MYSQL_FLAG_AUTO_INCREMENT
-            | Column::MYSQL_FLAG_BLOB
-        ));
     }
 
     public function testSetOptionsAndGetOptions()
@@ -126,6 +82,589 @@ class ColumnTest extends DatabaseTestAbstract
         }
     }
 
+    public function testGetFlagNames()
+    {
+        $categoryTable = $this->db()->category;
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PRI_KEY',
+                'UNSIGNED',
+                'AUTO_INCREMENT',
+                'PART_KEY',
+                'NUM',
+            ],
+            $categoryTable->id->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNIQUE_KEY',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+            ],
+            $categoryTable->name->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'ENUM',
+            ],
+            $categoryTable->type->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'PART_KEY',
+                'NUM',
+            ],
+            $categoryTable->active->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'BINARY',
+                'NO_DEFAULT_VALUE',
+            ],
+            $categoryTable->created_at->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNSIGNED',
+                'ZEROFILL',
+                'BINARY',
+                'TIMESTAMP',
+                'ON_UPDATE_NOW',
+            ],
+            $categoryTable->changed_at->getFlagNames()
+        );
+        $itemTable = $this->db()->item;
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PRI_KEY',
+                'UNSIGNED',
+                'AUTO_INCREMENT',
+                'PART_KEY',
+                'NUM',
+            ],
+            $itemTable->id->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'UNSIGNED',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+                'NUM',
+            ],
+            $itemTable->category_id->getFlagNames()
+        );
+        $this->assertSame(
+            [],
+            $itemTable->price->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNIQUE_KEY',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+            ],
+            $itemTable->name->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PART_KEY',
+                'NUM',
+            ],
+            $itemTable->active->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'BINARY',
+                'NO_DEFAULT_VALUE',
+            ],
+            $itemTable->created_at->getFlagNames()
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNSIGNED',
+                'ZEROFILL',
+                'BINARY',
+                'TIMESTAMP',
+                'ON_UPDATE_NOW',
+            ],
+            $itemTable->changed_at->getFlagNames()
+        );
+    }
+
+    public function testGetFlagNamesWithManipulation()
+    {
+        $column = $this->db()->category->changed_at;
+        $refClass = new \ReflectionClass(get_class($column));
+        $flagsProp = $refClass->getProperty('flags');
+        $flagsProp->setAccessible(true);
+        $flagsProp->setValue($column, 0);
+        $this->assertSame([], $column->getFlagNames());
+        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+            $flagsProp->setValue($column, $bit);
+            $this->assertSame([$name], $column->getFlagNames());
+        }
+        $flags = 0;
+        $names = [];
+        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+            $flags |= $bit;
+            $names[] = $name;
+            $flagsProp->setValue($column, $flags);
+            $this->assertSame($names, $column->getFlagNames());
+        }
+        $flagsProp->setValue(
+            $column,
+            Column::MYSQL_FLAG_NOT_NULL |
+            Column::MYSQL_FLAG_MULTIPLE_KEY |
+            Column::MYSQL_FLAG_PART_KEY
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'PART_KEY',
+            ],
+            $column->getFlagNames()
+        );
+    }
+
+    public function testGetFlag()
+    {
+        $categoryTable = $this->db()->category;
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_PRI_KEY));
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_AUTO_INCREMENT));
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue(
+            $categoryTable->id->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->id->getFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->id->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($categoryTable->name->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($categoryTable->name->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY));
+        $this->assertTrue($categoryTable->name->getFlag(Column::MYSQL_FLAG_NO_DEFAULT_VALUE));
+        $this->assertTrue($categoryTable->name->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue(
+            $categoryTable->name->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->name->getFlag(
+                Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->name->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($categoryTable->type->getFlag(Column::MYSQL_FLAG_ENUM));
+        $this->assertTrue(
+            $categoryTable->type->getFlag(
+                Column::MYSQL_FLAG_ENUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->type->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($categoryTable->active->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($categoryTable->active->getFlag(Column::MYSQL_FLAG_MULTIPLE_KEY));
+        $this->assertTrue($categoryTable->active->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue($categoryTable->active->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue(
+            $categoryTable->active->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->active->getFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->active->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($categoryTable->created_at->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($categoryTable->created_at->getFlag(Column::MYSQL_FLAG_BINARY));
+        $this->assertTrue($categoryTable->created_at->getFlag(Column::MYSQL_FLAG_NO_DEFAULT_VALUE));
+        $this->assertTrue(
+            $categoryTable->created_at->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->created_at->getFlag(
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->created_at->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_ZEROFILL));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_BINARY));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_TIMESTAMP));
+        $this->assertTrue($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_ON_UPDATE_NOW));
+        $this->assertTrue(
+            $categoryTable->changed_at->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->changed_at->getFlag(
+                Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $itemTable = $this->db()->item;
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_PRI_KEY));
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_AUTO_INCREMENT));
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue(
+            $itemTable->id->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+            )
+        );
+        $this->assertTrue(
+            $itemTable->id->getFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->id->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_MULTIPLE_KEY));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_NO_DEFAULT_VALUE));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue($itemTable->category_id->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue(
+            $itemTable->category_id->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+            )
+        );
+        $this->assertTrue(
+            $itemTable->category_id->getFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->category_id->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($itemTable->name->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->name->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY));
+        $this->assertTrue($itemTable->name->getFlag(Column::MYSQL_FLAG_NO_DEFAULT_VALUE));
+        $this->assertTrue($itemTable->name->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue(
+            $itemTable->name->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+            )
+        );
+        $this->assertTrue(
+            $itemTable->name->getFlag(
+                Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->name->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertFalse($itemTable->price->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertFalse($itemTable->price->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($itemTable->active->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->active->getFlag(Column::MYSQL_FLAG_PART_KEY));
+        $this->assertTrue($itemTable->active->getFlag(Column::MYSQL_FLAG_NUM));
+        $this->assertTrue(
+            $itemTable->active->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PART_KEY
+            )
+        );
+        $this->assertTrue(
+            $itemTable->active->getFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->active->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($itemTable->created_at->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->created_at->getFlag(Column::MYSQL_FLAG_BINARY));
+        $this->assertTrue($itemTable->created_at->getFlag(Column::MYSQL_FLAG_NO_DEFAULT_VALUE));
+        $this->assertTrue(
+            $itemTable->created_at->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+            )
+        );
+        $this->assertTrue(
+            $itemTable->created_at->getFlag(
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->created_at->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_NOT_NULL));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_UNSIGNED));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_ZEROFILL));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_BINARY));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_TIMESTAMP));
+        $this->assertTrue($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_ON_UPDATE_NOW));
+        $this->assertTrue(
+            $itemTable->changed_at->getFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+            )
+        );
+        $this->assertTrue(
+            $itemTable->changed_at->getFlag(
+                Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertFalse($itemTable->changed_at->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
+    }
+
+    public function testGetEachFlag()
+    {
+        $categoryTable = $this->db()->category;
+        $this->assertTrue(
+            $categoryTable->id->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_AUTO_INCREMENT
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->id->getEachFlag(
+                Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->name->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->name->getEachFlag(
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->type->getEachFlag(
+                Column::MYSQL_FLAG_ENUM
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->type->getEachFlag(
+                Column::MYSQL_FLAG_ENUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->active->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->active->getEachFlag(
+                Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->created_at->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->created_at->getEachFlag(
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $categoryTable->changed_at->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_ZEROFILL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+        $this->assertFalse(
+            $categoryTable->changed_at->getEachFlag(
+                Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $itemTable = $this->db()->item;
+        $this->assertTrue(
+            $itemTable->id->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_AUTO_INCREMENT
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertFalse(
+            $itemTable->id->getEachFlag(
+                Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $itemTable->category_id->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertFalse(
+            $itemTable->category_id->getEachFlag(
+                Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $itemTable->name->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+            )
+        );
+        $this->assertFalse(
+            $itemTable->name->getEachFlag(
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue($itemTable->price->getEachFlag(0));
+        $this->assertFalse(
+            $itemTable->price->getEachFlag(
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $itemTable->active->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertFalse(
+            $itemTable->active->getEachFlag(
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $itemTable->created_at->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertFalse(
+            $itemTable->created_at->getEachFlag(
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+        $this->assertTrue(
+            $itemTable->changed_at->getEachFlag(
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_ZEROFILL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+        $this->assertFalse(
+            $itemTable->changed_at->getEachFlag(
+                Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
+    }
+
+    public function testGetValues()
+    {
+        $categoryTable = $this->db()->category;
+        $this->assertNull($categoryTable->id->getValues());
+        $this->assertNull($categoryTable->name->getValues());
+        $this->assertSame([null, 'A\'s', 'B\'s', 'C\'s'], $categoryTable->type->getValues());
+        $this->assertNull($categoryTable->active->getValues());
+        $this->assertNull($categoryTable->created_at->getValues());
+        $this->assertNull($categoryTable->changed_at->getValues());
+        $itemTable = $this->db()->item;
+        $this->assertNull($itemTable->id->getValues());
+        $this->assertNull($itemTable->category_id->getValues());
+        $this->assertNull($itemTable->name->getValues());
+        $this->assertNull($itemTable->price->getValues());
+        $this->assertNull($itemTable->active->getValues());
+        $this->assertNull($itemTable->created_at->getValues());
+        $this->assertNull($itemTable->changed_at->getValues());
+    }
+
     public function testGetEachOption()
     {
         try {
@@ -161,42 +700,6 @@ class ColumnTest extends DatabaseTestAbstract
                 $column->setOptions(0);
             }
         }
-    }
-
-    public function testGetFlagNames()
-    {
-        $column = $this->db()->category->changed_at;
-        $refClass = new \ReflectionClass(get_class($column));
-        $flagsProp = $refClass->getProperty('flags');
-        $flagsProp->setAccessible(true);
-        $flagsProp->setValue($column, 0);
-        $this->assertSame([], $column->getFlagNames());
-        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
-            $flagsProp->setValue($column, $bit);
-            $this->assertSame([$name], $column->getFlagNames());
-        }
-        $flags = 0;
-        $names = [];
-        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
-            $flags |= $bit;
-            $names[] = $name;
-            $flagsProp->setValue($column, $flags);
-            $this->assertSame($names, $column->getFlagNames());
-        }
-        $flagsProp->setValue(
-            $column,
-            Column::MYSQL_FLAG_NOT_NULL |
-            Column::MYSQL_FLAG_MULTIPLE_KEY |
-            Column::MYSQL_FLAG_PART_KEY
-        );
-        $this->assertSame(
-            [
-                'NOT_NULL',
-                'MULTIPLE_KEY',
-                'PART_KEY',
-            ],
-            $column->getFlagNames()
-        );
     }
 
     public function testDynamicDefaults()
