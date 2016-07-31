@@ -708,6 +708,13 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_NUM
             )
         );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'id',
+                Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $category->getColumnEachFlag(
                 'name',
@@ -717,10 +724,24 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_PART_KEY
             )
         );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'name',
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $category->getColumnEachFlag(
                 'type',
                 Column::MYSQL_FLAG_ENUM
+            )
+        );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'type',
+                Column::MYSQL_FLAG_ENUM
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
         $this->assertTrue(
@@ -732,12 +753,26 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_NUM
             )
         );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'active',
+                Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $category->getColumnEachFlag(
                 'created_at',
                 Column::MYSQL_FLAG_NOT_NULL
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
         $this->assertTrue(
@@ -749,6 +784,13 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_TIMESTAMP
                 | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+        $this->assertFalse(
+            $category->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
         $item = $this->db()->item->newRow();
@@ -763,6 +805,13 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_NUM
             )
         );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'id',
+                Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $item->getColumnEachFlag(
                 'category_id',
@@ -774,6 +823,13 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_NUM
             )
         );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'category_id',
+                Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $item->getColumnEachFlag(
                 'name',
@@ -783,10 +839,24 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_PART_KEY
             )
         );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'name',
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $item->getColumnEachFlag(
                 'price',
                 0
+            )
+        );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'price',
+                Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
         $this->assertTrue(
@@ -797,12 +867,26 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_NUM
             )
         );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'active',
+                Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
+            )
+        );
         $this->assertTrue(
             $item->getColumnEachFlag(
                 'created_at',
                 Column::MYSQL_FLAG_NOT_NULL
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
         $this->assertTrue(
@@ -814,6 +898,13 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_TIMESTAMP
                 | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+        $this->assertFalse(
+            $item->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
     }
