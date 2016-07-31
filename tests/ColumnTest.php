@@ -206,38 +206,46 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testGetFlagNamesWithManipulation()
     {
-        $column = $this->db()->category->changed_at;
-        $refClass = new \ReflectionClass(get_class($column));
-        $flagsProp = $refClass->getProperty('flags');
-        $flagsProp->setAccessible(true);
-        $flagsProp->setValue($column, 0);
-        $this->assertSame([], $column->getFlagNames());
-        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
-            $flagsProp->setValue($column, $bit);
-            $this->assertSame([$name], $column->getFlagNames());
+        try {
+            $column = $this->db()->category->changed_at;
+            $refClass = new \ReflectionClass(get_class($column));
+            $flagsProp = $refClass->getProperty('flags');
+            $flagsProp->setAccessible(true);
+            $origValue = $flagsProp->getValue($column);
+            $haveOrigValue = true;
+            $flagsProp->setValue($column, 0);
+            $this->assertSame([], $column->getFlagNames());
+            foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+                $flagsProp->setValue($column, $bit);
+                $this->assertSame([$name], $column->getFlagNames());
+            }
+            $flags = 0;
+            $names = [];
+            foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
+                $flags |= $bit;
+                $names[] = $name;
+                $flagsProp->setValue($column, $flags);
+                $this->assertSame($names, $column->getFlagNames());
+            }
+            $flagsProp->setValue(
+                $column,
+                Column::MYSQL_FLAG_NOT_NULL |
+                Column::MYSQL_FLAG_MULTIPLE_KEY |
+                Column::MYSQL_FLAG_PART_KEY
+            );
+            $this->assertSame(
+                [
+                    'NOT_NULL',
+                    'MULTIPLE_KEY',
+                    'PART_KEY',
+                ],
+                $column->getFlagNames()
+            );
+        } finally {
+            if (isset($flagsProp) && isset($haveOrigValue)) {
+                $flagsProp->setValue($column, $origValue);
+            }
         }
-        $flags = 0;
-        $names = [];
-        foreach (Column::MYSQL_FLAG_NAMES as $bit => $name) {
-            $flags |= $bit;
-            $names[] = $name;
-            $flagsProp->setValue($column, $flags);
-            $this->assertSame($names, $column->getFlagNames());
-        }
-        $flagsProp->setValue(
-            $column,
-            Column::MYSQL_FLAG_NOT_NULL |
-            Column::MYSQL_FLAG_MULTIPLE_KEY |
-            Column::MYSQL_FLAG_PART_KEY
-        );
-        $this->assertSame(
-            [
-                'NOT_NULL',
-                'MULTIPLE_KEY',
-                'PART_KEY',
-            ],
-            $column->getFlagNames()
-        );
     }
 
     public function testGetFlag()
