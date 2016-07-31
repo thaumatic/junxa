@@ -162,7 +162,8 @@ class Row
      * @param string column name
      * @return Thaumatic\Junxa\Column result column, actual class will be as
      * defined by Junxa::columnClass()
-     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
      */
     public function getColumn($column)
     {
@@ -177,40 +178,149 @@ class Row
         return $this->_table->getColumns();
     }
 
-    public function type($column)
+    /**
+     * @param string column name
+     * @return string the specified column's type
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnType($column)
     {
-        return $this->getColumn($column)->type;
+        return $this->getColumn($column)->getType();
     }
 
-    public function fullType($column)
+    /**
+     * @param string column name
+     * @return string the specified column's full type specification
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnFullType($column)
     {
-        return $this->getColumn($column)->fullType;
+        return $this->getColumn($column)->getFullType();
     }
 
-    public function typeClass($column)
+    /**
+     * @param string column name
+     * @return string the specified column's type class
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnTypeClass($column)
     {
-        return $this->getColumn($column)->typeClass;
+        return $this->getColumn($column)->getTypeClass();
     }
 
-    public function length($column)
+    /**
+     * @param string column name
+     * @return int|null the specified column's length specification, if any
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnLength($column)
     {
-        return $this->getColumn($column)->length;
+        return $this->getColumn($column)->getLength();
     }
 
-    public function precision($column)
+    /**
+     * @param string column name
+     * @return int|null the specified column's precision specification, if any
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnPrecision($column)
     {
-        return $this->getColumn($column)->precision;
+        return $this->getColumn($column)->getPrecision();
     }
 
-    public function flags($column)
+    /**
+     * @param string column name
+     * @return int Thaumatic\Junxa\Column\MYSQL_FLAG_* bitmask for the
+     * specified column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnFlags($column)
     {
-        return $this->getColumn($column)->flags;
+        return $this->getColumn($column)->getFlags();
     }
 
-    public function values($column)
+    /**
+     * @param string column name
+     * @param int Thaumatic\Junxa\Column\MYSQL_FLAG_*
+     * @return bool whether the specified flag is enabled on the specified
+     * column, or if a bitmask of multiple flags is sent, whether any of
+     * them are enabled
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnFlag($column, $flag)
     {
-        $col = $this->getColumn($column);
-        return $col->values;
+        return $this->getColumn($column)->getFlag($flag);
+    }
+
+    /**
+     * @param string column name
+     * @param int Thaumatic\Junxa\Column\MYSQL_FLAG_* bitmask
+     * @return bool whether all specified flags are enabled on the specified
+     * column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnEachFlag($column, $flags)
+    {
+        return $this->getColumn($column)->getEachFlag($flags);
+    }
+
+    /**
+     * @param string column name
+     * @return array<string>|null the values the specified column can have,
+     * if it is an enum or set
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnValues($column)
+    {
+        return $this->getColumn($column)->getValues();
+    }
+
+    /**
+     * @param string column name
+     * @return int Thaumatic\Junxa\Column::OPTION_* bitmask for the
+     * specified column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnOptions($column)
+    {
+        return $this->getColumn($column)->getOptions();
+    }
+
+    /**
+     * @param string column name
+     * @param int Thaumatic\Junxa\Column\OPTION_*
+     * @return bool whether the specified option is enabled on the specified
+     * column, or if a bitmask of multiple options is specified, whether any
+     * of them is enabled
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnOption($column, $option)
+    {
+        return $this->getColumn($column)->getOption($option);
+    }
+
+    /**
+     * @param string column name
+     * @param int Thaumatic\Junxa\Column\OPTION_* bitmask
+     * @return bool whether all specified options are enabled on the specified
+     * column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function getColumnEachOption($column, $options)
+    {
+        return $this->getColumn($column)->getEachOption($options);
     }
 
     /**
