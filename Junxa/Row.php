@@ -7,6 +7,7 @@ use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
+use Thaumatic\Junxa\Exceptions\JunxaReferentialIntegrityException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Table;
@@ -918,17 +919,23 @@ class Row
      * @param string column name
      * @return Thaumatic\Junxa\Row|null foreign row, or null if the field value
      * in the local row is null
-     * @throws Thaumatic\Junxa\NoSuchColumnException if the specified column
-     * does not exist
-     * @throws Thaumatic\Junxa\InvalidQueryException if the specified column
-     * is not a foreign key
-     * @throws Thaumatic\Junxa\InvalidQueryException if the foreign column is
+     * @throws Thaumatic\Junxa\JunxaNoSuchColumnException if the specified
+     * column does not exist
+     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if the specified
+     * column is not a foreign key
+     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if the foreign column
      * is not part of a primary key or unique key
+     * @throws Thaumatic\Junxa\JunxaReferentialIntegrityException if there is
+     * no row in the foreign table corresponding to a non-null value in the
+     * local field
      */
     public function getForeignRow($columnName)
     {
         $column = $this->junxaInternalTable->$columnName;
         $localValue = $this->$columnName;
+        if ($localValue === null) {
+            return null;
+        }
         $foreignColumn = $column->getForeignColumn();
         if (!$foreignColumn) {
             throw new InvalidQueryException(
@@ -952,7 +959,17 @@ class Row
         if ($toPrimary) {
             $foreignPrimary = $foreignTable->getPrimaryKey();
             if (count($foreignPrimary) === 1) {
-                return $foreignTable->row($localValue);
+                $out = $foreignTable->row($localValue);
+                if (!$out) {
+                    throw new JunxaReferentialIntegrityException(
+                        $this->junxaInternalTable,
+                        $column,
+                        $foreignTable,
+                        $foreignColumn,
+                        $localValue
+                    );
+                }
+                return $out;
             } else {
                 throw new InvalidQueryException(
                     'foreign row retrieval by multipart primary key '
@@ -969,11 +986,20 @@ class Row
                     continue;
                 }
                 if (count($key->getParts()) === 1) {
-                    return
-                        $foreignTable->query()
-                            ->where($foreignColumn->getName(), $localValue)
-                            ->row()
+                    $out = $foreignTable->query()
+                        ->where($foreignColumn, $localValue)
+                        ->row()
                     ;
+                    if (!$out) {
+                        throw new JunxaReferentialIntegrityException(
+                            $this->junxaInternalTable,
+                            $column,
+                            $foreignTable,
+                            $foreignColumn,
+                            $localValue
+                        );
+                    }
+                    return $out;
                 }
                 $possible[] = $key;
             }
