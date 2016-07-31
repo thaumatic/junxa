@@ -909,6 +909,25 @@ class RowTest extends DatabaseTestAbstract
         );
     }
 
+    public function testGetColumnValues()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertNull($category->getColumnValues('id'));
+        $this->assertNull($category->getColumnValues('name'));
+        $this->assertSame([null, 'A\'s', 'B\'s', 'C\'s'], $category->getColumnValues('type'));
+        $this->assertNull($category->getColumnValues('active'));
+        $this->assertNull($category->getColumnValues('created_at'));
+        $this->assertNull($category->getColumnValues('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertNull($item->getColumnValues('id'));
+        $this->assertNull($item->getColumnValues('category_id'));
+        $this->assertNull($item->getColumnValues('name'));
+        $this->assertNull($item->getColumnValues('price'));
+        $this->assertNull($item->getColumnValues('active'));
+        $this->assertNull($item->getColumnValues('created_at'));
+        $this->assertNull($item->getColumnValues('changed_at'));
+    }
+
     public function testGetForeignRow()
     {
         try {
