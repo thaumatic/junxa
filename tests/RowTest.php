@@ -127,6 +127,42 @@ class RowTest extends DatabaseTestAbstract
         ], $itemRow->getColumns());
     }
 
+    public function testGetColumnType()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame('mediumint', $category->getColumnType('id'));
+        $this->assertSame('varchar', $category->getColumnType('name'));
+        $this->assertSame('enum', $category->getColumnType('type'));
+        $this->assertSame('tinyint', $category->getColumnType('active'));
+        $this->assertSame('datetime', $category->getColumnType('created_at'));
+        $this->assertSame('timestamp', $category->getColumnType('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertSame('mediumint', $item->getColumnType('id'));
+        $this->assertSame('mediumint', $item->getColumnType('category_id'));
+        $this->assertSame('varchar', $item->getColumnType('name'));
+        $this->assertSame('tinyint', $category->getColumnType('active'));
+        $this->assertSame('datetime', $item->getColumnType('created_at'));
+        $this->assertSame('timestamp', $item->getColumnType('changed_at'));
+    }
+
+    public function testGetColumnFullType()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame('mediumint(8) unsigned', $category->getColumnFullType('id'));
+        $this->assertSame('varchar(250)', $category->getColumnFullType('name'));
+        $this->assertSame('enum(\'A\'\'s\',\'B\'\'s\',\'C\'\'s\')', $category->getColumnFullType('type'));
+        $this->assertSame('tinyint(1)', $category->getColumnFullType('active'));
+        $this->assertSame('datetime', $category->getColumnFullType('created_at'));
+        $this->assertSame('timestamp', $category->getColumnFullType('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('id'));
+        $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('category_id'));
+        $this->assertSame('varchar(250)', $item->getColumnFullType('name'));
+        $this->assertSame('tinyint(1)', $category->getColumnFullType('active'));
+        $this->assertSame('datetime', $item->getColumnFullType('created_at'));
+        $this->assertSame('timestamp', $item->getColumnFullType('changed_at'));
+    }
+
     public function testGetForeignRow()
     {
         try {
