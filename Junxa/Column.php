@@ -344,9 +344,7 @@ class Column
     }
 
     /**
-     * Retrieves the model of the database this column is part of.
-     *
-     * @return Thaumatic\Junxa
+     * @return Thaumatic\Junxa the database model this column is part of
      */
     public function getDatabase()
     {
@@ -365,9 +363,7 @@ class Column
     }
 
     /**
-     * Retrieves the column name.
-     *
-     * @return string
+     * @return string the column's name
      */
     public function getName()
     {
@@ -428,9 +424,7 @@ class Column
     }
 
     /**
-     * Retrieves the columns Column::MYSQL_FLAG_* bitmask.
-     *
-     * @return int
+     * @return int the column's Column::MYSQL_FLAG_* bitmask
      */
     public function getFlags()
     {
@@ -438,9 +432,7 @@ class Column
     }
 
     /**
-     * Retrieves an array of the names of the flags set on the column.
-     *
-     * return array<string>
+     * return array<string> the names of the flags set on the column
      */
     public function getFlagNames()
     {
@@ -479,9 +471,7 @@ class Column
     }
 
     /**
-     * Retrieves the column's length specification, if any.
-     *
-     * @return int|null
+     * @return int|null the column's length specification, if any
      */
     public function getLength()
     {
@@ -489,9 +479,7 @@ class Column
     }
 
     /**
-     * Retrieves the column's precision specification, if any.
-     *
-     * @return int|null
+     * @return int|null the column's precision specification, if any
      */
     public function getPrecision()
     {
@@ -499,9 +487,7 @@ class Column
     }
 
     /**
-     * Retrieves the column's type class.
-     *
-     * @return string
+     * @return string the column's type class
      */
     public function getTypeClass()
     {
@@ -509,9 +495,7 @@ class Column
     }
 
     /**
-     * Retrieves the column's type.
-     *
-     * @return string
+     * @return string the column's type
      */
     public function getType()
     {
@@ -519,9 +503,7 @@ class Column
     }
 
     /**
-     * Retrieves the column's full type specification.
-     *
-     * @return string
+     * @return string the column's full type specification
      */
     public function getFullType()
     {
@@ -529,9 +511,7 @@ class Column
     }
 
     /**
-     * Retrieves the specification of the column's default value.
-     *
-     * @return string|null
+     * @return string|null the specification of the column's default value
      */
     public function getDefault()
     {
@@ -539,9 +519,7 @@ class Column
     }
 
     /**
-     * Retrieves whether the column has a default value.
-     *
-     * @return bool
+     * @return bool whether the column has a default value
      */
     public function hasDefault()
     {
@@ -549,9 +527,7 @@ class Column
     }
 
     /**
-     * Retrieves the PHP native version of the column's default value.
-     *
-     * @return mixed
+     * @return mixed the PHP native version of the column's default value
      */
     public function getDefaultValue()
     {
@@ -705,9 +681,7 @@ class Column
     }
 
     /**
-     * Retrieves a summary of the column's type information.
-     *
-     * @return string
+     * @return string a summary of the column's type information
      */
     public function getTypeSummary()
     {
@@ -807,9 +781,7 @@ class Column
     }
 
     /**
-     * Sets the column options bitmask.
-     *
-     * @param int Thaumatic\Junxa\Column::OPTION_*
+     * @param int Thaumatic\Junxa\Column::OPTION_* bitmask for the column
      * @return $this
      */
     public function setOptions($val)
@@ -819,9 +791,7 @@ class Column
     }
 
     /**
-     * Retrieves the column options bitmask.
-     *
-     * @return int Thaumatic\Junxa\Column::OPTION_*
+     * @return int Thaumatic\Junxa\Column::OPTION_* bitmask for the column
      */
     public function getOptions()
     {
