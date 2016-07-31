@@ -25,18 +25,18 @@ class Row
      *
      * @var array<string:mixed>|null
      */
-    private $_data;
+    private $junxaInternalData;
 
     /**
      * @var bool whether this row has been deleted via the delete() method
      * being called on it
      */
-    private $_deleted = false;
+    private $junxaInternalDeleted = false;
 
     /**
      * @var Thaumatic\Junxa\Table the table this row is from
      */
-    private $_table;
+    private $junxaInternalTable;
 
     /**
      * @param Thaumatic\Junxa\Table table model that this row is attached to
@@ -45,12 +45,12 @@ class Row
      */
     public function __construct(Table $table, array $data = null)
     {
-        $this->_table = $table;
-        $this->_data = $data;
+        $this->junxaInternalTable = $table;
+        $this->junxaInternalData = $data;
         if ($data) {
             foreach ($table->getPreloadColumns() as $column) {
                 $dataItem = $table->$column->import($data[$column]);
-                $this->_data[$column] = $dataItem;
+                $this->junxaInternalData[$column] = $dataItem;
                 $this->$column = $dataItem;
             }
         }
@@ -78,10 +78,10 @@ class Row
      */
     public function __get($name)
     {
-        if (!$this->_table->hasColumn($name)) {
+        if (!$this->junxaInternalTable->hasColumn($name)) {
             throw new JunxaNoSuchColumnException($name);
         }
-        if ($this->_table->getColumnDemandLoad($name)
+        if ($this->junxaInternalTable->getColumnDemandLoad($name)
             && !$this->getPrimaryKeyUnset()
         ) {
             $this->loadStoredValue($name);
@@ -104,8 +104,8 @@ class Row
     {
         if (property_exists($this, $name)) {
             $this->$name = $value;
-        } elseif ($this->_table->hasColumn($name)) {
-            if ($this->_table->$name->isDynamic()) {
+        } elseif ($this->junxaInternalTable->hasColumn($name)) {
+            if ($this->junxaInternalTable->$name->isDynamic()) {
                 throw new JunxaInvalidQueryException(
                     'cannot set value for dynamic column ' . $name
                 );
@@ -126,14 +126,14 @@ class Row
      */
     public function getCacheKey()
     {
-        switch (count($this->_table->primary)) {
+        switch (count($this->junxaInternalTable->primary)) {
             case 0:
                 throw new JunxaConfigurationException('cannot generate cache key without primary key');
             case 1:
-                $key = $this->_table->primary[0];
+                $key = $this->junxaInternalTable->primary[0];
                 return strval($this->$key);
             default:
-                foreach ($this->_table->primary as $key) {
+                foreach ($this->junxaInternalTable->primary as $key) {
                     $elem[] = $this->$key;
                 }
                 return join("\0", $args) . '|' . join('', array_map('md5', $args));
@@ -145,7 +145,7 @@ class Row
      */
     public function getDatabase()
     {
-        return $this->_table->getDatabase();
+        return $this->junxaInternalTable->getDatabase();
     }
 
     /**
@@ -153,7 +153,7 @@ class Row
      */
     public function getTable()
     {
-        return $this->_table;
+        return $this->junxaInternalTable;
     }
 
     /**
@@ -167,7 +167,7 @@ class Row
      */
     public function getColumn($column)
     {
-        return $this->_table->$column;
+        return $this->junxaInternalTable->$column;
     }
 
     /**
@@ -175,7 +175,7 @@ class Row
      */
     public function getColumns()
     {
-        return $this->_table->getColumns();
+        return $this->junxaInternalTable->getColumns();
     }
 
     /**
@@ -341,7 +341,7 @@ class Row
         $cond = $this->getMatchCondition();
         if (!$cond) {
             throw new JunxaInvalidQueryException(
-                'cannot generate match condition for ' . $this->_table->getName()
+                'cannot generate match condition for ' . $this->junxaInternalTable->getName()
             );
         }
         $value = $this->getDatabase()->query([
@@ -371,13 +371,13 @@ class Row
      */
     public function loadStoredValue($column)
     {
-        if (!$this->_table->getColumnDemandLoad($column)) {
+        if (!$this->junxaInternalTable->getColumnDemandLoad($column)) {
             $columnModel = $this->getColumn($column);
             throw new JunxaInvalidQueryException(
                 'column ' . $column . ' is not demand-loaded'
             );
         }
-        $pos = array_search($column, $this->_table->getDemandLoadColumns());
+        $pos = array_search($column, $this->junxaInternalTable->getDemandLoadColumns());
         if ($pos === false) {
             throw new JunxaInternalInconsistencyException(
                 'cannot find column ' . $column . ' in table demand-load list'
@@ -385,7 +385,7 @@ class Row
         }
         $value = $this->getStoredValue($column);
         $this->$column = $value;
-        $this->_data[$column] = $value;
+        $this->junxaInternalData[$column] = $value;
         return $this;
     }
 
@@ -404,10 +404,10 @@ class Row
     public function getValue($column)
     {
         if (!property_exists($this, $column)) {
-            if (!$this->_table->hasColumn($name)) {
+            if (!$this->junxaInternalTable->hasColumn($name)) {
                 throw new JunxaNoSuchColumnException($name);
             }
-            if ($this->_table->getColumnDemandLoad($column)
+            if ($this->junxaInternalTable->getColumnDemandLoad($column)
                 && !$this->getPrimaryKeyUnset()
             ) {
                 $this->loadStoredValue($column);
@@ -420,26 +420,26 @@ class Row
 
     public function demandAll()
     {
-        foreach ($this->_table->getDemandLoadColumns() as $column) {
+        foreach ($this->junxaInternalTable->getDemandLoadColumns() as $column) {
             $this->loadStoredValue($column);
         }
     }
 
     public function checkCaching($uncache = false)
     {
-        if ($this->_table->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->getPrimaryKey()) {
+        if ($this->junxaInternalTable->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->getPrimaryKey()) {
             $key = $this->getCacheKey();
             if ($uncache) {
-                $this->_table->removeCacheKey($key);
-            } elseif ($this->_table->getCachedValue($key) === null) {
-                $this->_table->setCachedValue($key, $this);
+                $this->junxaInternalTable->removeCacheKey($key);
+            } elseif ($this->junxaInternalTable->getCachedValue($key) === null) {
+                $this->junxaInternalTable->setCachedValue($key, $this);
             }
         }
     }
 
     public function getMatchCondition()
     {
-        $key = $this->_table->getPrimaryKey();
+        $key = $this->junxaInternalTable->getPrimaryKey();
         if (!$key) {
             return null;
         }
@@ -448,23 +448,23 @@ class Row
             if (!isset($this->$column)) {
                 return null;
             }
-            $what[] = Q::eq($this->_table->$column, $this->$column);
+            $what[] = Q::eq($this->junxaInternalTable->$column, $this->$column);
         }
         return $what;
     }
 
     public function find()
     {
-        $query = $this->_table->query()
-            ->select($this->_table->getSelectTarget())
+        $query = $this->junxaInternalTable->query()
+            ->select($this->junxaInternalTable->getSelectTarget())
             ->limit(2);
-        foreach ($this->_table->columns as $column) {
+        foreach ($this->junxaInternalTable->columns as $column) {
             if (!isset($this->$column)) {
                 continue;
             }
             $query->where($column, $this->$column);
         }
-        $rows = $this->_table->getDatabase()->query($query, Junxa::QUERY_ASSOCS);
+        $rows = $this->junxaInternalTable->getDatabase()->query($query, Junxa::QUERY_ASSOCS);
         switch (count($rows)) {
             case 0:
                 return Junxa::RESULT_FIND_FAIL;
@@ -476,17 +476,17 @@ class Row
                 break;
         }
         $data = $rows[0];
-        $this->_data = $data;
-        foreach ($this->_table->getPreloadColumns() as $column) {
-            $dataItem = $this->_table->$column->import($data[$column]);
-            $this->_data[$column] = $dataItem;
+        $this->junxaInternalData = $data;
+        foreach ($this->junxaInternalTable->getPreloadColumns() as $column) {
+            $dataItem = $this->junxaInternalTable->$column->import($data[$column]);
+            $this->junxaInternalData[$column] = $dataItem;
             $this->$column = $dataItem;
         }
-        foreach ($this->_table->getDemandLoadColumns() as $column) {
+        foreach ($this->junxaInternalTable->getDemandLoadColumns() as $column) {
             if (property_exists($this, $column)) {
                 $this->loadStoredValue($column);
             } else {
-                unset($this->_data[$column]);
+                unset($this->junxaInternalData[$column]);
             }
         }
         $this->checkCaching();
@@ -499,21 +499,21 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
         }
-        $target = $this->_table->getSelectTarget();
-        if ($this->_table->getDatabase()->getChangeHandlerObject()) {
+        $target = $this->junxaInternalTable->getSelectTarget();
+        if ($this->junxaInternalTable->getDatabase()->getChangeHandlerObject()) {
             usleep(200000);
         }
-        $row = $this->_table->getDatabase()->query([
+        $row = $this->junxaInternalTable->getDatabase()->query([
             'select'    => $target,
             'where'     => $cond,
         ], Junxa::QUERY_SINGLE_ASSOC);
         if (!$row) {
             throw new JunxaInvalidQueryException('table refresh query returned no data');
         }
-        $this->_data = $row;
-        foreach ($this->_table->getPreloadColumns() as $column) {
-            $dataItem = $this->_table->$column->import($row[$column]);
-            $this->_data[$column] = $dataItem;
+        $this->junxaInternalData = $row;
+        foreach ($this->junxaInternalTable->getPreloadColumns() as $column) {
+            $dataItem = $this->junxaInternalTable->$column->import($row[$column]);
+            $this->junxaInternalData[$column] = $dataItem;
             $this->$column = $dataItem;
         }
         $this->init();
@@ -539,7 +539,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->_table->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
@@ -552,13 +552,13 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->_table->query();
+            $queryDef = $this->junxaInternalTable->query();
         }
-        foreach ($this->_table->getStaticColumns() as $column) {
+        foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
             if (property_exists($this, $column)
                 && (
-                    !array_key_exists($column, $this->_data)
-                    || $this->$column !== $this->_data[$column]
+                    !array_key_exists($column, $this->junxaInternalData)
+                    || $this->$column !== $this->junxaInternalData[$column]
                 )
             ) {
                 $queryDef->update($column, $this->$column);
@@ -574,8 +574,8 @@ class Row
         foreach ($cond as $item) {
             $queryDef->where($item);
         }
-        $this->_table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->_table->getDatabase()->getQueryStatus();
+        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
 
@@ -599,7 +599,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->_table->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
@@ -612,21 +612,21 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->_table->query($queryDef);
+            $queryDef = $this->junxaInternalTable->query($queryDef);
         }
-        if ($this->_table->getDynamicDefaultsPresent()) {
-            foreach ($this->_table->getStaticColumns() as $column) {
+        if ($this->junxaInternalTable->getDynamicDefaultsPresent()) {
+            foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
                 if (property_exists($this, $column)) {
                     $queryDef->insert($column, $this->$column);
                 } else {
-                    $default = $this->_table->$column->getDynamicDefault();
+                    $default = $this->junxaInternalTable->$column->getDynamicDefault();
                     if ($default) {
                         $queryDef->insert($column, $default);
                     }
                 }
             }
         } else {
-            foreach ($this->_table->getStaticColumns() as $column) {
+            foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
                 if (property_exists($this, $column)) {
                     $queryDef->insert($column, $this->$column);
                 }
@@ -635,14 +635,14 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_INSERT_NOOP;
         }
-        $this->_table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->_table->getDatabase()->getQueryStatus();
+        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->_table->getAutoIncrementPrimary()) {
-                $this->$field = $this->_table->getDatabase()->getInsertId();
+            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
+                $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
@@ -666,7 +666,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->_table->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
@@ -679,11 +679,11 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->_table->query();
+            $queryDef = $this->junxaInternalTable->query();
         }
         $foundUniqueKeyMember = false;
-        foreach ($this->_table->getStaticColumns() as $column) {
-            $columnModel = $this->_table->$column;
+        foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
+            $columnModel = $this->junxaInternalTable->$column;
             if (property_exists($this, $column)) {
                 if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
                     $foundUniqueKeyMember = true;
@@ -705,14 +705,14 @@ class Row
         if (!$foundUniqueKeyMember) {
             return Junxa::RESULT_MERGE_NOKEY;
         }
-        $this->_table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->_table->getDatabase()->getQueryStatus();
+        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->_table->getAutoIncrementPrimary()) {
-                if ($id = $this->_table->getDatabase()->getInsertId()) {
+            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
+                if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
                     $this->$field = $id;
                 }
             }
@@ -743,7 +743,7 @@ class Row
                         );
                     }
                 }
-                $queryDef = $this->_table->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException(
@@ -759,9 +759,9 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->_table->query($queryDef);
+            $queryDef = $this->junxaInternalTable->query($queryDef);
         }
-        foreach ($this->_table->getStaticColumns() as $column) {
+        foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
             if (property_exists($this, $column)) {
                 $queryDef->replace($column, $this->$column);
             }
@@ -769,14 +769,14 @@ class Row
         if (!$queryDef->getReplace()) {
             return Junxa::RESULT_REPLACE_NOOP;
         }
-        $this->_table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->_table->getDatabase()->getQueryStatus();
+        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->_table->getAutoIncrementPrimary()) {
-                $this->$field = $this->_table->getDatabase()->getInsertId();
+            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
+                $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
@@ -791,7 +791,7 @@ class Row
      */
     public function save($queryDef = [])
     {
-        return $this->_data ? $this->update($queryDef) : $this->insert($queryDef);
+        return $this->junxaInternalData ? $this->update($queryDef) : $this->insert($queryDef);
     }
 
     /**
@@ -801,14 +801,14 @@ class Row
      */
     public function changed()
     {
-        if (!$this->_data) {
+        if (!$this->junxaInternalData) {
             return true;
         }
-        foreach ($this->_table->getStaticColumns() as $column) {
+        foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
             if (property_exists($this, $column)
                 && (
-                    !array_key_exists($column, $this->_data)
-                    || $this->$column !== $this->_data[$column]
+                    !array_key_exists($column, $this->junxaInternalData)
+                    || $this->$column !== $this->junxaInternalData[$column]
                 )
             ) {
                 return true;
@@ -835,7 +835,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->_table->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
                 if ($clause = $queryDef->checkClauses($badClauses)) {
                     throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
@@ -848,7 +848,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->_table->query();
+            $queryDef = $this->junxaInternalTable->query();
         }
         $cond = $this->getMatchCondition();
         if (!$cond) {
@@ -857,11 +857,11 @@ class Row
         foreach ($cond as $item) {
             $queryDef->where($item);
         }
-        $queryDef->delete($this->_table);
-        $this->_table->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
-        $res = $this->_table->getDatabase()->getQueryStatus();
+        $queryDef->delete($this->junxaInternalTable);
+        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (Junxa::OK($res)) {
-            $this->_deleted = true;
+            $this->junxaInternalDeleted = true;
             $this->checkCaching(true);
         }
         return $res;
@@ -873,7 +873,7 @@ class Row
      */
     public function getDeleted()
     {
-        return $this->_deleted;
+        return $this->junxaInternalDeleted;
     }
 
     /**
@@ -882,7 +882,7 @@ class Row
      */
     public function getPrimaryKey()
     {
-        return $this->_table->getPrimaryKey();
+        return $this->junxaInternalTable->getPrimaryKey();
     }
 
     /**
@@ -891,7 +891,7 @@ class Row
      */
     public function getPrimaryKeyUnset()
     {
-        foreach ($this->_table->getPrimaryKey() as $column) {
+        foreach ($this->junxaInternalTable->getPrimaryKey() as $column) {
             if (!isset($this->fields[$column])) {
                 return true;
             }
@@ -916,14 +916,14 @@ class Row
      */
     public function getForeignRow($columnName)
     {
-        $column = $this->_table->$columnName;
+        $column = $this->junxaInternalTable->$columnName;
         $localValue = $this->$columnName;
         $foreignColumn = $column->getForeignColumn();
         if (!$foreignColumn) {
             throw new InvalidQueryException(
                 $columnName
                 . ' on '
-                . $this->_table->getName()
+                . $this->junxaInternalTable->getName()
                 . ' is not a foreign key'
             );
         }

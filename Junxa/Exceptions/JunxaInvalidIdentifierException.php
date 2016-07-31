@@ -14,9 +14,9 @@ class JunxaInvalidIdentifierException extends JunxaException
     public function __construct($identifier)
     {
         $this->identifier = $identifier;
-        if ($this->identifier[0] === '_') {
+        if (preg_match('/^junxaInternal/', $this->identifier)) {
             $msg =
-                'cannot represent identifier beginning with underscore: '
+                'cannot represent identifier beginning with junxaInternal: '
                 . $identifier
             ;
         } else {

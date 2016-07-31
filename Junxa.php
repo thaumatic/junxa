@@ -1879,7 +1879,7 @@ class Junxa
      * Validates that Junxa can use the specified identifier as the name
      * of a table or column.  The identifiers that generate exceptions are:
      *
-     * 1) Identifiers starting with an underscore (_).  This is so that
+     * 1) Identifiers starting with "junxaInternal".  This is so that
      * Junxa models can use properties with names beginning with underscores
      * for their own purposes while loading database-defined information
      * into dynamic object properties.
@@ -1892,7 +1892,7 @@ class Junxa
      */
     public static function validateIdentifier($identifier)
     {
-        if ($identifier[0] === '_') {
+        if ($identifier[0] === 'j' && preg_match('/^junxaInternal/', $identifier)) {
             throw new  JunxaInvalidIdentifier($identifier);
         }
         if (in_array($identifier, self::PHP_KEYWORDS)) {
