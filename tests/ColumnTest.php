@@ -84,36 +84,83 @@ class ColumnTest extends DatabaseTestAbstract
         ));
     }
 
-    public function testColumnOptionsManipulation()
+    public function testSetOptionsAndGetOptions()
     {
-        $column = $this->db()->category->id;
-        $this->assertSame(0, $column->getOptions());
-        $column->setOptions(Column::OPTION_MERGE_NO_UPDATE);
-        $this->assertSame(Column::OPTION_MERGE_NO_UPDATE, $column->getOptions());
-        $this->assertTrue($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
-        $this->assertFalse($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
-        $this->assertTrue($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
-        $this->assertFalse($column->getEachOption(
-            Column::OPTION_MERGE_NO_UPDATE
-            | Column::OPTION_NO_AUTO_FOREIGN_KEY
-        ));
-        $column->setOptions(
-            Column::OPTION_MERGE_NO_UPDATE
-            | Column::OPTION_NO_AUTO_FOREIGN_KEY
-        );
-        $this->assertSame(
-            Column::OPTION_MERGE_NO_UPDATE
-            | Column::OPTION_NO_AUTO_FOREIGN_KEY,
-            $column->getOptions()
-        );
-        $this->assertTrue($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
-        $this->assertTrue($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
-        $this->assertTrue($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
-        $this->assertTrue($column->getEachOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
-        $this->assertTrue($column->getEachOption(
-            Column::OPTION_MERGE_NO_UPDATE
-            | Column::OPTION_NO_AUTO_FOREIGN_KEY
-        ));
+        try {
+            $column = $this->db()->category->id;
+            $this->assertSame(0, $column->getOptions());
+            $column->setOptions(Column::OPTION_MERGE_NO_UPDATE);
+            $this->assertSame(Column::OPTION_MERGE_NO_UPDATE, $column->getOptions());
+            $column->setOptions(
+                Column::OPTION_MERGE_NO_UPDATE
+                | Column::OPTION_NO_AUTO_FOREIGN_KEY
+            );
+            $this->assertSame(
+                Column::OPTION_MERGE_NO_UPDATE
+                | Column::OPTION_NO_AUTO_FOREIGN_KEY,
+                $column->getOptions()
+            );
+        } finally {
+            if (isset($column)) {
+                $column->setOptions(0);
+            }
+        }
+    }
+
+    public function testSetOptionAndGetOption()
+    {
+        try {
+            $column = $this->db()->category->id;
+            $this->assertFalse($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertFalse($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+            $column->setOption(Column::OPTION_MERGE_NO_UPDATE, true);
+            $this->assertTrue($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertFalse($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+            $column->setOption(Column::OPTION_NO_AUTO_FOREIGN_KEY, true);
+            $this->assertTrue($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertTrue($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+        } finally {
+            if (isset($column)) {
+                $column->setOptions(0);
+            }
+        }
+    }
+
+    public function testGetEachOption()
+    {
+        try {
+            $column = $this->db()->category->id;
+            $this->assertFalse($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertFalse($column->getEachOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+            $this->assertFalse(
+                $column->getEachOption(
+                    Column::OPTION_MERGE_NO_UPDATE
+                    | Column::OPTION_NO_AUTO_FOREIGN_KEY
+                )
+            );
+            $column->setOption(Column::OPTION_MERGE_NO_UPDATE, true);
+            $this->assertTrue($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertFalse($column->getEachOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+            $this->assertFalse(
+                $column->getEachOption(
+                    Column::OPTION_MERGE_NO_UPDATE
+                    | Column::OPTION_NO_AUTO_FOREIGN_KEY
+                )
+            );
+            $column->setOption(Column::OPTION_NO_AUTO_FOREIGN_KEY, true);
+            $this->assertTrue($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
+            $this->assertTrue($column->getEachOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
+            $this->assertTrue(
+                $column->getEachOption(
+                    Column::OPTION_MERGE_NO_UPDATE
+                    | Column::OPTION_NO_AUTO_FOREIGN_KEY
+                )
+            );
+        } finally {
+            if (isset($column)) {
+                $column->setOptions(0);
+            }
+        }
     }
 
     public function testGetFlagNames()
