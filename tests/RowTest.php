@@ -2,6 +2,7 @@
 
 namespace Thaumatic\Junxa\Tests;
 
+use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
@@ -215,6 +216,218 @@ class RowTest extends DatabaseTestAbstract
         $this->assertNull($item->getColumnPrecision('active'));
         $this->assertNull($item->getColumnPrecision('created_at'));
         $this->assertNull($item->getColumnPrecision('changed_at'));
+    }
+
+    public function testGetColumnFlags()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_PRI_KEY
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_AUTO_INCREMENT
+            | Column::MYSQL_FLAG_PART_KEY
+            | Column::MYSQL_FLAG_NUM,
+            $category->getColumnFlags('id')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_UNIQUE_KEY
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            | Column::MYSQL_FLAG_PART_KEY,
+            $category->getColumnFlags('name')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_ENUM,
+            $category->getColumnFlags('type')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_MULTIPLE_KEY
+            | Column::MYSQL_FLAG_PART_KEY
+            | Column::MYSQL_FLAG_NUM,
+            $category->getColumnFlags('active')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_BINARY
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE,
+            $category->getColumnFlags('created_at')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_ZEROFILL
+            | Column::MYSQL_FLAG_BINARY
+            | Column::MYSQL_FLAG_TIMESTAMP
+            | Column::MYSQL_FLAG_ON_UPDATE_NOW,
+            $category->getColumnFlags('changed_at')
+        );
+        $item = $this->db()->item->newRow();
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_PRI_KEY
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_AUTO_INCREMENT
+            | Column::MYSQL_FLAG_PART_KEY
+            | Column::MYSQL_FLAG_NUM,
+            $item->getColumnFlags('id')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_MULTIPLE_KEY
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            | Column::MYSQL_FLAG_PART_KEY
+            | Column::MYSQL_FLAG_NUM,
+            $item->getColumnFlags('category_id')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_UNIQUE_KEY
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            | Column::MYSQL_FLAG_PART_KEY,
+            $item->getColumnFlags('name')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_PART_KEY
+            | Column::MYSQL_FLAG_NUM,
+            $item->getColumnFlags('active')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_BINARY
+            | Column::MYSQL_FLAG_NO_DEFAULT_VALUE,
+            $item->getColumnFlags('created_at')
+        );
+        $this->assertSame(
+            Column::MYSQL_FLAG_NOT_NULL
+            | Column::MYSQL_FLAG_UNSIGNED
+            | Column::MYSQL_FLAG_ZEROFILL
+            | Column::MYSQL_FLAG_BINARY
+            | Column::MYSQL_FLAG_TIMESTAMP
+            | Column::MYSQL_FLAG_ON_UPDATE_NOW,
+            $item->getColumnFlags('changed_at')
+        );
+    }
+
+    public function testGetColumnFlagNames()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PRI_KEY',
+                'UNSIGNED',
+                'AUTO_INCREMENT',
+                'PART_KEY',
+                'NUM',
+            ],
+            $category->getColumnFlagNames('id')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNIQUE_KEY',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+            ],
+            $category->getColumnFlagNames('name')
+        );
+        $this->assertSame(
+            [
+                'ENUM',
+            ],
+            $category->getColumnFlagNames('type')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'PART_KEY',
+                'NUM',
+            ],
+            $category->getColumnFlagNames('active')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'BINARY',
+                'NO_DEFAULT_VALUE',
+            ],
+            $category->getColumnFlagNames('created_at')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNSIGNED',
+                'ZEROFILL',
+                'BINARY',
+                'TIMESTAMP',
+                'ON_UPDATE_NOW',
+            ],
+            $category->getColumnFlagNames('changed_at')
+        );
+        $item = $this->db()->item->newRow();
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PRI_KEY',
+                'UNSIGNED',
+                'AUTO_INCREMENT',
+                'PART_KEY',
+                'NUM',
+            ],
+            $item->getColumnFlagNames('id')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'MULTIPLE_KEY',
+                'UNSIGNED',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+                'NUM',
+            ],
+            $item->getColumnFlagNames('category_id')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNIQUE_KEY',
+                'NO_DEFAULT_VALUE',
+                'PART_KEY',
+            ],
+            $item->getColumnFlagNames('name')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'PART_KEY',
+                'NUM',
+            ],
+            $item->getColumnFlagNames('active')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'BINARY',
+                'NO_DEFAULT_VALUE',
+            ],
+            $item->getColumnFlagNames('created_at')
+        );
+        $this->assertSame(
+            [
+                'NOT_NULL',
+                'UNSIGNED',
+                'ZEROFILL',
+                'BINARY',
+                'TIMESTAMP',
+                'ON_UPDATE_NOW',
+            ],
+            $item->getColumnFlagNames('changed_at')
+        );
     }
 
     public function testGetForeignRow()
