@@ -38,12 +38,14 @@ class Column
     const MYSQL_FLAG_PRI_KEY                = 0x00000002;
 
     /**
-     * @const int MySQL flag: column is part of a non-primary unique key
+     * @const int MySQL flag: column forms the entirey of a non-primary
+     * unique key
      */
     const MYSQL_FLAG_UNIQUE_KEY             = 0x00000004;
 
     /**
-     * @const int MySQL flag: column is part of a non-primary non-unique key
+     * @const int MySQL flag: column is the first element of a non-primary
+     * key and MYSQL_FLAG_UNIQUE_KEY does not apply
      */
     const MYSQL_FLAG_MULTIPLE_KEY           = 0x00000008;
 
