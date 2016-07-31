@@ -81,7 +81,7 @@ class Row
         if (!$this->_table->hasColumn($name)) {
             throw new JunxaNoSuchColumnException($name);
         }
-        if ($this->_table->queryColumnDemandLoad($name)
+        if ($this->_table->getColumnDemandLoad($name)
             && !$this->getPrimaryKeyUnset()
         ) {
             $this->loadStoredValue($name);
@@ -298,7 +298,7 @@ class Row
                 throw new JunxaNoSuchColumnException($name);
             }
             if (
-                $this->_table->queryColumnDemandLoad($column)
+                $this->_table->getColumnDemandLoad($column)
                 && !$this->getPrimaryKeyUnset()
             ) {
                 $this->loadStoredValue($column);
