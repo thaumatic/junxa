@@ -107,7 +107,7 @@ class Column
     const MYSQL_FLAG_PART_KEY               = 0x00004000;
 
     /**
-     * @const int MySQL flag: column is numeric
+     * @const int MySQL flag: column is some variety of integer
      */
     const MYSQL_FLAG_NUM                    = 0x00008000;
 
