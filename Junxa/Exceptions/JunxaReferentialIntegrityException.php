@@ -22,14 +22,25 @@ class JunxaReferentialIntegrityException extends JunxaException
         Column $localColumn,
         Table $foreignTable,
         Column $foreignColumn,
-        array $missingValues
+        $missingValue
     ) {
         $this->localTable = $localTable;
         $this->localColumn = $localColumn;
         $this->foreignTable = $foreignTable;
         $this->foreignColumn = $foreignColumn;
-        $this->missingValues = $missingValues;
-        parent::__construct('no such column: ' . $columnName);
+        $this->missingValue = $missingValue;
+        parent::__construct(
+            'foreign table '
+            . $foreignTable->getName()
+            . ' has no value in '
+            . $foreignColumn->getName()
+            . ' corresponding to value '
+            . print_r($missingValue, true)
+            . ' for '
+            . $localColumn->getName()
+            . ' in local table '
+            . $localTable->getName()
+        );
     }
 
     public function getLocalTable()
@@ -50,6 +61,11 @@ class JunxaReferentialIntegrityException extends JunxaException
     public function getForeignColumn()
     {
         return $this->foreignColumn;
+    }
+
+    public function getMissingValue()
+    {
+        return $this->missingValue;
     }
 
 }
