@@ -450,6 +450,130 @@ class RowTest extends DatabaseTestAbstract
         );
     }
 
+    public function testGetColumnEachFlag()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'id',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_AUTO_INCREMENT
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'name',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+            )
+        );
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'type',
+                Column::MYSQL_FLAG_ENUM
+            )
+        );
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'active',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertTrue(
+            $category->getColumnEachFlag(
+                'changed_at',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_ZEROFILL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+        $item = $this->db()->item->newRow();
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'id',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PRI_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_AUTO_INCREMENT
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'category_id',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_MULTIPLE_KEY
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'name',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNIQUE_KEY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+                | Column::MYSQL_FLAG_PART_KEY
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'price',
+                0
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'active',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_PART_KEY
+                | Column::MYSQL_FLAG_NUM
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'created_at',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
+            )
+        );
+        $this->assertTrue(
+            $item->getColumnEachFlag(
+                'changed_at',
+                Column::MYSQL_FLAG_NOT_NULL
+                | Column::MYSQL_FLAG_UNSIGNED
+                | Column::MYSQL_FLAG_ZEROFILL
+                | Column::MYSQL_FLAG_BINARY
+                | Column::MYSQL_FLAG_TIMESTAMP
+                | Column::MYSQL_FLAG_ON_UPDATE_NOW
+            )
+        );
+    }
+
     public function testGetForeignRow()
     {
         try {
