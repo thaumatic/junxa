@@ -31,7 +31,7 @@ class JunxaTest extends DatabaseTestAbstract
             'database'                  => DatabaseTestAbstract::TEST_DATABASE_NAME,
             'username'                  => 'testUsername',
             'password'                  => '',
-            'options'                   => Junxa::DB_PRELOAD_TABLES | Junxa::DB_PERSISTENT_CONNECTION,
+            'options'                   => Junxa::DB_PERSISTENT_CONNECTION,
             'defaultTableClass'         => 'FakeTableClass',
             'defaultColumnClass'        => 'FakeColumnClass',
             'defaultRowClass'           => 'FakeRowClass',
@@ -68,7 +68,6 @@ class JunxaTest extends DatabaseTestAbstract
             ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
             ->setUsername('testUsername')
             ->setPassword('')
-            ->setOption(Junxa::DB_PRELOAD_TABLES, true)
             ->setOption(Junxa::DB_PERSISTENT_CONNECTION, true)
             ->setDefaultTableClass('FakeTableClass')
             ->setDefaultColumnClass('FakeColumnClass')

@@ -6,6 +6,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Events\JunxaQueryEvent;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException;
@@ -39,27 +40,21 @@ class Junxa
 {
 
     /**
-     * @const int database-level behavioral option: load all tables at
-     * initialization
-     */
-    const DB_PRELOAD_TABLES             = 0x00000001;
-
-    /**
      * @const int database-level behavioral option: cache row results from
      * tables
      */
-    const DB_CACHE_TABLE_ROWS           = 0x00000002;
+    const DB_CACHE_TABLE_ROWS           = 0x00000001;
 
     /**
      * @const int database-level behavioral option: collect statistics on
      * queries executed
      */
-    const DB_COLLECT_QUERY_STATISTICS   = 0x00000004;
+    const DB_COLLECT_QUERY_STATISTICS   = 0x00000002;
 
     /**
      * @const int database-level behavioral option: use a persistent connection
      */
-    const DB_PERSISTENT_CONNECTION      = 0x00000008;
+    const DB_PERSISTENT_CONNECTION      = 0x00000004;
 
     /**
      * @const int query output type: raw result from database interface module
@@ -227,6 +222,77 @@ class Junxa
      * @const int query result code: an UPDATE query affected no rows
      */
     const RESULT_UPDATE_FAIL            = -10;
+
+    /**
+     * @const array<string> list of PHP keywords, used for identifier validation
+     */
+    const PHP_KEYWORDS = [
+        'abstract',
+        'and',
+        'array',
+        'as',
+        'break',
+        'callable',
+        'case',
+        'catch',
+        'class',
+        'clone',
+        'const',
+        'continue',
+        'declare',
+        'default',
+        'die',
+        'do',
+        'echo',
+        'else',
+        'elseif',
+        'empty',
+        'enddeclare',
+        'endfor',
+        'endforeach',
+        'endif',
+        'endswitch',
+        'endwhile',
+        'eval',
+        'exit',
+        'extends',
+        'final',
+        'for',
+        'foreach',
+        'function',
+        'global',
+        'goto',
+        '__halt_compiler',
+        'if',
+        'implements',
+        'include',
+        'include_once',
+        'instanceof',
+        'insteadof',
+        'interface',
+        'isset',
+        'list',
+        'namespace',
+        'new',
+        'or',
+        'print',
+        'private',
+        'protected',
+        'public',
+        'require',
+        'require_once',
+        'return',
+        'static',
+        'switch',
+        'throw',
+        'trait',
+        'try',
+        'unset',
+        'use',
+        'var',
+        'while',
+        'xor',
+    ];
 
     /**
      * @var string the hostname to connect to MySQL on
@@ -1151,16 +1217,26 @@ class Junxa
     }
 
     /**
-     * Loads one or more tables onto the database model, each specified as an argument.
+     * Loads one or more tables onto the database model, each specified as an
+     * argument.
      *
-     * @param string... the names of tables to load
+     * @param string... the names of tables to load; if none are specified,
+     * load all tables
+     * @return $this
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if a table specified does not exist
      */
     public function loadTables()
     {
         $baseTables = func_get_args();
-        if (count($baseTables) === 1 && is_array($baseTables[0])) {
-            $baseTables = $baseTables[0];
+        switch (count($baseTables)) {
+            case 0:
+                $baseTables = $this->tables;
+                break;
+            case 1:
+                if (is_array($baseTables[0])) {
+                    $baseTables = $baseTables[0];
+                }
+                break;
         }
         $tables = [];
         foreach ($baseTables as $baseTable) {
@@ -1196,6 +1272,7 @@ class Junxa
             $class = $this->tableClass($table);
             $this->tableModels[$table] = new $class($this, $table, count($fieldSets[$index]), $fieldSets[$index]);
         }
+        return $this;
     }
 
     public function reportQueryStatistics()
@@ -1505,16 +1582,29 @@ class Junxa
         return $out;
     }
 
+    /**
+     * Determines and validates the names of the tables present in the
+     * database, storing the list on this model.
+     *
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
+     * any of the table names are invalid identifiers
+     */
     public function determineTables()
     {
         $this->tables = [];
         $res = $this->link->query('SHOW TABLES');
         while ($row = $res->fetch_array(MYSQLI_NUM)) {
             $table = $row[0];
+            self::validateIdentifier($table);
             $this->tables[] = $table;
         }
+        return $this;
     }
 
+    /**
+     * @return numeric the number of rows affected by the last query
+     */
     public function getAffectedRows()
     {
         return $this->link->affected_rows;
@@ -1523,13 +1613,26 @@ class Junxa
     /**
      * Property-mode accessor for tables.
      *
-     * @param string
+     * @param string table name
      * @return Thaumatic\Junxa\Table
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if the table does not exist
      */
     public function __get($name)
     {
         return $this->table($name);
+    }
+
+    /**
+     * Property-mode mutator.  Exists only to throw exceptions if attempts
+     * are made to set non-class properties on this model.
+     *
+     * @param string property name
+     * @param mixed property value
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException
+     */
+    public function __set($name, $value)
+    {
+        throw new JunxaConfigurationException('cannot set property ' . $name);
     }
 
     /**
@@ -1770,6 +1873,31 @@ class Junxa
     public static function OK($code)
     {
         return $code > 0;
+    }
+
+    /**
+     * Validates that Junxa can use the specified identifier as the name
+     * of a table or column.  The identifiers that generate exceptions are:
+     *
+     * 1) Identifiers starting with an underscore (_).  This is so that
+     * Junxa models can use properties with names beginning with underscores
+     * for their own purposes while loading database-defined information
+     * into dynamic object properties.
+     * 2) Identifiers that are PHP keywords.  This is because if you, for
+     * example, were try to use Junxa to access a database table called
+     * "isset" using syntax like $db->isset, this would be a syntax error.
+     *
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
+     * Junxa cannot represent the specified identifier
+     */
+    public static function validateIdentifier($identifier)
+    {
+        if ($identifier[0] === '_') {
+            throw new  JunxaInvalidIdentifier($identifier);
+        }
+        if (in_array($identifier, self::PHP_KEYWORDS)) {
+            throw new  JunxaInvalidIdentifier($identifier);
+        }
     }
 
 }

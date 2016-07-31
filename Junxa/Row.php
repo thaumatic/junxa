@@ -28,12 +28,6 @@ class Row
     private $_data;
 
     /**
-     * @var array<string:mixed> the "working values" for the columns on this
-     * row; when a value is set on this row after creation, it is set here
-     */
-    private $fields = [];
-
-    /**
      * @var bool whether this row has been deleted via the delete() method
      * being called on it
      */
@@ -44,27 +38,20 @@ class Row
      */
     private $_table;
 
+    /**
+     * @param Thaumatic\Junxa\Table table model that this row is attached to
+     * @param array<string:mixed> data mapping for this row; null for a new,
+     * empty row model without a corresponding database row yet
+     */
     public function __construct(Table $table, array $data = null)
     {
         $this->_table = $table;
         $this->_data = $data;
         if ($data) {
-            $demandOnlyColumns = $table->getDemandOnlyColumns();
-            if ($demandOnlyColumns) {
-                $columns = [];
-                foreach ($table->getColumns() as $column) {
-                    if (!in_array($column, $demandOnlyColumns)) {
-                        $columns[] = $column;
-                    }
-                }
-            } else {
-                $columns = $table->getColumns();
-            }
-            for ($i = 0; $i < count($columns); $i++) {
-                $column = $columns[$i];
-                $dataItem = $table->$column->import($data[$i]);
-                $this->_data[$i] = $dataItem;
-                $this->fields[$column] = $dataItem;
+            foreach ($table->getPreloadColumns() as $column) {
+                $dataItem = $table->$column->import($data[$column]);
+                $this->_data[$column] = $dataItem;
+                $this->$column = $dataItem;
             }
         }
         $this->init();
@@ -85,14 +72,20 @@ class Row
      * @return mixed
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified field does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * demand-loaded column is requested and this row cannot be identified by
+     * primary key such that values can be retrieved for it
      */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->fields)) {
-            return $this->fields[$name];
-        }
         if (!$this->_table->hasColumn($name)) {
             throw new JunxaNoSuchColumnException($name);
+        }
+        if ($this->_table->queryColumnDemandLoad($name)
+            && !$this->getPrimaryKeyUnset()
+        ) {
+            $this->loadStoredValue($name);
+            return $this->$name;
         }
         return null;
     }
@@ -102,13 +95,22 @@ class Row
      *
      * @param string field name
      * @param mixed value to assign
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * specified field is a dynamic column
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified field does not exist
      */
     public function __set($name, $value)
     {
-        if (array_key_exists($name, $this->fields) || $this->_table->hasColumn($name)) {
-            $this->fields[$name] = $value;
+        if (property_exists($this, $name)) {
+            $this->$name = $value;
+        } elseif($this->_table->hasColumn($name)) {
+            if ($this->_table->$name->isDynamic()) {
+                throw new JunxaInvalidQueryException(
+                    'cannot set value for dynamic column ' . $name
+                );
+            }
+            $this->$name = $value;
         } else {
             throw new JunxaNoSuchColumnException($name);
         }
@@ -129,10 +131,10 @@ class Row
                 throw new JunxaConfigurationException('cannot generate cache key without primary key');
             case 1:
                 $key = $this->_table->primary[0];
-                return strval($this->fields[$key]);
+                return strval($this->$key);
             default:
                 foreach ($this->_table->primary as $key) {
-                    $elem[] = $this->fields[$key];
+                    $elem[] = $this->$key;
                 }
                 return join("\0", $args) . '|' . join('', array_map('md5', $args));
         }
@@ -212,12 +214,13 @@ class Row
     }
 
     /**
-     * Retrieves the value for the specified column on this row.  This is
-     * the mechanism intended to be used for obtaining the values of
-     * demand-only columns.
+     * Retrieves the value for the specified column on this row.  Generally
+     * used to obtain the values of demand-loaded columns.
      *
      * @param string column name
      * @return mixed
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if this
      * row cannot be identified by primary key such that values can be
      * retrieved for it
@@ -238,23 +241,78 @@ class Row
         return $column->import($value);
     }
 
-    public function value($column)
+    /**
+     * Loads the database value for the specified column into this row model.
+     *
+     * @param string column name
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * value passed is not the name of a demand-loaded column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * value passed is not the name of a demand-loaded column
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if this
+     * row cannot be identified by primary key such that values can be
+     * retrieved for it
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInternalInconsistencyException
+     * if the column name cannot be found in the table's list of demand-loaded
+     * columns
+     */
+    public function loadStoredValue($column)
     {
-        if (empty($this->fields[$column])) {
-            if ($this->_table->queryColumnDemandOnly($column) && !$this->getPrimaryKeyUnset()) {
-                $this->fields[$column] = $this->getStoredValue($column);
+        if (!$this->_table->getColumnDemandLoad($column)) {
+            $columnModel = $this->getColumn($column);
+            throw new JunxaInvalidQueryException(
+                'column ' . $column . ' is not demand-loaded'
+            );
+        }
+        $pos = array_search($column, $this->_table->getDemandLoadColumns());
+        if ($pos === false) {
+            throw new JunxaInternalInconsistencyException(
+                'cannot find column ' . $column . ' in table demand-load list'
+            );
+        }
+        $value = $this->getStoredValue($column);
+        $this->$column = $value;
+        $this->_data[$column] = $value;
+        return $this;
+    }
+
+    /**
+     * Retrieves this row's value for the specified column, retrieving a
+     * demand-loaded column if necessary.
+     *
+     * @param string column name
+     * @return mixed
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * demand-loaded column is requested and this row cannot be identified by
+     * primary key such that values can be retrieved for it
+     */
+    public function getValue($column)
+    {
+        if (!property_exists($this, $column)) {
+            if (!$this->_table->hasColumn($name)) {
+                throw new JunxaNoSuchColumnException($name);
+            }
+            if (
+                $this->_table->queryColumnDemandLoad($column)
+                && !$this->getPrimaryKeyUnset()
+            ) {
+                $this->loadStoredValue($column);
+            } else {
+                return null;
             }
         }
-        return isset($this->fields[$column]) ? $this->fields[$column] : null;
+        return $this->$column;
     }
 
     public function demandAll()
     {
-        $demandOnlyColumns = $this->_table->getDemandOnlyColumns();
-        if ($demandOnlyColumns) {
-            foreach ($demandOnlyColumns as $column) {
-                $this->value($column);
-            }
+        foreach ($this->_table->getDemandLoadColumns() as $column) {
+            $this->loadStoredValue($column);
         }
     }
 
@@ -278,31 +336,26 @@ class Row
         }
         $what = [];
         foreach ($key as $column) {
-            if (!isset($this->fields[$column])) {
+            if (!isset($this->$column)) {
                 return null;
             }
-            $what[] = Q::eq($this->_table->$column, $this->fields[$column]);
+            $what[] = Q::eq($this->_table->$column, $this->$column);
         }
         return $what;
     }
 
     public function find()
     {
-        $target = $this->_table->getSelectTarget();
-        $query = [
-            'select'    => $target,
-            'limit'     => 2,
-        ];
+        $query = $this->_table->query()
+            ->select($this->_table->getSelectTarget())
+            ->limit(2);
         foreach ($this->_table->columns as $column) {
-            if (empty($this->fields[$column])) {
+            if (!isset($this->$column)) {
                 continue;
             }
-            $cond[] = Q::eq($this->_table->$column, $this->fields[$column]);
+            $query->where($column, $this->$column);
         }
-        if (count($cond)) {
-            $query['where'] = $cond;
-        }
-        $rows = $this->_table->getDatabase()->query($query, Junxa::QUERY_ARRAYS);
+        $rows = $this->_table->getDatabase()->query($query, Junxa::QUERY_ASSOCS);
         switch (count($rows)) {
             case 0:
                 return Junxa::RESULT_FIND_FAIL;
@@ -315,22 +368,17 @@ class Row
         }
         $data = $rows[0];
         $this->_data = $data;
-        $demandOnlyColumns = $this->_table->getDemandOnlyColumns();
-        if ($demandOnlyColumns) {
-            $columns = [];
-            foreach ($this->_table->columns as $column) {
-                if (!in_array($column, $demandOnlyColumns)) {
-                    $columns[] = $column;
-                }
-            }
-        } else {
-            $columns = $this->_table->columns;
+        foreach($this->_table->getPreloadColumns() as $column) {
+            $dataItem = $this->_table->$column->import($data[$column]);
+            $this->_data[$column] = $dataItem;
+            $this->$column = $dataItem;
         }
-        for ($i = 0; $i < count($columns); $i++) {
-            $column = $columns[$i];
-            $dataItem = $this->_table->$column->import($data[$i]);
-            $this->_data[$i] = $dataItem;
-            $this->fields[$column] = $dataItem;
+        foreach($this->_table->getDemandLoadColumns() as $column) {
+            if (property_exists($this, $column)) {
+                $this->loadStoredValue($column);
+            } else {
+                unset($this->_data[$column]);
+            }
         }
         $this->checkCaching();
         return $out;
@@ -349,27 +397,15 @@ class Row
         $row = $this->_table->getDatabase()->query([
             'select'    => $target,
             'where'     => $cond,
-        ], Junxa::QUERY_SINGLE_ARRAY);
+        ], Junxa::QUERY_SINGLE_ASSOC);
         if (!$row) {
             throw new JunxaInvalidQueryException('table refresh query returned no data');
         }
         $this->_data = $row;
-        $demandOnlyColumns = $this->_table->getDemandOnlyColumns();
-        if ($demandOnlyColumns) {
-            $columns = [];
-            foreach ($this->_table->getColumns() as $column) {
-                if (!in_array($column, $demandOnlyColumns)) {
-                    $columns[] = $column;
-                }
-            }
-        } else {
-            $columns = $this->_table->getColumns();
-        }
-        for ($i = 0; $i < count($columns); $i++) {
-            $column = $columns[$i];
-            $dataItem = $this->_table->$column->import($row[$i]);
-            $this->_data[$i] = $dataItem;
-            $this->fields[$column] = $dataItem;
+        foreach($this->_table->getPreloadColumns() as $column) {
+            $dataItem = $this->_table->$column->import($row[$column]);
+            $this->_data[$column] = $dataItem;
+            $this->$column = $dataItem;
         }
         $this->init();
         $this->checkCaching();
@@ -409,33 +445,14 @@ class Row
         } else {
             $queryDef = $this->_table->query();
         }
-        $demandOnlyColumns = $this->_table->getDemandOnlyColumns();
-        if ($demandOnlyColumns) {
-            $columns = [];
-            foreach ($this->_table->getStaticColumns() as $column) {
-                if (!in_array($column, $demandOnlyColumns)) {
-                    $columns[] = $column;
-                }
-            }
-            foreach ($demandOnlyColumns as $column) {
-                $value = $this->getStoredValue($column);
-                if ($this->fields[$column] !== $value
-                    && (
-                        !is_numeric($value)
-                        || !is_numeric($this->fields[$column])
-                        || $this->fields[$column] != $value
-                    )
-                ) {
-                    $queryDef->update($column, $this->fields[$column]);
-                }
-            }
-        } else {
-            $columns = $this->_table->getStaticColumns();
-        }
-        for ($i = 0; $i < count($columns); $i++) {
-            $column = $columns[$i];
-            if ($this->fields[$column] !== $this->_data[$i]) {
-                $queryDef->update($column, $this->fields[$column]);
+        foreach ($this->_table->getStaticColumns() as $column) {
+            if (property_exists($this, $column)
+                && (
+                    !array_key_exists($column, $this->_data)
+                    || $this->$column !== $this->_data[$column]
+                )
+            ) {
+                $queryDef->update($column, $this->$column);
             }
         }
         if (!$queryDef->getUpdate()) {
@@ -490,8 +507,8 @@ class Row
         }
         if ($this->_table->getDynamicDefaultsPresent()) {
             foreach ($this->_table->getStaticColumns() as $column) {
-                if (array_key_exists($column, $this->fields)) {
-                    $queryDef->insert($column, $this->fields[$column]);
+                if (property_exists($this, $column)) {
+                    $queryDef->insert($column, $this->$column);
                 } else {
                     $default = $this->_table->$column->getDynamicDefault();
                     if ($default) {
@@ -501,8 +518,8 @@ class Row
             }
         } else {
             foreach ($this->_table->getStaticColumns() as $column) {
-                if (array_key_exists($column, $this->fields)) {
-                    $queryDef->insert($column, $this->fields[$column]);
+                if (property_exists($this, $column)) {
+                    $queryDef->insert($column, $this->$column);
                 }
             }
         }
@@ -516,7 +533,7 @@ class Row
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->_table->getAutoIncrementPrimary()) {
-                $this->fields[$field] = $this->_table->getDatabase()->getInsertId();
+                $this->$field = $this->_table->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
@@ -558,13 +575,13 @@ class Row
         $foundUniqueKeyMember = false;
         foreach ($this->_table->getStaticColumns() as $column) {
             $columnModel = $this->_table->$column;
-            if (array_key_exists($column, $this->fields)) {
+            if (property_exists($this, $column)) {
                 if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
                     $foundUniqueKeyMember = true;
                 }
-                $queryDef->insert($column, $this->fields[$column]);
+                $queryDef->insert($column, $this->$column);
                 if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)) {
-                    $queryDef->update($column, $this->fields[$column]);
+                    $queryDef->update($column, $this->$column);
                 }
             } else {
                 $default = $columnModel->getDynamicDefault();
@@ -587,7 +604,7 @@ class Row
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->_table->getAutoIncrementPrimary()) {
                 if ($id = $this->_table->getDatabase()->getInsertId()) {
-                    $this->fields[$field] = $id;
+                    $this->$field = $id;
                 }
             }
         }
@@ -636,8 +653,8 @@ class Row
             $queryDef = $this->_table->query($queryDef);
         }
         foreach ($this->_table->getStaticColumns() as $column) {
-            if (array_key_exists($column, $this->fields)) {
-                $queryDef->replace($column, $this->fields[$column]);
+            if (property_exists($this, $column)) {
+                $queryDef->replace($column, $this->$column);
             }
         }
         if (!$queryDef->getReplace()) {
@@ -650,41 +667,41 @@ class Row
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->_table->getAutoIncrementPrimary()) {
-                $this->fields[$field] = $this->_table->getDatabase()->getInsertId();
+                $this->$field = $this->_table->getDatabase()->getInsertId();
             }
         }
         return $this->refresh();
     }
 
+    /**
+     * Persists the data on this row model to the database, via insert if this
+     * is a new row or update if it is an existing row.
+     *
+     * @param mixed base query definition to use
+     * @return int Thaumatic\Junxa::RESULT_* value for operation
+     */
     public function save($queryDef = [])
     {
         return $this->_data ? $this->update($queryDef) : $this->insert($queryDef);
     }
 
+    /**
+     * @return bool whether this row has been changed from the version of it
+     * in the database; a new row model with no corresponding database row
+     * is always considered changed
+     */
     public function changed()
     {
         if (!$this->_data) {
             return true;
         }
-        $demandOnlyColumns = $table->getDemandOnlyColumns();
-        if ($demandOnlyColumns) {
-            foreach ($demandOnlyColumns as $column) {
-                if ($this->fields[$column] !== $this->getStoredValue($column)) {
-                    return true;
-                }
-            }
-            $columns = [];
-            foreach ($this->_table->getStaticColumns() as $column) {
-                if (!in_array($column, $demandOnlyColumns)) {
-                    $columns[] = $column;
-                }
-            }
-        } else {
-            $columns = $this->_table->getStaticColumns();
-        }
-        for ($i = 0; $i < count($columns); $i++) {
-            $column = $columns[$i];
-            if ($this->fields[$column] !== $this->_data[$i]) {
+        foreach ($this->_table->getStaticColumns() as $column) {
+            if (property_exists($this, $column)
+                && (
+                    !array_key_exists($column, $this->_data)
+                    || $this->$column !== $this->_data[$column]
+                )
+            ) {
                 return true;
             }
         }
@@ -742,10 +759,8 @@ class Row
     }
 
     /**
-     * Retrieves whether this row has been deleted via the delete() call on
-     * itself.
-     *
-     * @return bool
+     * @return bool whether this row has been deleted via the delete() call on
+     * itself
      */
     public function getDeleted()
     {
@@ -753,10 +768,8 @@ class Row
     }
 
     /**
-     * Retrieves an array of the column names of of this row's table's primary
-     * key.
-     *
-     * @return array<string>
+     * @return array<string> the column names of of this row's table's primary
+     * key
      */
     public function getPrimaryKey()
     {
@@ -764,10 +777,8 @@ class Row
     }
 
     /**
-     * Retrieves whether any of the primary key columns for this row's table
-     * are not set on this row.
-     *
-     * @return bool
+     * @return bool whether any of the primary key columns for this row's table
+     * are not set on this row
      */
     public function getPrimaryKeyUnset()
     {

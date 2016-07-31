@@ -66,10 +66,16 @@ class Table
     private $dynamicColumns = [];
 
     /**
-     * @var array<string> the names of demand-only columns (not loaded when
+     * @var array<string> the names of preload columns (loaded when row models
+     * are generated)
+     */
+    private $preloadColumns = [];
+
+    /**
+     * @var array<string> the names of demand-loaded columns (not loaded when
      * row models are generated)
      */
-    private $demandOnlyColumns = [];
+    private $demandLoadColumns = [];
 
     /**
      * @var array<string:Thaumatic\Junxa\Row> row cached used when
@@ -117,6 +123,9 @@ class Table
      *
      * @param int the number of columns in the table
      * @param array field information on the table's columns
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
+     * a column name fails validation via
+     * {@see Thaumatic\Junxa::validateIdentifier()}
      */
     private function determineColumns($columnCount = null, $fields = [])
     {
@@ -137,8 +146,10 @@ class Table
         for ($i = 0; $i < $columnCount; $i++) {
             $field = $fields[$i];
             $column = $field->name;
+            Junxa::validateIdentifier($column);
             $this->columns[] = $column;
             $this->staticColumns[] = $column;
+            $this->preloadColumns[] = $column;
             $class = $this->database->columnClass($column);
             $columnModel = new $class($this, $column, $field, $colinfo[$i], null);
             $this->columnModels[$column] = $columnModel;
@@ -330,18 +341,24 @@ class Table
     }
 
     /**
-     * Sets whether a specified column is demand-only.  Demand-only columns
+     * Sets whether a specified column is demand-loaded.  Demand-loaded columns
      * are not retrieved when the overall row they are a part of is retrieved,
      * only when they are specifically requested.
      *
-     * @param string the name of the column
+     * @param string column name
      * @param bool the setting desired
      * @return $this
+     * @throws Thaumatic\Junxa\JunxaNoSuchColumnException if the column
+     * specified does not exist
      */
-    public function setColumnDemandOnly($name, $flag)
+    public function setColumnDemandLoad($name, $flag)
     {
-        if ($this->demandOnlyColumns) {
-            $pos = array_search($name, $this->demandOnlyColumns);
+        $mainPos = array_search($name, $this->columns);
+        if ($mainPos === false) {
+            throw new JunxaNoSuchColumnException($name);
+        }
+        if ($this->demandLoadColumns) {
+            $pos = array_search($name, $this->demandLoadColumns);
         } else {
             $pos = false;
         }
@@ -350,29 +367,39 @@ class Table
                 throw new JunxaConfigurationException(
                     'Cannot set primary key column "'
                     . $name
-                    . '" as demand-only'
+                    . '" as demand-loaded'
                 );
             }
             if ($pos === false) {
-                $this->demandOnlyColumns[] = $name;
+                $this->demandLoadColumns[] = $name;
             }
+            unset($preloadColumns[$mainPos]);
         } else {
             if ($pos !== false) {
-                array_splice($this->demandOnlyColumns, $pos, 1);
+                array_splice($this->demandLoadColumns, $pos, 1);
             }
+            $preloadColumns[$mainPos] = $name;
         }
         return $this;
     }
 
     /**
-     * Retrieves whether the specified column is demand-only.
+     * @param string column name
+     * @return bool whether the specified column is preloaded
+     */
+    public function getColumnPreload($name)
+    {
+        return in_array($name, $this->preloadColumns);
+    }
+
+    /**
      *
      * @param string the name of the column
-     * @return bool
+     * @return bool whether the specified column is demand-loaded
      */
-    public function getColumnDemandOnly($name)
+    public function getColumnDemandLoad($name)
     {
-        return $this->demandOnlyColumns && in_array($name, $this->demandOnlyColumns);
+        return in_array($name, $this->demandLoadColumns);
     }
 
     /**
@@ -434,11 +461,19 @@ class Table
     }
 
     /**
-     * @return array<string> the list of demand-only columns for this table
+     * @return array<string> the list of preloaded columns for this table
      */
-    public function getDemandOnlyColumns()
+    public function getPreloadColumns()
     {
-        return $this->demandOnlyColumns;
+        return $this->preloadColumns;
+    }
+
+    /**
+     * @return array<string> the list of demand-loaded columns for this table
+     */
+    public function getDemandLoadColumns()
+    {
+        return $this->demandLoadColumns;
     }
 
     /**
@@ -634,7 +669,7 @@ class Table
             ->select($target)
             ->limit(1)
             ->option('emptyOkay', true)
-            ->setMode(Junxa::QUERY_SINGLE_ARRAY)
+            ->setMode(Junxa::QUERY_SINGLE_ASSOC)
         ;
         $row = $this->database->query($query);
         if (!$row) {
@@ -824,10 +859,10 @@ class Table
         if ($query->isMultitable()
             && !($context === 'function' && $parent instanceof Element && $parent->type === 'COUNT')
         ) {
-            if ($this->demandOnlyColumns && $context !== 'function') {
+            if ($this->demandLoadColumns && $context !== 'function') {
                 $items = [];
                 foreach ($this->columns as $column) {
-                    if (!in_array($column, $this->demandOnlyColumns)) {
+                    if (!in_array($column, $this->demandLoadColumns)) {
                         $items[] = '`' . $this->name . '`.`' . $column . '`';
                     }
                 }
@@ -836,10 +871,10 @@ class Table
                 return '`' . $this->name . '`.*';
             }
         }
-        if ($this->demandOnlyColumns && $context !== 'function') {
+        if ($this->demandLoadColumns && $context !== 'function') {
             $items = [];
             foreach ($this->columns as $column) {
-                if (!in_array($column, $this->demandOnlyColumns)) {
+                if (!in_array($column, $this->demandLoadColumns)) {
                     $items[] = '`' . $column . '`';
                 }
             }
