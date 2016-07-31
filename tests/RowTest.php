@@ -2,6 +2,7 @@
 
 namespace Thaumatic\Junxa\Tests;
 
+use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 
@@ -59,6 +60,44 @@ class RowTest extends DatabaseTestAbstract
             $this->assertFalse(empty($categoryRow->created_at));
             $this->assertFalse(empty($categoryRow->changed_at));
             $this->assertTrue(empty($categoryRow->nonexistent_column));
+        } finally {
+            if (isset($categoryRow) && $categoryRow->id !== null) {
+                $categoryRow->delete();
+            }
+        }
+    }
+
+    public function testExceptionOnNonexistentColumn()
+    {
+        try {
+            $categoryRow = $this->db()->category->newRow();
+            try {
+                $value = $categoryRow->nonexistent_column;
+                $this->fail('was able to access nonexistent_column');
+            } catch(JunxaNoSuchColumnException $e) {
+                $this->assertSame('nonexistent_column', $e->getColumnName());
+            }
+            try {
+                $categoryRow->nonexistent_column = 'value';
+                $this->fail('was able to mutate nonexistent_column');
+            } catch(JunxaNoSuchColumnException $e) {
+                $this->assertSame('nonexistent_column', $e->getColumnName());
+            }
+            $categoryRow->name = 'Uncategorized';
+            $categoryRow->created_at = Q::func('NOW');
+            $categoryRow->save();
+            try {
+                $value = $categoryRow->nonexistent_column;
+                $this->fail('was able to access nonexistent_column');
+            } catch(JunxaNoSuchColumnException $e) {
+                $this->assertSame('nonexistent_column', $e->getColumnName());
+            }
+            try {
+                $categoryRow->nonexistent_column = 'value';
+                $this->fail('was able to mutate nonexistent_column');
+            } catch(JunxaNoSuchColumnException $e) {
+                $this->assertSame('nonexistent_column', $e->getColumnName());
+            }
         } finally {
             if (isset($categoryRow) && $categoryRow->id !== null) {
                 $categoryRow->delete();
