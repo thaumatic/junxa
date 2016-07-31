@@ -104,7 +104,7 @@ class Row
     {
         if (property_exists($this, $name)) {
             $this->$name = $value;
-        } elseif($this->_table->hasColumn($name)) {
+        } elseif ($this->_table->hasColumn($name)) {
             if ($this->_table->$name->isDynamic()) {
                 throw new JunxaInvalidQueryException(
                     'cannot set value for dynamic column ' . $name
@@ -407,8 +407,7 @@ class Row
             if (!$this->_table->hasColumn($name)) {
                 throw new JunxaNoSuchColumnException($name);
             }
-            if (
-                $this->_table->getColumnDemandLoad($column)
+            if ($this->_table->getColumnDemandLoad($column)
                 && !$this->getPrimaryKeyUnset()
             ) {
                 $this->loadStoredValue($column);
@@ -478,12 +477,12 @@ class Row
         }
         $data = $rows[0];
         $this->_data = $data;
-        foreach($this->_table->getPreloadColumns() as $column) {
+        foreach ($this->_table->getPreloadColumns() as $column) {
             $dataItem = $this->_table->$column->import($data[$column]);
             $this->_data[$column] = $dataItem;
             $this->$column = $dataItem;
         }
-        foreach($this->_table->getDemandLoadColumns() as $column) {
+        foreach ($this->_table->getDemandLoadColumns() as $column) {
             if (property_exists($this, $column)) {
                 $this->loadStoredValue($column);
             } else {
@@ -512,7 +511,7 @@ class Row
             throw new JunxaInvalidQueryException('table refresh query returned no data');
         }
         $this->_data = $row;
-        foreach($this->_table->getPreloadColumns() as $column) {
+        foreach ($this->_table->getPreloadColumns() as $column) {
             $dataItem = $this->_table->$column->import($row[$column]);
             $this->_data[$column] = $dataItem;
             $this->$column = $dataItem;

@@ -74,13 +74,13 @@ class RowTest extends DatabaseTestAbstract
             try {
                 $value = $categoryRow->nonexistent_column;
                 $this->fail('was able to access nonexistent_column');
-            } catch(JunxaNoSuchColumnException $e) {
+            } catch (JunxaNoSuchColumnException $e) {
                 $this->assertSame('nonexistent_column', $e->getColumnName());
             }
             try {
                 $categoryRow->nonexistent_column = 'value';
                 $this->fail('was able to mutate nonexistent_column');
-            } catch(JunxaNoSuchColumnException $e) {
+            } catch (JunxaNoSuchColumnException $e) {
                 $this->assertSame('nonexistent_column', $e->getColumnName());
             }
             $categoryRow->name = 'Uncategorized';
@@ -89,13 +89,13 @@ class RowTest extends DatabaseTestAbstract
             try {
                 $value = $categoryRow->nonexistent_column;
                 $this->fail('was able to access nonexistent_column');
-            } catch(JunxaNoSuchColumnException $e) {
+            } catch (JunxaNoSuchColumnException $e) {
                 $this->assertSame('nonexistent_column', $e->getColumnName());
             }
             try {
                 $categoryRow->nonexistent_column = 'value';
                 $this->fail('was able to mutate nonexistent_column');
-            } catch(JunxaNoSuchColumnException $e) {
+            } catch (JunxaNoSuchColumnException $e) {
                 $this->assertSame('nonexistent_column', $e->getColumnName());
             }
         } finally {
