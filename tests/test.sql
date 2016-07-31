@@ -16,6 +16,7 @@ CREATE TABLE `item` (
     `id` mediumint unsigned not null auto_increment,
     `category_id` mediumint unsigned not null,
     `name` varchar(250) not null,
+    `price` decimal(10,2),
     `active` bool not null default 1,
     `created_at` datetime not null,
     `changed_at` timestamp not null,

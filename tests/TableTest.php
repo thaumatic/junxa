@@ -22,6 +22,7 @@ class TableTest extends DatabaseTestAbstract
             'id',
             'category_id',
             'name',
+            'price',
             'active',
             'created_at',
             'changed_at',

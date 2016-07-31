@@ -128,6 +128,7 @@ class RowTest extends DatabaseTestAbstract
             'id',
             'category_id',
             'name',
+            'price',
             'active',
             'created_at',
             'changed_at',
@@ -147,6 +148,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('mediumint', $item->getColumnType('id'));
         $this->assertSame('mediumint', $item->getColumnType('category_id'));
         $this->assertSame('varchar', $item->getColumnType('name'));
+        $this->assertSame('decimal', $item->getColumnType('price'));
         $this->assertSame('tinyint', $item->getColumnType('active'));
         $this->assertSame('datetime', $item->getColumnType('created_at'));
         $this->assertSame('timestamp', $item->getColumnType('changed_at'));
@@ -165,6 +167,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('id'));
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('category_id'));
         $this->assertSame('varchar(250)', $item->getColumnFullType('name'));
+        $this->assertSame('decimal(10,2)', $item->getColumnFullType('price'));
         $this->assertSame('tinyint(1)', $item->getColumnFullType('active'));
         $this->assertSame('datetime', $item->getColumnFullType('created_at'));
         $this->assertSame('timestamp', $item->getColumnFullType('changed_at'));
@@ -183,6 +186,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('int', $item->getColumnTypeClass('id'));
         $this->assertSame('int', $item->getColumnTypeClass('category_id'));
         $this->assertSame('text', $item->getColumnTypeClass('name'));
+        $this->assertSame('float', $item->getColumnTypeClass('price'));
         $this->assertSame('int', $item->getColumnTypeClass('active'));
         $this->assertSame('datetime', $item->getColumnTypeClass('created_at'));
         $this->assertSame('datetime', $item->getColumnTypeClass('changed_at'));
@@ -201,6 +205,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(8, $item->getColumnLength('id'));
         $this->assertSame(8, $item->getColumnLength('category_id'));
         $this->assertSame(250, $item->getColumnLength('name'));
+        $this->assertSame(10, $item->getColumnLength('price'));
         $this->assertSame(1, $item->getColumnLength('active'));
         $this->assertNull($item->getColumnLength('created_at'));
         $this->assertNull($item->getColumnLength('changed_at'));
@@ -219,6 +224,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertNull($item->getColumnPrecision('id'));
         $this->assertNull($item->getColumnPrecision('category_id'));
         $this->assertNull($item->getColumnPrecision('name'));
+        $this->assertSame(2, $item->getColumnPrecision('price'));
         $this->assertNull($item->getColumnPrecision('active'));
         $this->assertNull($item->getColumnPrecision('created_at'));
         $this->assertNull($item->getColumnPrecision('changed_at'));
@@ -294,6 +300,10 @@ class RowTest extends DatabaseTestAbstract
             | Column::MYSQL_FLAG_NO_DEFAULT_VALUE
             | Column::MYSQL_FLAG_PART_KEY,
             $item->getColumnFlags('name')
+        );
+        $this->assertSame(
+            0,
+            $item->getColumnFlags('price')
         );
         $this->assertSame(
             Column::MYSQL_FLAG_NOT_NULL
@@ -397,6 +407,10 @@ class RowTest extends DatabaseTestAbstract
                 'NUM',
             ],
             $item->getColumnFlagNames('category_id')
+        );
+        $this->assertSame(
+            [],
+            $item->getColumnFlagNames('price')
         );
         $this->assertSame(
             [
