@@ -140,7 +140,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('mediumint', $item->getColumnType('id'));
         $this->assertSame('mediumint', $item->getColumnType('category_id'));
         $this->assertSame('varchar', $item->getColumnType('name'));
-        $this->assertSame('tinyint', $category->getColumnType('active'));
+        $this->assertSame('tinyint', $item->getColumnType('active'));
         $this->assertSame('datetime', $item->getColumnType('created_at'));
         $this->assertSame('timestamp', $item->getColumnType('changed_at'));
     }
@@ -158,7 +158,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('id'));
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('category_id'));
         $this->assertSame('varchar(250)', $item->getColumnFullType('name'));
-        $this->assertSame('tinyint(1)', $category->getColumnFullType('active'));
+        $this->assertSame('tinyint(1)', $item->getColumnFullType('active'));
         $this->assertSame('datetime', $item->getColumnFullType('created_at'));
         $this->assertSame('timestamp', $item->getColumnFullType('changed_at'));
     }
@@ -176,7 +176,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('int', $item->getColumnTypeClass('id'));
         $this->assertSame('int', $item->getColumnTypeClass('category_id'));
         $this->assertSame('text', $item->getColumnTypeClass('name'));
-        $this->assertSame('int', $category->getColumnTypeClass('active'));
+        $this->assertSame('int', $item->getColumnTypeClass('active'));
         $this->assertSame('datetime', $item->getColumnTypeClass('created_at'));
         $this->assertSame('datetime', $item->getColumnTypeClass('changed_at'));
     }
@@ -194,9 +194,27 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(8, $item->getColumnLength('id'));
         $this->assertSame(8, $item->getColumnLength('category_id'));
         $this->assertSame(250, $item->getColumnLength('name'));
-        $this->assertSame(1, $category->getColumnLength('active'));
+        $this->assertSame(1, $item->getColumnLength('active'));
         $this->assertNull($item->getColumnLength('created_at'));
         $this->assertNull($item->getColumnLength('changed_at'));
+    }
+
+    public function testGetColumnPrecision()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertNull($category->getColumnPrecision('id'));
+        $this->assertNull($category->getColumnPrecision('name'));
+        $this->assertNull($category->getColumnPrecision('type'));
+        $this->assertNull($category->getColumnPrecision('active'));
+        $this->assertNull($category->getColumnPrecision('created_at'));
+        $this->assertNull($category->getColumnPrecision('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertNull($item->getColumnPrecision('id'));
+        $this->assertNull($item->getColumnPrecision('category_id'));
+        $this->assertNull($item->getColumnPrecision('name'));
+        $this->assertNull($item->getColumnPrecision('active'));
+        $this->assertNull($item->getColumnPrecision('created_at'));
+        $this->assertNull($item->getColumnPrecision('changed_at'));
     }
 
     public function testGetForeignRow()
