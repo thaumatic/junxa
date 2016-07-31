@@ -163,6 +163,24 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('timestamp', $item->getColumnFullType('changed_at'));
     }
 
+    public function testGetColumnTypeClass()
+    {
+        $category = $this->db()->category->newRow();
+        $this->assertSame('int', $category->getColumnTypeClass('id'));
+        $this->assertSame('text', $category->getColumnTypeClass('name'));
+        $this->assertSame('text', $category->getColumnTypeClass('type'));
+        $this->assertSame('int', $category->getColumnTypeClass('active'));
+        $this->assertSame('datetime', $category->getColumnTypeClass('created_at'));
+        $this->assertSame('datetime', $category->getColumnTypeClass('changed_at'));
+        $item = $this->db()->item->newRow();
+        $this->assertSame('int', $item->getColumnTypeClass('id'));
+        $this->assertSame('int', $item->getColumnTypeClass('category_id'));
+        $this->assertSame('text', $item->getColumnTypeClass('name'));
+        $this->assertSame('int', $category->getColumnTypeClass('active'));
+        $this->assertSame('datetime', $item->getColumnTypeClass('created_at'));
+        $this->assertSame('datetime', $item->getColumnTypeClass('changed_at'));
+    }
+
     public function testGetForeignRow()
     {
         try {
