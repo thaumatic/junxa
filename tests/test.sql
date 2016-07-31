@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `category`;
 CREATE TABLE `category` (
     `id` mediumint unsigned not null auto_increment,
     `name` varchar(250) not null,
+    `type` enum('A''s', 'B''s', 'C''s'),
     `active` bool not null default 1,
     `created_at` datetime not null,
     `changed_at` timestamp not null,

@@ -111,6 +111,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame([
             'id',
             'name',
+            'type',
             'active',
             'created_at',
             'changed_at',
