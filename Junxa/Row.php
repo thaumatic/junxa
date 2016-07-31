@@ -122,7 +122,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
      * table we are attached to has no primary key
      */
-    public function cacheKey()
+    public function getCacheKey()
     {
         switch (count($this->table->primary)) {
             case 0:
@@ -167,9 +167,12 @@ class Row
         return $this->table->$column;
     }
 
-    public function columns()
+    /**
+     * @return array<string> the list of column names for this row's table
+     */
+    public function getColumns()
     {
-        return $this->table->columns;
+        return $this->table->getColumns();
     }
 
     public function type($column)
@@ -258,7 +261,7 @@ class Row
     public function checkCaching($uncache = false)
     {
         if ($this->table->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->getPrimaryKey()) {
-            $key = $this->cacheKey();
+            $key = $this->getCacheKey();
             if ($uncache) {
                 $this->table->removeCacheKey($key);
             } elseif ($this->table->getCachedValue($key) === null) {

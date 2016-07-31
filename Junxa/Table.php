@@ -644,7 +644,7 @@ class Table
         $out = new $class($this, $row);
         if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             if (!isset($key)) {
-                $key = $out->cacheKey();
+                $key = $out->getCacheKey();
             }
             if (empty($this->cache[$key])) {
                 $this->cache[$key] = $out;
@@ -748,7 +748,7 @@ class Table
         if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->primary && !$query->option('nocache')) {
             foreach ($rows as $data) {
                 $row = new $class($this, $data);
-                $key = $row->cacheKey();
+                $key = $row->getCacheKey();
                 if (empty($this->cache[$key])) {
                     $this->cache[$key] = $row;
                 }
