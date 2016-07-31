@@ -283,8 +283,8 @@ class Column
             }
             $list = substr($match[0], 2, strlen($match[0]) - 4);
             $this->values = preg_split("/','/", $list);
-            for ($i = 0; $i < count($this->values); $i++) {
-                $this->values[$i] = preg_replace("/''/", "'", $this->values[$i]);
+            foreach ($this->values as &$value) {
+                $value = str_replace("''", "'", $value);
             }
             if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL) && $this->getFlag(self::MYSQL_FLAG_ENUM)) {
                 array_unshift($this->values, null);
@@ -532,6 +532,15 @@ class Column
     public function getDefaultValue()
     {
         return $this->defaultValue;
+    }
+
+    /**
+     * @return array<string>|null the values this column can have, if an enum
+     * or set
+     */
+    public function getValues()
+    {
+        return $this->values;
     }
 
     /**
