@@ -1355,7 +1355,11 @@ class Junxa
                 $queryType = $query->getType();
                 if ($queryType === 'select' || $queryType === 'show') {
                     $isResult = true;
+                    $useChangeHandler = $query->getOption(QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER);
                 } else {
+                    $useChangeHandler = true;
+                }
+                if ($useChangeHandler) {
                     $handler = $this->getChangeHandlerObject();
                     if ($handler) {
                         $result = $handler->query($query, $mode, $emptyOkay);
@@ -1365,17 +1369,15 @@ class Junxa
                         return $result;
                     }
                 }
-                if ($query->hasOptions()) {
-                    if ($query->option('emptyOkay')) {
-                        $emptyOkay = true;
-                    }
-                    if ($query->option('errorOkay')) {
-                        $errorOkay = true;
-                    }
+                if ($query->getOption(QueryBuilder::OPTION_EMPTY_OKAY)) {
+                    $emptyOkay = true;
+                }
+                if ($query->getOption(QueryBuilder::OPTION_ERROR_OKAY)) {
+                    $errorOkay = true;
                 }
                 if ($queryType === 'update') {
                     $update = true;
-                } elseif ($queryType === 'insert' && $query->option('ignore')) {
+                } elseif ($queryType === 'insert' && $query->getOption(QueryBuilder::OPTION_IGNORE)) {
                     $insertIgnore = true;
                 }
                 $query = $query->express();

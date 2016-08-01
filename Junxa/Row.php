@@ -563,26 +563,35 @@ class Row
         return $out;
     }
 
+    /**
+     * Loads this model with the current data for its row from the database.
+     *
+     * @return int Thaumatic\Junxa::RESULT_SUCCESS if the refresh succeeds,
+     * Thaumatic\Junxa::RESULT_REFRESH_FAIL if the row cannot be refreshed
+     * because a match condition cannot be constructed (normally means the
+     * row's table has no primary key)
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * refresh query executes but returns no data
+     */
     public function refresh()
     {
         $cond = $this->getMatchCondition();
         if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
         }
-        $target = $this->junxaInternalTable->getSelectTarget();
-        if ($this->junxaInternalTable->getDatabase()->getChangeHandlerObject()) {
-            usleep(200000);
-        }
-        $row = $this->junxaInternalTable->getDatabase()->query([
-            'select'    => $target,
-            'where'     => $cond,
-        ], Junxa::QUERY_SINGLE_ASSOC);
-        if (!$row) {
-            throw new JunxaInvalidQueryException('table refresh query returned no data');
-        }
-        $this->junxaInternalData = $row;
+        $rowData = $this->junxaInternalTable->getDatabase()->query()
+            ->select($this->junxaInternalTable->getSelectTarget())
+            ->setMode(Junxa::QUERY_SINGLE_ASSOC)
+            // We force refresh queries to run against the change handler,
+            // because otherwise we would have to sleep for an undeterminable
+            // period of time to allow changes to propagate.
+            ->setOption(QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER, true)
+            ->where($cond)
+            ->execute()
+        ;
+        $this->junxaInternalData = $rowData;
         foreach ($this->junxaInternalTable->getPreloadColumns() as $column) {
-            $dataItem = $this->junxaInternalTable->$column->import($row[$column]);
+            $dataItem = $this->junxaInternalTable->$column->import($rowData[$column]);
             $this->junxaInternalData[$column] = $dataItem;
             $this->$column = $dataItem;
         }

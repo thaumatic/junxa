@@ -17,6 +17,63 @@ use Thaumatic\Junxa\Table;
 class Builder
 {
 
+    /**
+     * @const int option: INSERT and REPLACE clauses generated from this query
+     * should use the DELAYED modifier
+     */
+    const OPTION_DELAYED                    = 0x00000001;
+
+    /**
+     * @const int option: a SELECT clause generated from this query should
+     * use the DISTINCT modifier
+     */
+    const OPTION_DISTINCT                   = 0x00000002;
+
+    /**
+     * @const int option: single element result sets should result in a null
+     * return value rather than raising an exception if they find no results
+     */
+    const OPTION_EMPTY_OKAY                 = 0x00000004;
+
+    /**
+     * @const int option: don't raise exceptions on query failures
+     */
+    const OPTION_ERROR_OKAY                 = 0x00000008;
+
+    /**
+     * @const int option: force this query to be sent to the database's
+     * change handler, if any
+     */
+    const OPTION_FORCE_USE_CHANGE_HANDLER   = 0x00000010;
+
+    /**
+     * @const int option: INSERT and REPLACE clauses generated from this query
+     * should use the HIGH_PRIORITY modifier (overrides OPTION_LOW_PRIORITY
+     * and OPTION_DELAYED)
+     */
+    const OPTION_HIGH_PRIORITY              = 0x00000020;
+
+    /**
+     * @const int option: INSERT and REPLACE clauses generated from this query
+     * should use the IGNORE modifier
+     */
+    const OPTION_IGNORE                     = 0x00000040;
+
+    /**
+     * @const int option: INSERT and REPLACE clauses generated from this query
+     * should use the LOW_PRIORITY modifier (overrides OPTION_DELAYED)
+     */
+    const OPTION_LOW_PRIORITY               = 0x00000080;
+
+    /**
+     * @const int option: don't cache rows retrieved with this query
+     */
+    const OPTION_SUPPRESS_CACHING           = 0x00000100;
+
+    /**
+     * @const array<string> the clauses for which incoming values need to be
+     * loaded into an array if they aren't one already
+     */
     const ARRAY_CLAUSES = [
         'select',
         'insert',
@@ -27,39 +84,125 @@ class Builder
         'order',
         'group',
     ];
+
+    /**
+     * @const array<string> the clauses for which incoming values can be used
+     * directly
+     */
     const DIRECT_CLAUSES = [
         'join',
         'delete',
         'limit',
         'mode',
     ];
-    const OPTION_CLAUSES = [
-        'options',
-    ];
 
+    /**
+     * @var string the main clause of the query, set by validate()
+     */
     private $type;
+
+    /**
+     * @var int Junxa::QUERY_* mode indicating how query results should be
+     * handled
+     */
     private $mode = 0;
+
+    /**
+     * @var Thaumatic\Junxa database model this query is attached to
+     */
     private $database;
+
+    /**
+     * @var Thaumatic\Junxa\Table table model this query is attached
+     * to, if any
+     */
     private $table;
+
+    /**
+     * @var array<mixed> SELECT clause contents
+     */
     private $select = [];
+
+    /**
+     * @var array<mixed> INSERT clause contents
+     */
     private $insert = [];
+
+    /**
+     * @var array<mixed> REPLACE clause contents
+     */
     private $replace = [];
+
+    /**
+     * @var array<mixed> UPDATE clause contents
+     */
     private $update = [];
+
+    /**
+     * @var array<mixed> DELETE clause contents
+     */
     private $delete = [];
+
+    /**
+     * @var array<mixed> JOIN clause contents
+     */
     private $join = [];
+
+    /**
+     * @var array<mixed> WHERE clause contents
+     */
     private $where = [];
+
+    /**
+     * @var array<mixed> GROUP BY clause contents
+     */
     private $group = [];
+
+    /**
+     * @var array<mixed> HAVING clause contents
+     */
     private $having = [];
+
+    /**
+     * @var array<mixed> ORDER BY clause contents
+     */
     private $order = [];
+
+    /**
+     * @var mixed LIMIT clause contents
+     */
     private $limit;
-    private $options = [];
+
+    /**
+     * @var string cache of rendered SQL for this query
+     */
     private $outputCache;
-    private $expressed;
+
+    /**
+     * @var array<string> list of names of tables this query interacts with
+     */
     private $tables = [];
+
+    /**
+     * @var array<string:true> map of names of tables that can be assigned
+     * null fields because of their JOIN position
+     */
     private $nullTables = [];
+
+    /**
+     * @var bool whether this query interacts with multiple tables
+     */
     private $isMultitable = false;
+
+    /**
+     * @var bool whether this query has been validated
+     */
     private $validated = false;
-    private $forceUseChangeHandler = false;
+
+    /**
+     * @var int Thaumatic\Junxa\OPTION_* bitmask of enabled query options
+     */
+    private $options = 0;
 
     /**
      * @param Thaumatic\Junxa the database the generated query is to be
@@ -92,18 +235,13 @@ class Builder
                 $this->$clause = $def[$clause];
             }
         }
-        foreach (self::OPTION_CLAUSES as $clause) {
-            if (isset($def[$clause])) {
-                $this->$clause = is_array($def[$clause]) ? $def[$clause] : [$def[$clause] => true];
-            }
-        }
         if (!$skipValidate) {
             $this->validate();
         }
     }
 
     /**
-     * Retrieves the database model this query builder is attached to.
+     * Retrieves the database model this query is attached to.
      *
      * @return Thaumatic\Junxa
      */
@@ -113,7 +251,7 @@ class Builder
     }
 
     /**
-     * Retrieves the table model this query builder is attached to, if any.
+     * Retrieves the table model this query is attached to, if any.
      *
      * @return Thaumatic\Junxa\Table|null
      */
@@ -124,7 +262,7 @@ class Builder
 
     /**
      * Called when an alteration is made to the query definition.  Marks the
-     * query builder as not validated and clears any output caching.
+     * query as not validated and clears any output caching.
      */
     private function changed()
     {
@@ -906,54 +1044,6 @@ class Builder
         return $this;
     }
 
-    /**
-     * Retrieves whether any options are enabled.
-     *
-     * @return bool
-     */
-    public function hasOptions()
-    {
-        return (bool) $this->options;
-    }
-
-    public function options(array $what)
-    {
-        foreach ($what as $key => $value) {
-            $this->options[$key] = $value;
-        }
-        $this->changed();
-        return $this;
-    }
-
-    public function option()
-    {
-        $args = func_get_args();
-        switch (count($args)) {
-            case 0:
-                throw new JunxaInvalidQueryException('not enough arguments (0)');
-            case 1:
-                $name = $args[0];
-                if (!is_string($name)) {
-                    throw new JunxaInvalidQueryException('option name must be string');
-                }
-                return array_key_exists($name, $this->options) ? $this->options[$name] : null;
-            case 2:
-                $name = $args[0];
-                if (!is_string($name)) {
-                    throw new JunxaInvalidQueryException('option name must be string');
-                }
-                $value = $args[1];
-                if ($value === null) {
-                    unset($this->options[$name]);
-                } else {
-                    $this->options[$name] = $value;
-                }
-                $this->changed();
-                break;
-        }
-        return $this;
-    }
-
     public function performTableScan()
     {
         $tables = [];
@@ -999,14 +1089,13 @@ class Builder
             return $this->outputCache;
         }
         $this->validate();
-        $this->expressed = [];
         $type = $this->type;
         $main = $this->$type;
         $this->performTableScan();
         $out = strtoupper($type) . ' ';
         switch ($type) {
             case 'select':
-                if ($this->option('distinct')) {
+                if ($this->getOption(self::OPTION_DISTINCT)) {
                     $out .= 'DISTINCT ';
                 }
                 $out .= $this->database->resolve($main, $this, $type, null, $this);
@@ -1025,14 +1114,14 @@ class Builder
                     );
                 }
                 if ($this->options) {
-                    if ($this->option('high_priority')) {
+                    if ($this->getOption(self::OPTION_HIGH_PRIORITY)) {
                         $out .= 'HIGH_PRIORITY ';
-                    } elseif ($this->option('low_priority')) {
+                    } elseif ($this->getOption(self::OPTION_LOW_PRIORITY)) {
                         $out .= 'LOW_PRIORITY ';
-                    } elseif ($this->option('delayed')) {
+                    } elseif ($this->getOption(self::OPTION_DELAYED)) {
                         $out .= 'DELAYED ';
                     }
-                    if ($this->option('ignore')) {
+                    if ($this->getoption(self::OPTION_IGNORE)) {
                         $out .= 'IGNORE ';
                     }
                 }
@@ -1223,7 +1312,7 @@ class Builder
 
     /**
      * Retrieves the first clause out of the provided list of clauses that
-     * has a definition on this query builder, if any.
+     * has a definition on this query, if any.
      *
      * @param array<string> list of clauses
      * @return string|null
@@ -1239,23 +1328,61 @@ class Builder
     }
 
     /**
-     * @param bool whether this query should be forced to be sent to the
-     * database's change handler, if present
+     * @param int Thaumatic\Junxa\Query\Builder::OPTION_* bitmask for the column
      * @return $this
      */
-    public function setForceUseChangeHandler($val)
+    public function setOptions($val)
     {
-        $this->forceUseChangeHandler = $val;
+        $this->options = $val;
         return $this;
     }
 
     /**
-     * @return bool whether this query should be forced to be sent to the
-     * database's change handler, if present
+     * @return int Thaumatic\Junxa\Query\Builder::OPTION_* bitmask for the column
      */
-    public function getForceUseChangeHandler()
+    public function getOptions()
     {
-        return $this->forceUseChangeHandler;
+        return $this->options;
+    }
+
+    /**
+     * Enables or disables a query option.
+     *
+     * @param int Thaumatic\Junxa\Query\Builder::OPTION_*
+     * @param bool whether we want the option on or off
+     * @return $this
+     */
+    public function setOption($option, $flag)
+    {
+        if ($flag) {
+            $this->options |= $option;
+        } else {
+            $this->options &= ~$option;
+        }
+        return $this;
+    }
+
+    /**
+     * Retrieves whether a given query option is enabled.  If a bitmask of
+     * multiple options is given, returns whether any of them are enabled.
+     *
+     * @param int Thaumatic\Junxa\Query\Builder::OPTION_*
+     * @return bool
+     */
+    public function getOption($option)
+    {
+        return (bool) ($this->options & $option);
+    }
+
+    /**
+     * Retrieves whether every option in a given bitmask of options is enabled.
+     *
+     * @param int Thaumatic\Junxa\Query\Builder::OPTION_*
+     * @return bool
+     */
+    public function getEachOption($options)
+    {
+        return ($this->options & $options) === $options;
     }
 
 }
