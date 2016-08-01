@@ -185,7 +185,7 @@ class Element
             case 'comparison':
                 $prefix = '';
                 switch ($type) {
-                    case '~':
+                    case '===':
                         if (self::useNullSafeEquivalence(
                             $query,
                             $context,
@@ -199,7 +199,7 @@ class Element
                             $type = '=';
                         }
                         break;
-                    case '!~':
+                    case '!==':
                         if (self::useNullSafeEquivalence(
                             $query,
                             $context,
