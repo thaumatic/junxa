@@ -84,7 +84,7 @@ class Query
 
     public static function not($arg)
     {
-        if ($arg instanceof Column && $arg->type === 'tinyint' && $arg->length === 1) {
+        if ($arg instanceof Column && $arg->getTypeClass() === 'int') {
             return new Element('comparison', '=', [$arg, 0]);
         } else {
             return new Element('unary', 'NOT', $arg);
