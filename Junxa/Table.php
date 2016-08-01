@@ -579,7 +579,7 @@ class Table
             throw new \Exception('row must be identified by same number of arguments as columns in primary key');
         }
         $key = self::argsCacheKey($args);
-        if (array_key_exists($key, $this->cache)) {
+        if ($key !== null && array_key_exists($key, $this->cache)) {
             return $this->cache[$key];
         }
         if (!$this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
@@ -655,7 +655,7 @@ class Table
             }
             if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
                 $key = self::argsCacheKey($args);
-                if (!empty($this->cache[$key])) {
+                if ($key !== null && isset($this->cache[$key])) {
                     return $this->cache[$key];
                 }
             }
@@ -671,22 +671,17 @@ class Table
             ->option('emptyOkay', true)
             ->setMode(Junxa::QUERY_SINGLE_ASSOC)
         ;
-        $row = $this->database->query($query);
-        if (!$row) {
+        $rowData = $this->database->query($query);
+        if (!$rowData) {
             return null;
         }
         $class = $this->database->rowClass($this->name);
-        $out = new $class($this, $row);
-        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
-            if (!isset($key)) {
-                $key = $out->getCacheKey();
-            }
-            if (empty($this->cache[$key])) {
-                $this->cache[$key] = $out;
-            }
-            return $this->cache[$key];
+        $row = new $class($this, $rowData);
+        if ($query->option('suppressCaching')) {
+            return $row;
+        } else {
+            return $row->checkCaching();
         }
-        return $out;
     }
 
     /**
@@ -780,14 +775,13 @@ class Table
         $class = $this->database->rowClass($this->name);
         $rows = $this->database->query($query);
         $out = [];
-        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->primary && !$query->option('nocache')) {
+        if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)
+            && $this->primary
+            && !$query->option('suppressCaching')
+        ) {
             foreach ($rows as $data) {
                 $row = new $class($this, $data);
-                $key = $row->getCacheKey();
-                if (empty($this->cache[$key])) {
-                    $this->cache[$key] = $row;
-                }
-                $out[] = $this->cache[$key];
+                $out[] = $row->checkCaching();
             }
         } else {
             foreach ($rows as $data) {
@@ -915,6 +909,11 @@ class Table
      */
     private static function argsCacheKey(array $args)
     {
+        foreach ($args as $arg) {
+            if ($arg === null) {
+                return null;
+            }
+        }
         return
             count($args) > 1
             ? join("\0", $args) . '|' . join('', array_map('md5', $args))

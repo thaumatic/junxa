@@ -132,10 +132,15 @@ class Row
                 throw new JunxaConfigurationException('cannot generate cache key without primary key');
             case 1:
                 $key = $this->junxaInternalTable->primary[0];
-                return strval($this->$key);
+                $val = $this->$key;
+                return $val === null ? $val : strval($val);
             default:
                 foreach ($this->junxaInternalTable->primary as $key) {
-                    $elem[] = $this->$key;
+                    $val = $this->$key;
+                    if ($val === null) {
+                        return null;
+                    }
+                    $elem[] = $val;
                 }
                 return join("\0", $args) . '|' . join('', array_map('md5', $args));
         }
@@ -443,16 +448,38 @@ class Row
         return $this;
     }
 
+    /**
+     * Ensures that this row is cached or uncached in its parent table if the
+     * database model has row caching enabled.
+     *
+     * @param bool whether we want to remove this row from the cache rather
+     * than add it
+     * @return $this|Thaumatic\Junxa\Row the operating version of the row;
+     * $this if caching is not enabled or if this row was added to the cache,
+     * the previously cached row if one was present in the cache and should
+     * be referenced instead
+     */
     public function checkCaching($uncache = false)
     {
-        if ($this->junxaInternalTable->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS) && $this->getPrimaryKey()) {
+        $out = $this;
+        if ($this->junxaInternalTable->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS)
+            && $this->getPrimaryKey()
+        ) {
             $key = $this->getCacheKey();
-            if ($uncache) {
-                $this->junxaInternalTable->removeCacheKey($key);
-            } elseif ($this->junxaInternalTable->getCachedValue($key) === null) {
-                $this->junxaInternalTable->setCachedValue($key, $this);
+            if ($key !== null) {
+                if ($uncache) {
+                    $this->junxaInternalTable->removeCacheKey($key);
+                } else {
+                    $cached = $this->junxaInternalTable->getCachedValue($key);
+                    if ($cached === null) {
+                        $this->junxaInternalTable->setCachedValue($key, $this);
+                    } else {
+                        $out = $cached;
+                    }
+                }
             }
         }
+        return $out;
     }
 
     public function getMatchCondition()
