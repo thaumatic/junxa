@@ -512,6 +512,17 @@ class Row
         }
     }
 
+    /**
+     * Treats the defined properties on this model as search criteria and
+     * attempts to find exactly one database row matching them and load its
+     * data onto this model.  If multiple rows are found, the first one will
+     * be loaded.
+     *
+     * @return int Thaumatic\Junxa::RESULT_SUCCESS if exactly one row is
+     * found and loaded; Thaumatic\Junxa::RESULT_FIND_FAIL if no matching
+     * rows are found; Thaumatic\Junxa::RESULT_FIND_EXCESS if multiple
+     * matching rows are found and the first one is loaded
+     */
     public function find()
     {
         $query = $this->junxaInternalTable->query()
