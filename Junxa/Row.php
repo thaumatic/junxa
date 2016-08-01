@@ -517,7 +517,7 @@ class Row
         $query = $this->junxaInternalTable->query()
             ->select($this->junxaInternalTable->getSelectTarget())
             ->limit(2);
-        foreach ($this->junxaInternalTable->columns as $column) {
+        foreach ($this->junxaInternalTable->getColumns() as $column) {
             if (!isset($this->$column)) {
                 continue;
             }
