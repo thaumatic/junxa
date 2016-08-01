@@ -482,20 +482,34 @@ class Row
         return $out;
     }
 
+    /**
+     * Retrieves a matching condition (for a WHERE or HAVING clause) that will
+     * match this specific row in the database, if one can be constructed.
+     *
+     * @return array<Thaumatic\Junxa\Query\Element>|Thaumatic\Junxa\Query\Element|null
+     * the match condition, or null if one cannot be constructed
+     */
     public function getMatchCondition()
     {
         $key = $this->junxaInternalTable->getPrimaryKey();
         if (!$key) {
             return null;
         }
-        $what = [];
-        foreach ($key as $column) {
-            if (!isset($this->$column)) {
-                return null;
+        if (count($key) === 1) {
+            $column = $key[0];
+            $value = $this->$column;
+            return Q::eq($this->junxaInternalTable->$column, $value);
+        } else {
+            $what = [];
+            foreach ($key as $column) {
+                $value = $this->$column;
+                if ($value === null) {
+                    return null;
+                }
+                $what[] = Q::eq($this->junxaInternalTable->$column, $value);
             }
-            $what[] = Q::eq($this->junxaInternalTable->$column, $this->$column);
+            return $what;
         }
-        return $what;
     }
 
     public function find()
