@@ -37,6 +37,16 @@ class Query
         return new Element('comparison', '!=', [$a, $b]);
     }
 
+    public static function xeq($a, $b)
+    {
+        return new Element('comparison', '===', [$a, $b]);
+    }
+
+    public static function xne($a, $b)
+    {
+        return new Element('comparison', '!==', [$a, $b]);
+    }
+
     public static function gt($a, $b)
     {
         return new Element('comparison', '>', [$a, $b]);
