@@ -1363,9 +1363,9 @@ class Junxa
                     $handler = $this->getChangeHandlerObject();
                     if ($handler) {
                         $result = $handler->query($query, $mode, $emptyOkay);
-                        $this->queryStatus = $handler->queryStatus;
-                        $this->queryMessage = $handler->queryMessage;
-                        $this->insertId = $handler->insertId;
+                        $this->queryStatus = $handler->getQueryStatus();
+                        $this->queryMessage = $handler->getQueryMessage();
+                        $this->insertId = $handler->getInsertId();
                         return $result;
                     }
                 }
