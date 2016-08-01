@@ -183,8 +183,9 @@ class Element
                 $out = 'CAST(' . $values[0] . ' AS ' . $this->type . ')';
                 break;
             case 'comparison':
+                $prefix = '';
                 switch ($type) {
-                    case '=':
+                    case '~':
                         if (self::useNullSafeEquivalence(
                             $query,
                             $context,
@@ -194,18 +195,27 @@ class Element
                             $values[1]
                         )) {
                             $type = '<=>';
+                        } else {
+                            $type = '=';
                         }
                         break;
-                    case '!=':
-                        if ($base[1] === null) {
-                            $type = 'IS NOT';
-                        } elseif ($base[0] === null) {
-                            $type = 'IS NOT';
-                            list($values[1], $values[0]) = $values;
+                    case '!~':
+                        if (self::useNullSafeEquivalence(
+                            $query,
+                            $context,
+                            $base[0],
+                            $base[1],
+                            $values[0],
+                            $values[1]
+                        )) {
+                            $type = '<=>';
+                            $prefix = '!';
+                        } else {
+                            $type = '!=';
                         }
                         break;
                 }
-                $out = '(' . $values[0] . ' ' . $type . ' ' . $values[1] . ')';
+                $out = $prefix . '(' . $values[0] . ' ' . $type . ' ' . $values[1] . ')';
                 break;
             case 'unary':
                 $out = '(' . $type . ' ' . $values[0] . ')';
