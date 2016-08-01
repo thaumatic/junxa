@@ -59,6 +59,7 @@ class Builder
     private $nullTables = [];
     private $isMultitable = false;
     private $validated = false;
+    private $forceUseChangeHandler = false;
 
     /**
      * @param Thaumatic\Junxa the database the generated query is to be
@@ -1235,6 +1236,26 @@ class Builder
             }
         }
         return null;
+    }
+
+    /**
+     * @param bool whether this query should be forced to be sent to the
+     * database's change handler, if present
+     * @return $this
+     */
+    public function setForceUseChangeHandler($val)
+    {
+        $this->forceUseChangeHandler = $val;
+        return $this;
+    }
+
+    /**
+     * @return bool whether this query should be forced to be sent to the
+     * database's change handler, if present
+     */
+    public function getForceUseChangeHandler()
+    {
+        return $this->forceUseChangeHandler;
     }
 
 }
