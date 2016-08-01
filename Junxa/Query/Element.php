@@ -186,33 +186,11 @@ class Element
                 $prefix = '';
                 switch ($type) {
                     case '===':
-                        if (self::useNullSafeEquivalence(
-                            $query,
-                            $context,
-                            $base[0],
-                            $base[1],
-                            $values[0],
-                            $values[1]
-                        )) {
-                            $type = '<=>';
-                        } else {
-                            $type = '=';
-                        }
+                        $type = '<=>';
                         break;
                     case '!==':
-                        if (self::useNullSafeEquivalence(
-                            $query,
-                            $context,
-                            $base[0],
-                            $base[1],
-                            $values[0],
-                            $values[1]
-                        )) {
-                            $type = '<=>';
-                            $prefix = '!';
-                        } else {
-                            $type = '!=';
-                        }
+                        $type = '<=>';
+                        $prefix = '!';
                         break;
                 }
                 $out = $prefix . '(' . $values[0] . ' ' . $type . ' ' . $values[1] . ')';
@@ -270,24 +248,6 @@ class Element
                 );
         }
         return $out;
-    }
-
-    private static function useNullSafeEquivalence($query, $context, $base1, $base2, $value1, $value2)
-    {
-        if ($value1 === 'NULL' || $value2 === 'NULL') {
-            return true;
-        }
-        if (is_object($base1)) {
-            if (!($base1 instanceof Column) || $base1->contextNull($query, $context)) {
-                return true;
-            }
-        }
-        if (is_object($base2)) {
-            if (!($base2 instanceof Column) || $base2->contextNull($query, $context)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
