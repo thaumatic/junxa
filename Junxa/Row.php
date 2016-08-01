@@ -430,11 +430,17 @@ class Row
         return $this->$column;
     }
 
+    /**
+     * Loads all demand-loaded columns.
+     *
+     * @return $this
+     */
     public function demandAll()
     {
         foreach ($this->junxaInternalTable->getDemandLoadColumns() as $column) {
             $this->loadStoredValue($column);
         }
+        return $this;
     }
 
     public function checkCaching($uncache = false)
