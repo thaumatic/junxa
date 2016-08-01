@@ -91,6 +91,11 @@ class Query
         }
     }
 
+    public static function explicitNot($arg)
+    {
+        return new Element('unary', 'NOT', $arg);
+    }
+
     public static function paren(...$args)
     {
         return new Element('interleave', '', self::processArgs($args));
