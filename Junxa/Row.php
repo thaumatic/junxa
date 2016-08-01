@@ -527,14 +527,16 @@ class Row
     {
         $query = $this->junxaInternalTable->query()
             ->select($this->junxaInternalTable->getSelectTarget())
-            ->limit(2);
+            ->limit(2)
+            ->setMode(Junxa::QUERY_ASSOCS)
+        ;
         foreach ($this->junxaInternalTable->getColumns() as $column) {
             if (!isset($this->$column)) {
                 continue;
             }
             $query->where($column, $this->$column);
         }
-        $rows = $this->junxaInternalTable->getDatabase()->query($query, Junxa::QUERY_ASSOCS);
+        $rows = $query->execute();
         switch (count($rows)) {
             case 0:
                 return Junxa::RESULT_FIND_FAIL;
@@ -650,8 +652,11 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_UPDATE_NOKEY;
         }
-        $queryDef->where($cond);
-        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $queryDef
+            ->where($cond)
+            ->setMode(Junxa::QUERY_FORGET)
+        ;
+        $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
@@ -712,7 +717,8 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_INSERT_NOOP;
         }
-        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
@@ -782,7 +788,8 @@ class Row
         if (!$foundUniqueKeyMember) {
             return Junxa::RESULT_MERGE_NOKEY;
         }
-        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
@@ -846,7 +853,8 @@ class Row
         if (!$queryDef->getReplace()) {
             return Junxa::RESULT_REPLACE_NOOP;
         }
-        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
             return $res;
@@ -931,9 +939,12 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_DELETE_FAIL;
         }
-        $queryDef->where($cond);
-        $queryDef->delete($this->junxaInternalTable);
-        $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
+        $queryDef
+            ->where($cond)
+            ->delete($this->junxaInternalTable)
+            ->setMode(Junxa::QUERY_FORGET)
+        ;
+        $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (Junxa::OK($res)) {
             $this->junxaInternalDeleted = true;
