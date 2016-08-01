@@ -354,17 +354,17 @@ class Row
      */
     public function getStoredValue($column)
     {
-        $column = $this->getColumn($column);
         $cond = $this->getMatchCondition();
         if (!$cond) {
             throw new JunxaInvalidQueryException(
                 'cannot generate match condition for ' . $this->junxaInternalTable->getName()
             );
         }
-        $value = $this->getDatabase()->query([
-            'select'     => $column,
-            'where'      => $cond,
-        ], Junxa::QUERY_SINGLE_CELL);
+        $value = $this->getDatabase()->query()
+            ->select($this->getColumn($column))
+            ->where($cond)
+            ->setMode(Junxa::QUERY_SINGLE_CELL)
+            ->execute();
         return $column->import($value);
     }
 
@@ -486,8 +486,8 @@ class Row
      * Retrieves a matching condition (for a WHERE or HAVING clause) that will
      * match this specific row in the database, if one can be constructed.
      *
-     * @return array<Thaumatic\Junxa\Query\Element>|Thaumatic\Junxa\Query\Element|null
-     * the match condition, or null if one cannot be constructed
+     * @return Thaumatic\Junxa\Query\Element|null the match condition, or null
+     * if one cannot be constructed
      */
     public function getMatchCondition()
     {
@@ -498,7 +498,7 @@ class Row
         if (count($key) === 1) {
             $column = $key[0];
             $value = $this->$column;
-            return Q::eq($this->junxaInternalTable->$column, $value);
+            return $value === null ? null : Q::eq($this->junxaInternalTable->$column, $value);
         } else {
             $what = [];
             foreach ($key as $column) {
@@ -508,7 +508,7 @@ class Row
                 }
                 $what[] = Q::eq($this->junxaInternalTable->$column, $value);
             }
-            return $what;
+            return Q::andClause($what);
         }
     }
 
@@ -650,9 +650,7 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_UPDATE_NOKEY;
         }
-        foreach ($cond as $item) {
-            $queryDef->where($item);
-        }
+        $queryDef->where($cond);
         $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         return Junxa::OK($res) ? $this->refresh() : $res;
@@ -933,9 +931,7 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_DELETE_FAIL;
         }
-        foreach ($cond as $item) {
-            $queryDef->where($item);
-        }
+        $queryDef->where($cond);
         $queryDef->delete($this->junxaInternalTable);
         $this->junxaInternalTable->getDatabase()->query($queryDef, Junxa::QUERY_FORGET);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
