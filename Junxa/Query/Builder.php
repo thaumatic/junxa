@@ -97,6 +97,12 @@ class Builder
     ];
 
     /**
+     * @const string the "clause" in an array query specification which should
+     * be interpreted as a list of options
+     */
+    const OPTIONS_CLAUSE = 'options';
+
+    /**
      * @var string the main clause of the query, set by validate()
      */
     private $type;
@@ -233,6 +239,31 @@ class Builder
         foreach (self::DIRECT_CLAUSES as $clause) {
             if (isset($def[$clause]) && $def[$clause] !== []) {
                 $this->$clause = $def[$clause];
+            }
+        }
+        if (isset($def[self::OPTIONS_CLAUSE])) {
+            $options = $def[self::OPTIONS_CLAUSE];
+            if (is_array($options)) {
+                foreach ($options as $option) {
+                    if (!is_int($option)) {
+                        throw new JunxaInvalidQueryException(
+                            'invalid type for value in '
+                            . self::OPTIONS_CLAUSE
+                            . ': '
+                            . gettype($option)
+                        );
+                    }
+                    $this->setOption($option, true);
+                }
+            } elseif (is_int($options)) {
+                $this->setOption($options, true);
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'invalid type for '
+                    . self::OPTIONS_CLAUSE
+                    . ': '
+                    . gettype($options)
+                );
             }
         }
         if (!$skipValidate) {
