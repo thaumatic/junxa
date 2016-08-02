@@ -938,11 +938,10 @@ class Row
         if (!Junxa::OK($res)) {
             return $res;
         }
-        if ($res === Junxa::RESULT_SUCCESS) {
-            if ($autoInc) {
-                if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
-                    $this->$autoInc = $id;
-                }
+        if ($res === Junxa::RESULT_SUCCESS && $autoInc) {
+            $id = $this->junxaInternalTable->getDatabase()->getInsertId();
+            if ($id) {
+                $this->$autoInc = $id;
             }
         }
         return $this->refresh();
