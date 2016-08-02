@@ -703,8 +703,8 @@ class Row
      *   if either the update or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
      *   if the refresh fails
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
-     * query definition has a clause that is present in
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * passed query definition has a clause that is present in
      * Thaumatic\Junxa\Row::UPDATE_INVALID_CLAUSES
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
@@ -786,8 +786,8 @@ class Row
      *   if either the insert or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
      *   if the refresh fails
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
-     * query definition has a clause that is present in
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * passed query definition has a clause that is present in
      * Thaumatic\Junxa\Row::INSERT_INVALID_CLAUSES
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
@@ -881,8 +881,8 @@ class Row
      *   if either the merge or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
      *   if the refresh fails
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
-     * query definition has a clause that is present in
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * passed query definition has a clause that is present in
      * Thaumatic\Junxa\Row::MERGE_INVALID_CLAUSES
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
@@ -971,8 +971,8 @@ class Row
      *   if either the replace or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
      *   if the refresh fails
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
-     * query definition has a clause that is present in
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * passed query definition has a clause that is present in
      * Thaumatic\Junxa\Row::REPLACE_INVALID_CLAUSES
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
@@ -1037,7 +1037,10 @@ class Row
      * Persists the data on this row model to the database, via insert if this
      * is a new row or update if it is an existing row.
      *
-     * @param mixed base query definition to use
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
      * @return int Thaumatic\Junxa::RESULT_* value for operation
      */
     public function save($queryDef = [])
@@ -1068,6 +1071,27 @@ class Row
         return false;
     }
 
+    /**
+     * Deletes the database row corresponding to this row model and
+     * marks this row model as deleted.
+     *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
+     * @return int
+     * Thaumatic\Junxa::RESULT_SUCCESS
+     *   if the query was successful
+     * Thaumatic\Junxa::RESULT_DELETE_FAIL
+     *   if the query could not be issued because not enough primary key
+     *   information was available to reliably identified the database row
+     *   corresponding to this row model
+     * Thaumatic\Junxa::RESULT_PREVENTED
+     *   if the query was prevented by a listener
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * passed query definition has a clause that is present in
+     * Thaumatic\Junxa\Row::DELETE_INVALID_CLAUSES
+     */
     public function delete($queryDef = [])
     {
         if ($queryDef) {
