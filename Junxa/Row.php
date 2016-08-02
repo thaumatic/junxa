@@ -722,7 +722,8 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES)) {
+                $clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES);
+                if ($clause) {
                     throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
                 }
             } else {
@@ -804,7 +805,8 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses(self::INSERT_INVALID_CLAUSES)) {
+                $clause = $queryDef->checkClauses(self::INSERT_INVALID_CLAUSES);
+                if ($clause) {
                     throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
                 }
             } else {
@@ -845,7 +847,8 @@ class Row
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
+            $field = $this->junxaInternalTable->getAutoIncrementPrimary();
+            if ($field) {
                 $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
@@ -897,7 +900,8 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses(self::MERGE_INVALID_CLAUSES)) {
+                $clause = $queryDef->checkClauses(self::MERGE_INVALID_CLAUSES);
+                if ($clause) {
                     throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
                 }
             } else {
@@ -989,7 +993,8 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses(self::REPLACE_INVALID_CLAUSES)) {
+                $clause = $queryDef->checkClauses(self::REPLACE_INVALID_CLAUSES);
+                if ($clause) {
                     throw new JunxaInvalidQueryException(
                         'query definition for replace() may not define '
                         . $clause
@@ -1020,7 +1025,8 @@ class Row
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
+            $field = $this->junxaInternalTable->getAutoIncrementPrimary();
+            if ($field) {
                 $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
@@ -1073,7 +1079,8 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses(self::DELETE_INVALID_CLAUSES)) {
+                $clause = $queryDef->checkClauses(self::DELETE_INVALID_CLAUSES);
+                if ($clause) {
                     throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
                 }
             } else {
