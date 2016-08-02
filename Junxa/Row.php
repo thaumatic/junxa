@@ -602,6 +602,16 @@ class Row
         return Junxa::RESULT_SUCCESS;
     }
 
+    /**
+     * Synchronizes this row to the database by issuing an UPDATE query
+     * setting any field values that have been changed from the row's
+     * state when it was loaded from the database.
+     *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base;
+     * a query builder passed should be generated using the table's
+     * query() method
+     */
     public function update($queryDef = [])
     {
         static $badClauses = [
