@@ -682,7 +682,7 @@ class Row
      * Synchronizes this row to the database by issuing an UPDATE query
      * setting any field values that have been changed from the row's state
      * when it was loaded from the database.  After the query is issued, the
-     * row's contents will be refreshed from the database.
+     * row model's contents will be refreshed from the database.
      *
      * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
      * specification to use instead of default empty query as a base; a
@@ -699,6 +699,8 @@ class Row
      *   (this being typically the result you will get if you call this method
      *   on a row that was generated as a new, empty row rather than loaded
      *   from the database)
+     * Thaumatic\Junxa::RESULT_PREVENTED
+     *   if either the update or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
      *   if the refresh fails
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
@@ -759,6 +761,38 @@ class Row
         return Junxa::OK($res) ? $this->refresh() : $res;
     }
 
+    /**
+     * Creates a row in the database based on this row model's fields by
+     * issuing an INSERT query.  Only fields which have been set will be
+     * included in the query.  After the query is issued, the row model's
+     * contents will be refreshed from the database with the contents of
+     * the generated database row.
+     *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
+     * @return int
+     * Thaumatic\Junxa::RESULT_SUCCESS
+     *   if the insert and refresh are both successful
+     * Thaumatic\Junxa::RESULT_INSERT_NOOP
+     *   if no fields on this row have been set
+     * Thaumatic\Junxa::RESULT_INSERT_FAIL
+     *   if an INSERT IGNORE query was executed (because of the option
+     *   Thaumatic\Junxa\Query\Builder::OPTION_IGNORE being enabled) and
+     *   no rows were affected
+     * Thaumatic\Junxa::RESULT_PREVENTED
+     *   if either the insert or the refresh was prevented by a listener
+     * Thaumatic\Junxa::RESULT_REFRESH_FAIL
+     *   if the refresh fails
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
+     * query definition has a clause that is present in
+     * Thaumatic\Junxa\Row::INSERT_INVALID_CLAUSES
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * refresh query executes but returns no data
+     */
     public function insert($queryDef = [])
     {
         if ($queryDef) {
