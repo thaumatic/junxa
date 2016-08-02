@@ -908,8 +908,10 @@ class Row
         }
         if ($res === Junxa::RESULT_SUCCESS) {
             if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
-                if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
-                    $this->$field = $id;
+                if (!isset($this->$field)) {
+                    if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
+                        $this->$field = $id;
+                    }
                 }
             }
         }
