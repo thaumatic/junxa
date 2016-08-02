@@ -763,10 +763,10 @@ class Row
 
     /**
      * Creates a row in the database based on this row model's fields by
-     * issuing an INSERT query.  Only fields which have been set will be
-     * included in the query.  After the query is issued, the row model's
-     * contents will be refreshed from the database with the contents of
-     * the generated database row.
+     * issuing an INSERT query.  Only fields which have been set or which
+     * have dynamic defaults configured will be included in the query.
+     * After the query is issued, the row model's contents will be refreshed
+     * from the database with the contents of the generated database row.
      *
      * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
      * specification to use instead of default empty query as a base; a
@@ -776,7 +776,7 @@ class Row
      * Thaumatic\Junxa::RESULT_SUCCESS
      *   if the insert and refresh are both successful
      * Thaumatic\Junxa::RESULT_INSERT_NOOP
-     *   if no fields on this row have been set
+     *   if no fields on this row have been set nor have dynamic defaults
      * Thaumatic\Junxa::RESULT_INSERT_FAIL
      *   if an INSERT IGNORE query was executed (because of the option
      *   Thaumatic\Junxa\Query\Builder::OPTION_IGNORE being enabled) and
@@ -852,6 +852,40 @@ class Row
         return $this->refresh();
     }
 
+    /**
+     * Synchronizes this row model to the database using an INSERT... ON
+     * DUPLICATE KEY UPDATE query (an operation also known as upsert or
+     * merge).  The INSERT clause is constructed using the fields which
+     * have been set or which have a dynamic default configured; the UPDATE
+     * clause includes only fields which have been set and which do not
+     * have Thaumatic\Junxa\Column::OPTION_MERGE_NO_UPDATE enabled.  (If
+     * the UPDATE clause would be empty, this function only performs an
+     * INSERT.)  If the INSERT clause would create a duplicate entry on
+     * a unique key, then the UPDATE clause is executed.  After the query
+     * is issued, the row model's contents will be refreshed from the
+     * database with the contents of the generated or updated database row.
+     *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
+     * @return int
+     * Thaumatic\Junxa::RESULT_SUCCESS
+     *   if the insert and refresh are both successful
+     * Thaumatic\Junxa::RESULT_MERGE_NOOP
+     *   if no fields on this row have been set nor have dynamic defaults
+     * Thaumatic\Junxa::RESULT_PREVENTED
+     *   if either the merge or the refresh was prevented by a listener
+     * Thaumatic\Junxa::RESULT_REFRESH_FAIL
+     *   if the refresh fails
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
+     * query definition has a clause that is present in
+     * Thaumatic\Junxa\Row::MERGE_INVALID_CLAUSES
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * refresh query executes but returns no data
+     */
     public function merge($queryDef = [])
     {
         if ($queryDef) {
@@ -876,16 +910,17 @@ class Row
         } else {
             $queryDef = $this->junxaInternalTable->query();
         }
-        $foundUniqueKeyMember = false;
+        $autoInc = $this->junxaInternalTable->getAutoIncrementPrimary();
+        if ($autoInc) {
+            $autoIncCol = $this->junxaInternalTable->$autoInc;
+            $queryDef->update($autoIncCol, Q::func('LAST_INSERT_ID', $autoIncCol));
+        }
         foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
             $columnModel = $this->junxaInternalTable->$column;
             if (property_exists($this, $column)) {
-                if (!$foundUniqueKeyMember && $columnModel->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
-                    $foundUniqueKeyMember = true;
-                }
-                $queryDef->insert($column, $this->$column);
+                $queryDef->insert($columnModel, $this->$column);
                 if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)) {
-                    $queryDef->update($column, $this->$column);
+                    $queryDef->update($columnModel, $this->$column);
                 }
             } else {
                 $default = $columnModel->getDynamicDefault();
@@ -897,9 +932,6 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_MERGE_NOOP;
         }
-        if (!$foundUniqueKeyMember) {
-            return Junxa::RESULT_MERGE_NOKEY;
-        }
         $queryDef->setMode(Junxa::QUERY_FORGET);
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
@@ -907,11 +939,9 @@ class Row
             return $res;
         }
         if ($res === Junxa::RESULT_SUCCESS) {
-            if ($field = $this->junxaInternalTable->getAutoIncrementPrimary()) {
-                if (!isset($this->$field)) {
-                    if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
-                        $this->$field = $id;
-                    }
+            if ($autoInc) {
+                if ($id = $this->junxaInternalTable->getDatabase()->getInsertId()) {
+                    $this->$autoInc = $id;
                 }
             }
         }

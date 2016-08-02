@@ -194,34 +194,28 @@ class Junxa
     const RESULT_UPDATE_NOKEY           = -5;
 
     /**
-     * @const int query result code: a table row merge was called for but the
-     * table did not have any non-primary unique key to base a merge on
-     */
-    const RESULT_MERGE_NOKEY            = -6;
-
-    /**
      * @const int query result code: a table row delete was called for but the
      * row did not have the primary key information necessary to automatically
      * generate a delete
      */
-    const RESULT_DELETE_FAIL            = -7;
+    const RESULT_DELETE_FAIL            = -6;
 
     /**
      * @const int query result code: a table row find was called for and no
      * matching rows were found
      */
-    const RESULT_FIND_FAIL              = -8;
+    const RESULT_FIND_FAIL              = -7;
 
     /**
      * @const int query result code: an INSERT IGNORE query was executed and no
      * rows were affected
      */
-    const RESULT_INSERT_FAIL            = -9;
+    const RESULT_INSERT_FAIL            = -8;
 
     /**
      * @const int query result code: an UPDATE query affected no rows
      */
-    const RESULT_UPDATE_FAIL            = -10;
+    const RESULT_UPDATE_FAIL            = -9;
 
     /**
      * @const array<string> list of PHP keywords, used for identifier validation
