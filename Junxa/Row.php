@@ -19,6 +19,80 @@ class Row
 {
 
     /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::update()
+     */
+    const UPDATE_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'having',
+    ];
+
+    /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::insert()
+     */
+    const INSERT_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'order',
+        'having',
+        'limit',
+    ];
+
+    /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::merge()
+     */
+    const MERGE_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'having',
+    ];
+
+    /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::replace()
+     */
+    const REPLACE_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'order',
+        'having',
+        'limit',
+    ];
+
+    /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::delete()
+     */
+    const DELETE_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'having',
+    ];
+
+    /**
      * The "database values" for the columns on this row; more precisely, the
      * import()ed version of the values obtained from the database for this
      * row when the row was generated.  Will be null for a row generated as
@@ -568,10 +642,12 @@ class Row
     /**
      * Loads this model with the current data for its row from the database.
      *
-     * @return int Thaumatic\Junxa::RESULT_SUCCESS if the refresh succeeds,
-     * Thaumatic\Junxa::RESULT_REFRESH_FAIL if the row cannot be refreshed
-     * because a match condition cannot be constructed (normally means the
-     * row's table has no primary key)
+     * @return int
+     * Thaumatic\Junxa::RESULT_SUCCESS
+     *   if the refresh succeeds
+     * Thaumatic\Junxa::RESULT_REFRESH_FAIL
+     *   if the row cannot be refreshed because a match condition cannot be
+     *   constructed (normally means the row's table has no primary key)
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
@@ -604,35 +680,47 @@ class Row
 
     /**
      * Synchronizes this row to the database by issuing an UPDATE query
-     * setting any field values that have been changed from the row's
-     * state when it was loaded from the database.
+     * setting any field values that have been changed from the row's state
+     * when it was loaded from the database.  After the query is issued, the
+     * row's contents will be refreshed from the database.
      *
      * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
-     * specification to use instead of default empty query as a base;
-     * a query builder passed should be generated using the table's
-     * query() method
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
+     * @return int
+     * Thaumatic\Junxa::RESULT_SUCCESS
+     *   if the update and refresh are both successful
+     * Thaumatic\Junxa::RESULT_UPDATE_NOOP
+     *   if no fields on this row have been changed
+     * Thaumatic\Junxa::RESULT_UPDATE_NOKEY
+     *   if an update could not be performed because there wasn't enough
+     *   primary key information to reliably match this row in the database
+     *   (this being typically the result you will get if you call this method
+     *   on a row that was generated as a new, empty row rather than loaded
+     *   from the database)
+     * Thaumatic\Junxa::RESULT_REFRESH_FAIL
+     *   if the refresh fails
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException a passed
+     * query definition has a clause that is present in
+     * Thaumatic\Junxa\Row::UPDATE_INVALID_CLAUSES
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * passed query definition is not an array or Thaumatic\Junxa\Query\Builder
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * refresh query executes but returns no data
      */
     public function update($queryDef = [])
     {
-        static $badClauses = [
-            'select',
-            'insert',
-            'replace',
-            'update',
-            'delete',
-            'group',
-            'having',
-        ];
         if ($queryDef) {
             if (is_array($queryDef)) {
-                foreach ($badClauses as $clause) {
+                foreach (self::UPDATE_INVALID_CLAUSES as $clause) {
                     if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
                     }
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses($badClauses)) {
+                if ($clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES)) {
                     throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
                 }
             } else {
@@ -673,27 +761,16 @@ class Row
 
     public function insert($queryDef = [])
     {
-        static $badClauses = [
-            'select',
-            'insert',
-            'replace',
-            'update',
-            'delete',
-            'group',
-            'order',
-            'having',
-            'limit',
-        ];
         if ($queryDef) {
             if (is_array($queryDef)) {
-                foreach ($badClauses as $clause) {
+                foreach (self::INSERT_INVALID_CLAUSES as $clause) {
                     if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
                     }
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses($badClauses)) {
+                if ($clause = $queryDef->checkClauses(self::INSERT_INVALID_CLAUSES)) {
                     throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
                 }
             } else {
@@ -743,25 +820,16 @@ class Row
 
     public function merge($queryDef = [])
     {
-        static $badClauses = [
-            'select',
-            'insert',
-            'replace',
-            'update',
-            'delete',
-            'group',
-            'having',
-        ];
         if ($queryDef) {
             if (is_array($queryDef)) {
-                foreach ($badClauses as $clause) {
+                foreach (self::MERGE_INVALID_CLAUSES as $clause) {
                     if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
                     }
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses($badClauses)) {
+                if ($clause = $queryDef->checkClauses(self::MERGE_INVALID_CLAUSES)) {
                     throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
                 }
             } else {
@@ -816,20 +884,9 @@ class Row
 
     public function replace($queryDef = [])
     {
-        static $badClauses = [
-            'select',
-            'insert',
-            'replace',
-            'update',
-            'delete',
-            'group',
-            'order',
-            'having',
-            'limit',
-        ];
         if ($queryDef) {
             if (is_array($queryDef)) {
-                foreach ($badClauses as $clause) {
+                foreach (self::REPLACE_INVALID_CLAUSES as $clause) {
                     if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException(
                             'query definition for replace() may not define '
@@ -839,7 +896,7 @@ class Row
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses($badClauses)) {
+                if ($clause = $queryDef->checkClauses(self::REPLACE_INVALID_CLAUSES)) {
                     throw new JunxaInvalidQueryException(
                         'query definition for replace() may not define '
                         . $clause
@@ -914,25 +971,16 @@ class Row
 
     public function delete($queryDef = [])
     {
-        static $badClauses = [
-            'select',
-            'insert',
-            'replace',
-            'update',
-            'delete',
-            'group',
-            'having',
-        ];
         if ($queryDef) {
             if (is_array($queryDef)) {
-                foreach ($badClauses as $clause) {
+                foreach (self::DELETE_INVALID_CLAUSES as $clause) {
                     if (isset($queryDef[$clause])) {
                         throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
                     }
                 }
                 $queryDef = $this->junxaInternalTable->query($queryDef);
             } elseif ($queryDef instanceof QueryBuilder) {
-                if ($clause = $queryDef->checkClauses($badClauses)) {
+                if ($clause = $queryDef->checkClauses(self::DELETE_INVALID_CLAUSES)) {
                     throw new JunxaInvalidQueryException('query definition for delete() may not define ' . $clause);
                 }
             } else {
