@@ -1423,10 +1423,12 @@ class Builder
 
     /**
      * @param callable what to call with the final SQL text as argument
+     * @return $this
      */
     public function setCallOnSql(callable $call)
     {
         $this->callOnSql = $call;
+        return $this;
     }
 
     /**
