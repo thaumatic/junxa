@@ -7,6 +7,7 @@ use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaConfigurationException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
+use Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException;
 use Thaumatic\Junxa\Exceptions\JunxaReferentialIntegrityException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
@@ -1095,6 +1096,33 @@ class Row
     public function save($queryDef = [])
     {
         return $this->junxaInternalData ? $this->update($queryDef) : $this->insert($queryDef);
+    }
+
+    /**
+     * Calls {see save()}.
+     *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
+     * @return $this
+     * @throws Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException if the
+     * return value from save() isn't okay according to {see Junxa::OK()}.
+     */
+    public function performSave($queryDef = [])
+    {
+        $result = $this->save($queryDef);
+        if (!Junxa::OK($result)) {
+            throw new JunxaQueryExecutionException(
+                'result from save() was '
+                . (
+                    array_key_exists($result, Junxa::RESULT_NAMES)
+                    ? Junxa::RESULT_NAMES[$result]
+                    : ('unknown ' . gettype($result))
+                )
+            );
+        }
+        return $this;
     }
 
     /**
