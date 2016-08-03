@@ -692,7 +692,7 @@ class Row
         }
         $queryDef
             ->select($this->junxaInternalTable->getSelectTarget())
-            ->defaultOrder(Q::literal('1'))
+            ->defaultOrder(Q::literal(1))
             ->limit(2)
             ->setMode(Junxa::QUERY_ASSOCS)
         ;
