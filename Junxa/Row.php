@@ -1121,6 +1121,34 @@ class Row
     }
 
     /**
+     * @return array<string> the names of fields that have been changed in
+     * this row model
+     */
+    public function getChangedFields()
+    {
+        $out = [];
+        if ($this->junxaInternalData) {
+            foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
+                if (property_exists($this, $column)
+                    && (
+                        !array_key_exists($column, $this->junxaInternalData)
+                        || $this->$column !== $this->junxaInternalData[$column]
+                    )
+                ) {
+                    $out[] = $column;
+                }
+            }
+        } else {
+            foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
+                if (property_exists($this, $column)) {
+                    $out[] = $column;
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
      * Deletes the database row corresponding to this row model and
      * marks this row model as deleted.
      *
