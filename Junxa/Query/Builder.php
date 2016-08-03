@@ -960,6 +960,7 @@ class Builder
         if (!$this->order) {
             $this->order($what);
         }
+        return $this;
     }
 
     /**
