@@ -21,6 +21,20 @@ class Row
 
     /**
      * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::find()
+     */
+    const FIND_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+        'limit',
+    ];
+
+    /**
+     * @const array<string> query clauses that may not be defined in a query
      * definition passed to Row::update()
      */
     const UPDATE_INVALID_CLAUSES = [
@@ -642,14 +656,41 @@ class Row
      * data onto this model.  If multiple rows are found, the first one will
      * be loaded.
      *
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the table's query()
+     * method
      * @return int Thaumatic\Junxa::RESULT_SUCCESS if exactly one row is
      * found and loaded; Thaumatic\Junxa::RESULT_FIND_FAIL if no matching
      * rows are found; Thaumatic\Junxa::RESULT_FIND_EXCESS if multiple
      * matching rows are found and the first one is loaded
      */
-    public function find()
+    public function find($queryDef = [])
     {
-        $query = $this->junxaInternalTable->query()
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach (self::FIND_INVALID_CLAUSES as $clause) {
+                    if (isset($queryDef[$clause])) {
+                        throw new JunxaInvalidQueryException('query definition for find() may not define ' . $clause);
+                    }
+                }
+                $queryDef = $this->junxaInternalTable->query($queryDef);
+            } elseif ($queryDef instanceof QueryBuilder) {
+                $clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES);
+                if ($clause) {
+                    throw new JunxaInvalidQueryException('query definition for find() may not define ' . $clause);
+                }
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for find() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        } else {
+            $queryDef = $this->junxaInternalTable->query();
+        }
+        $queryDef
             ->select($this->junxaInternalTable->getSelectTarget())
             ->defaultOrder(Q::literal('1'))
             ->limit(2)
@@ -659,9 +700,9 @@ class Row
             if (!isset($this->$column)) {
                 continue;
             }
-            $query->where($column, $this->$column);
+            $queryDef->where($column, $this->$column);
         }
-        $rows = $query->execute();
+        $rows = $queryDef->execute();
         switch (count($rows)) {
             case 0:
                 return Junxa::RESULT_FIND_FAIL;
