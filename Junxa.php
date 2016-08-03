@@ -1396,6 +1396,7 @@ class Junxa
                     $insertIgnore = true;
                 }
                 $query = $query->express();
+                $queryBuilder->processSql($query);
                 break;
             default:
                 throw new JunxaInvalidQueryException('invalid argument to query()');

@@ -211,6 +211,11 @@ class Builder
     private $options = 0;
 
     /**
+     * @var callable call this with the final SQL text as argument
+     */
+    private $callOnSql;
+
+    /**
      * @param Thaumatic\Junxa the database the generated query is to be
      * attached to
      * @param Thaumatic\Junxa\Table the table the generated query is to be
@@ -1414,6 +1419,35 @@ class Builder
     public function getEachOption($options)
     {
         return ($this->options & $options) === $options;
+    }
+
+    /**
+     * @param callable what to call with the final SQL text as argument
+     */
+    public function setCallOnSql(callable $call)
+    {
+        $this->callOnSql = $call;
+    }
+
+    /**
+     * @return callable what to call with the final SQL text as argument
+     */
+    public function getCallOnSql()
+    {
+        return $this->callOnSql;
+    }
+
+    /**
+     * Performs any processing needed on the final SQL text for the query.
+     *
+     * @return $this
+     */
+    public function processSql($sql)
+    {
+        if ($this->callOnSql) {
+            call_user_func($this->callOnSql, $sql);
+        }
+        return $this;
     }
 
 }
