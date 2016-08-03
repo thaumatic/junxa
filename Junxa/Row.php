@@ -651,7 +651,7 @@ class Row
     {
         $query = $this->junxaInternalTable->query()
             ->select($this->junxaInternalTable->getSelectTarget())
-            ->order(Q::literal('1'))
+            ->defaultOrder(Q::literal('1'))
             ->limit(2)
             ->setMode(Junxa::QUERY_ASSOCS)
         ;
