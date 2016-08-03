@@ -222,20 +222,20 @@ class Junxa
      * string names
      */
     const RESULT_NAMES                  = [
-        RESULT_SUCCESS                  => 'RESULT_SUCCESS',
-        RESULT_REFRESH_FAIL             => 'RESULT_REFRESH_FAIL',
-        RESULT_UPDATE_NOOP              => 'RESULT_UPDATE_NOOP',
-        RESULT_FIND_EXCESS              => 'RESULT_FIND_EXCESS',
-        RESULT_PREVENTED                => 'RESULT_PREVENTED',
-        RESULT_FAILURE                  => 'RESULT_FAILURE',
-        RESULT_INSERT_NOOP              => 'RESULT_INSERT_NOOP',
-        RESULT_REPLACE_NOOP             => 'RESULT_REPLACE_NOOP',
-        RESULT_MERGE_NOOP               => 'RESULT_MERGE_NOOP',
-        RESULT_UPDATE_NOKEY             => 'RESULT_UPDATE_NOKEY',
-        RESULT_DELETE_FAIL              => 'RESULT_DELETE_FAIL',
-        RESULT_FIND_FAIL                => 'RESULT_FIND_FAIL',
-        RESULT_INSERT_FAIL              => 'RESULT_INSERT_FAIL',
-        RESULT_UPDATE_FAIL              => 'RESULT_UPDATE_FAIL',
+        self::RESULT_SUCCESS            => 'RESULT_SUCCESS',
+        self::RESULT_REFRESH_FAIL       => 'RESULT_REFRESH_FAIL',
+        self::RESULT_UPDATE_NOOP        => 'RESULT_UPDATE_NOOP',
+        self::RESULT_FIND_EXCESS        => 'RESULT_FIND_EXCESS',
+        self::RESULT_PREVENTED          => 'RESULT_PREVENTED',
+        self::RESULT_FAILURE            => 'RESULT_FAILURE',
+        self::RESULT_INSERT_NOOP        => 'RESULT_INSERT_NOOP',
+        self::RESULT_REPLACE_NOOP       => 'RESULT_REPLACE_NOOP',
+        self::RESULT_MERGE_NOOP         => 'RESULT_MERGE_NOOP',
+        self::RESULT_UPDATE_NOKEY       => 'RESULT_UPDATE_NOKEY',
+        self::RESULT_DELETE_FAIL        => 'RESULT_DELETE_FAIL',
+        self::RESULT_FIND_FAIL          => 'RESULT_FIND_FAIL',
+        self::RESULT_INSERT_FAIL        => 'RESULT_INSERT_FAIL',
+        self::RESULT_UPDATE_FAIL        => 'RESULT_UPDATE_FAIL',
     ];
 
     /**
