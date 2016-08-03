@@ -955,6 +955,13 @@ class Builder
         return $this;
     }
 
+    public function defaultOrder($what)
+    {
+        if (!$this->order) {
+            $this->order($what);
+        }
+    }
+
     /**
      * Retrieves the order clause.
      *
