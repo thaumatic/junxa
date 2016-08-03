@@ -1102,7 +1102,7 @@ class Row
      * in the database; a new row model with no corresponding database row
      * is always considered changed
      */
-    public function changed()
+    public function hasChanged()
     {
         if (!$this->junxaInternalData) {
             return true;
