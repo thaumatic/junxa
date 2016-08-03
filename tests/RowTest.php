@@ -2,6 +2,7 @@
 
 namespace Thaumatic\Junxa\Tests;
 
+use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
@@ -1030,6 +1031,79 @@ class RowTest extends DatabaseTestAbstract
         } finally {
             if (isset($column)) {
                 $column->setOptions(0);
+            }
+        }
+    }
+
+    public function testFind()
+    {
+        try {
+            $createCategoryRow1 = $this->db()->category->newRow()
+                ->setField('name', 'Uncategorized')
+                ->setField('type', 'A\'s')
+                ->setField('created_at', Q::func('NOW'))
+                ->performSave();
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Uncategorized');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('type', 'A\'s');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Unknown');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+            $this->assertNull($findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('type', 'B\'s');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+            $this->assertNull($findCategoryRow->name);
+            //
+            $createCategoryRow2 = $this->db()->category->newRow()
+                ->setField('name', 'Categorized')
+                ->setField('type', 'A\'s')
+                ->setField('created_at', Q::func('NOW'))
+                ->performSave();
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Uncategorized');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Categorized');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Unknown');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+            $this->assertNull($findCategoryRow->type);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('type', 'A\'s');
+            $result = $findCategoryRow->find();
+            $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            $this->assertSame('Uncategorized', $findCategoryRow->name);
+        } finally {
+            if (isset($createCategoryRow1) && $createCategoryRow1->id !== null) {
+                $createCategoryRow1->delete();
+            }
+            if (isset($createCategoryRow2) && $createCategoryRow2->id !== null) {
+                $createCategoryRow2->delete();
             }
         }
     }
