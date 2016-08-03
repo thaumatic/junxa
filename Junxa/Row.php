@@ -141,7 +141,30 @@ class Row
     }
 
     /**
-     * Property-mode accessor for field values.
+     * Accessor for field values.
+     *
+     * @param string field name
+     * @return ix
+     */
+    public function setField($name, $value)
+    {
+        if (property_exists($this, $name)) {
+            $this->$name = $value;
+        } elseif ($this->junxaInternalTable->hasColumn($name)) {
+            if ($this->junxaInternalTable->$name->isDynamic()) {
+                throw new JunxaInvalidQueryException(
+                    'cannot set value for dynamic column ' . $name
+                );
+            }
+            $this->$name = $value;
+        } else {
+            throw new JunxaNoSuchColumnException($name);
+        }
+        return $this;
+    }
+
+    /**
+     * Accessor for field values.
      *
      * @param string field name
      * @return mixed
@@ -151,8 +174,11 @@ class Row
      * demand-loaded column is requested and this row cannot be identified by
      * primary key such that values can be retrieved for it
      */
-    public function __get($name)
+    public function getField($name)
     {
+        if (property_exists($this, $name)) {
+            return $this->$name;
+        }
         if (!$this->junxaInternalTable->hasColumn($name)) {
             throw new JunxaNoSuchColumnException($name);
         }
@@ -177,9 +203,7 @@ class Row
      */
     public function __set($name, $value)
     {
-        if (property_exists($this, $name)) {
-            $this->$name = $value;
-        } elseif ($this->junxaInternalTable->hasColumn($name)) {
+        if ($this->junxaInternalTable->hasColumn($name)) {
             if ($this->junxaInternalTable->$name->isDynamic()) {
                 throw new JunxaInvalidQueryException(
                     'cannot set value for dynamic column ' . $name
@@ -189,6 +213,31 @@ class Row
         } else {
             throw new JunxaNoSuchColumnException($name);
         }
+    }
+
+    /**
+     * Property-mode accessor for field values.
+     *
+     * @param string field name
+     * @return mixed
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified field does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * demand-loaded column is requested and this row cannot be identified by
+     * primary key such that values can be retrieved for it
+     */
+    public function __get($name)
+    {
+        if (!$this->junxaInternalTable->hasColumn($name)) {
+            throw new JunxaNoSuchColumnException($name);
+        }
+        if ($this->junxaInternalTable->getColumnDemandLoad($name)
+            && !$this->getPrimaryKeyUnset()
+        ) {
+            $this->loadStoredValue($name);
+            return $this->$name;
+        }
+        return null;
     }
 
     /**
