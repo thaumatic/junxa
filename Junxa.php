@@ -218,6 +218,27 @@ class Junxa
     const RESULT_UPDATE_FAIL            = -9;
 
     /**
+     * @const array<numeric:string> mapping of the RESULT_* constants to their
+     * string names
+     */
+    const RESULT_NAMES                  = [
+        RESULT_SUCCESS                  => 'RESULT_SUCCESS',
+        RESULT_REFRESH_FAIL             => 'RESULT_REFRESH_FAIL',
+        RESULT_UPDATE_NOOP              => 'RESULT_UPDATE_NOOP',
+        RESULT_FIND_EXCESS              => 'RESULT_FIND_EXCESS',
+        RESULT_PREVENTED                => 'RESULT_PREVENTED',
+        RESULT_FAILURE                  => 'RESULT_FAILURE',
+        RESULT_INSERT_NOOP              => 'RESULT_INSERT_NOOP',
+        RESULT_REPLACE_NOOP             => 'RESULT_REPLACE_NOOP',
+        RESULT_MERGE_NOOP               => 'RESULT_MERGE_NOOP',
+        RESULT_UPDATE_NOKEY             => 'RESULT_UPDATE_NOKEY',
+        RESULT_DELETE_FAIL              => 'RESULT_DELETE_FAIL',
+        RESULT_FIND_FAIL                => 'RESULT_FIND_FAIL',
+        RESULT_INSERT_FAIL              => 'RESULT_INSERT_FAIL',
+        RESULT_UPDATE_FAIL              => 'RESULT_UPDATE_FAIL',
+    ];
+
+    /**
      * @const array<string> list of PHP keywords, used for identifier validation
      */
     const PHP_KEYWORDS = [
