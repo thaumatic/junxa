@@ -6,6 +6,7 @@ use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
+use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 
 class RowTest extends DatabaseTestAbstract
@@ -1098,6 +1099,17 @@ class RowTest extends DatabaseTestAbstract
             $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
             $this->assertSame('A\'s', $findCategoryRow->type);
             $this->assertSame('Uncategorized', $findCategoryRow->name);
+            //
+            $findCategoryRow = $this->db()->category->newRow()
+                ->setField('type', 'A\'s');
+            $result = $findCategoryRow->find(
+                $findCategoryRow->getTable()->query()
+                    ->order('id')
+                    ->desc()
+            );
+            $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
+            $this->assertSame('A\'s', $findCategoryRow->type);
+            $this->assertSame('Categorized', $findCategoryRow->name);
         } finally {
             if (isset($createCategoryRow1) && $createCategoryRow1->id !== null) {
                 $createCategoryRow1->delete();
