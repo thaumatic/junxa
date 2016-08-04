@@ -216,27 +216,6 @@ class Builder
     private $callOnSql;
 
     /**
-     * Static factory method.
-     *
-     * @param Thaumatic\Junxa the database the generated query is to be
-     * attached to
-     * @param Thaumatic\Junxa\Table the table the generated query is to be
-     * attached to, if any
-     * @param array<string:mixed> query definition
-     * @param bool whether to skip immediate query validation on construction
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if there
-     * is something wrong with the query
-     */
-    public static function make(
-        Junxa $database,
-        Table $table = null,
-        array $def = [],
-        $skipValidate = false
-    ) {
-        return new self($database, $table, $def, $skipValidate);
-    }
-
-    /**
      * @param Thaumatic\Junxa the database the generated query is to be
      * attached to
      * @param Thaumatic\Junxa\Table the table the generated query is to be
