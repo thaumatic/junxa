@@ -4,6 +4,7 @@ namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
@@ -1116,6 +1117,45 @@ class RowTest extends DatabaseTestAbstract
             }
             if (isset($createCategoryRow2) && $createCategoryRow2->id !== null) {
                 $createCategoryRow2->delete();
+            }
+        }
+    }
+
+    public function testRefresh()
+    {
+        try {
+            $createCategoryRow = $this->db()->category->newRow()
+                ->setField('name', 'Uncategorized')
+                ->setField('type', 'A\'s')
+                ->setField('created_at', Q::func('NOW'))
+                ->performSave();
+            //
+            $refreshCategoryRow = $this->db()->category->newRow()
+                ->setField('id', $createCategoryRow->id);
+            $result = $refreshCategoryRow->refresh();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('Uncategorized', $refreshCategoryRow->name);
+            $this->assertSame('A\'s', $refreshCategoryRow->type);
+            //
+            $refreshCategoryRow = $this->db()->category->newRow();
+            $result = $refreshCategoryRow->refresh();
+            $this->assertSame(Junxa::RESULT_REFRESH_FAIL, $result);
+            $this->assertNull($refreshCategoryRow->name);
+            $this->assertNull($refreshCategoryRow->type);
+            //
+            $refreshCategoryRow = $this->db()->category->newRow()
+                ->setField('id', $createCategoryRow->id + 1);
+            try {
+                $result = $refreshCategoryRow->refresh();
+                $this->fail('refresh with invalid ID did not throw exception');
+            } catch(JunxaInvalidQueryException $e) {
+                // expected
+            }
+            $this->assertNull($refreshCategoryRow->name);
+            $this->assertNull($refreshCategoryRow->type);
+        } finally {
+            if (isset($createCategoryRow) && $createCategoryRow->id !== null) {
+                $createCategoryRow->delete();
             }
         }
     }
