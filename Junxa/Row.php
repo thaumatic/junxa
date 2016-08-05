@@ -734,6 +734,9 @@ class Row
     /**
      * Loads this model with the current data for its row from the database.
      *
+     * @param bool whether we need current data and therefore reading from a
+     * secondary database server would be unacceptable; normally this is
+     * because this refresh is a followup to a mutating query
      * @return int
      * Thaumatic\Junxa::RESULT_SUCCESS
      *   if the refresh succeeds
@@ -743,22 +746,28 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function refresh()
+    public function refresh($needCurrent = false)
     {
         $cond = $this->getMatchCondition();
         if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
         }
-        $rowData = $this->junxaInternalTable->getDatabase()->query()
+        $query = $this->junxaInternalTable->getDatabase()->query()
             ->select($this->junxaInternalTable->getSelectTarget())
             ->setMode(Junxa::QUERY_SINGLE_ASSOC)
-            // We force refresh queries to run against the change handler,
-            // because otherwise we would have to sleep for an undeterminable
-            // period of time to allow changes to propagate.
-            ->setOption(QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER, true)
             ->where($cond)
-            ->execute()
         ;
+        if ($needCurrent) {
+            // If we need current data, we force refresh queries to run
+            // against the change handler, because otherwise we would have
+            // to sleep for an undeterminable period of time to allow changes
+            // to propagate from primary to secondary database servers.
+            $query->setOption(
+                QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER,
+                true
+            );
+        }
+        $rowData = $query->execute();
         $this->junxaInternalData = $rowData;
         foreach ($this->junxaInternalTable->getPreloadColumns() as $column) {
             $dataItem = $this->junxaInternalTable->$column->import($rowData[$column]);
@@ -851,7 +860,7 @@ class Row
         ;
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
-        return Junxa::OK($res) ? $this->refresh() : $res;
+        return Junxa::OK($res) ? $this->refresh(true) : $res;
     }
 
     /**
@@ -944,7 +953,7 @@ class Row
                 $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
-        return $this->refresh();
+        return $this->refresh(true);
     }
 
     /**
@@ -1040,7 +1049,7 @@ class Row
                 $this->$autoInc = $id;
             }
         }
-        return $this->refresh();
+        return $this->refresh(true);
     }
 
     /**
@@ -1122,7 +1131,7 @@ class Row
                 $this->$field = $this->junxaInternalTable->getDatabase()->getInsertId();
             }
         }
-        return $this->refresh();
+        return $this->refresh(true);
     }
 
     /**
