@@ -1160,6 +1160,132 @@ class RowTest extends DatabaseTestAbstract
         }
     }
 
+    public function testInsert()
+    {
+        try {
+            $category = $this->db()->category->newRow();
+            $category->name = 'Uncategorized';
+            $category->created_at = Q::func('NOW');
+            $category->insert();
+            //
+            $this->assertInternalType('int', $category->id);
+            $this->assertSame('Uncategorized', $category->name);
+            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $category->created_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($category->created_at));
+            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $category->changed_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
+            $this->assertTrue($category->active);
+            //
+            $item = $this->db()->item->newRow();
+            $item->category_id = $category->id;
+            $item->name = 'Widget';
+            $item->created_at = Q::func('NOW');
+            $item->insert();
+            //
+            $this->assertInternalType('int', $item->id);
+            $this->assertSame($category->id, $item->category_id);
+            $this->assertSame('Widget', $item->name);
+            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $item->created_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($item->created_at));
+            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $item->changed_at);
+            $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
+            $this->assertTrue($item->active);
+        } finally {
+            if (isset($category) && $category->id !== null) {
+                $category->delete();
+            }
+            if (isset($item) && $item->id !== null) {
+                $item->delete();
+            }
+        }
+    }
+
+    public function testUpdate()
+    {
+        try {
+            $category = $this->db()->category->newRow();
+            $category->name = 'Uncategorized';
+            $category->created_at = Q::func('NOW');
+            $category->save();
+            //
+            $originalCategoryId = $category->id;
+            $category->name = 'Recategorized';
+            $result = $category->update();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('Recategorized', $category->name);
+            $this->assertSame($originalCategoryId, $category->id);
+            $categoryAlt = $this->db()->category->row($category->id);
+            $this->assertNotSame($category, $categoryAlt);
+            $this->assertSame($category->name, $categoryAlt->name);
+            $result = $category->update();
+            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+            $this->assertTrue(Junxa::OK($result));
+            //
+            $item = $this->db()->item->newRow();
+            $item->category_id = $category->id;
+            $item->name = 'Widget';
+            $item->created_at = Q::func('NOW');
+            $item->insert();
+            $this->assertTrue($item->active);
+            //
+            $originalItemId = $item->id;
+            $item->name = 'Whatsit';
+            $result = $item->update();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertSame('Whatsit', $item->name);
+            $this->assertSame($originalItemId, $item->id);
+            $itemAlt = $this->db()->item->row($item->id);
+            $this->assertNotSame($item, $itemAlt);
+            $this->assertSame($item->name, $itemAlt->name);
+            $result = $item->update();
+            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+            $this->assertTrue(Junxa::OK($result));
+        } finally {
+            if (isset($category) && $category->id !== null) {
+                $category->delete();
+            }
+            if (isset($item) && $item->id !== null) {
+                $item->delete();
+            }
+        }
+    }
+
+    public function testDelete()
+    {
+        try {
+            $category = $this->db()->category->newRow();
+            $category->name = 'Uncategorized';
+            $category->created_at = Q::func('NOW');
+            $category->save();
+            //
+            $item = $this->db()->item->newRow();
+            $item->category_id = $category->id;
+            $item->name = 'Widget';
+            $item->created_at = Q::func('NOW');
+            $item->insert();
+            $this->assertTrue($item->active);
+            //
+            $this->assertFalse($item->getDeleted());
+            $result = $item->delete();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertTrue(Junxa::OK($result));
+            $this->assertTrue($item->getDeleted());
+            //
+            $this->assertFalse($category->getDeleted());
+            $result = $category->delete();
+            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+            $this->assertTrue(Junxa::OK($result));
+            $this->assertTrue($category->getDeleted());
+        } finally {
+            if (isset($category) && $category->id !== null) {
+                $category->delete();
+            }
+            if (isset($item) && $item->id !== null) {
+                $item->delete();
+            }
+        }
+    }
+
     public function testGetForeignRow()
     {
         try {
