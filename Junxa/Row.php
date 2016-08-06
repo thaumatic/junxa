@@ -961,8 +961,9 @@ class Row
      * DUPLICATE KEY UPDATE query (an operation also known as upsert or
      * merge).  The INSERT clause is constructed using the fields which
      * have been set or which have a dynamic default configured; the UPDATE
-     * clause includes only fields which have been set and which do not
-     * have Thaumatic\Junxa\Column::OPTION_MERGE_NO_UPDATE enabled.  (If
+     * clause includes only fields which have been set, which do not
+     * have Thaumatic\Junxa\Column::OPTION_MERGE_NO_UPDATE enabled, and
+     * for which no updates are already present in the query builder.  (If
      * the UPDATE clause would be empty, this function only performs a
      * non-mutating update to retrieve an auto-increment primary key, if
      * present.)  If the INSERT clause would create a duplicate entry on
