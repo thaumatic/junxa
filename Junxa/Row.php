@@ -963,8 +963,9 @@ class Row
      * have been set or which have a dynamic default configured; the UPDATE
      * clause includes only fields which have been set and which do not
      * have Thaumatic\Junxa\Column::OPTION_MERGE_NO_UPDATE enabled.  (If
-     * the UPDATE clause would be empty, this function only performs an
-     * INSERT.)  If the INSERT clause would create a duplicate entry on
+     * the UPDATE clause would be empty, this function only performs a
+     * non-mutating update to retrieve an auto-increment primary key, if
+     * present.)  If the INSERT clause would create a duplicate entry on
      * a unique key, then the UPDATE clause is executed.  After the query
      * is issued, the row model's contents will be refreshed from the
      * database with the contents of the generated or updated database row.
