@@ -1024,7 +1024,9 @@ class Row
             $columnModel = $this->junxaInternalTable->$column;
             if (property_exists($this, $column)) {
                 $queryDef->insert($columnModel, $this->$column);
-                if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)) {
+                if (!$columnModel->getOption(Column::OPTION_MERGE_NO_UPDATE)
+                    && !$queryDef->hasUpdateOnColumn($columnModel)
+                ) {
                     $queryDef->update($columnModel, $this->$column);
                 }
             } else {
