@@ -322,7 +322,7 @@ class Junxa
     /**
      * @var string the name of the MySQL database to connect to
      */
-    private $database;
+    private $databaseName;
 
     /**
      * @var string the username to use to connect to the database
@@ -625,24 +625,24 @@ class Junxa
     }
 
     /**
-     * Sets the database to connect to.
+     * Sets the name of the database to connect to.
      *
      * @return $this
      */
-    public function setDatabase($val)
+    public function setDatabaseName($val)
     {
-        $this->database = $val;
+        $this->databaseName = $val;
         return $this;
     }
 
     /**
-     * Retrieves the database we connect to.
+     * Retrieves the name of the database we connect to.
      *
      * @return string
      */
-    public function getDatabase()
+    public function getDatabaseName()
     {
-        return $this->database;
+        return $this->databaseName;
     }
 
     /**
@@ -1098,13 +1098,13 @@ class Junxa
      */
     public function connect()
     {
-        if (!$this->database) {
+        if (!$this->databaseName) {
             throw new JunxaConfigurationException('database to connect to has not been specified');
         }
         if ($this->getOption(self::DB_PERSISTENT_CONNECTION)) {
-            $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->database);
+            $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->databaseName);
         } else {
-            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->database);
+            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->databaseName);
         }
         return $this;
     }
