@@ -1224,6 +1224,11 @@ class RowTest extends DatabaseTestAbstract
         $item->category_id = $category->id;
         $item->name = 'Widget';
         $item->created_at = Q::func('NOW');
+        //
+        $result = $item->delete();
+        $this->assertSame(Junxa::RESULT_DELETE_NOKEY, $result);
+        $this->assertFalse(Junxa::OK($result));
+        //
         $item->insert();
         $this->assertTrue($item->active);
         //
@@ -1238,6 +1243,28 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertTrue(Junxa::OK($result));
         $this->assertTrue($category->getDeleted());
+        //
+        try {
+            $category->delete();
+            $this->fail('was able to redelete a deleted row');
+        } catch(JunxaInvalidQueryException $e) {
+            $this->assertSame('row has already been deleted', $e->getMessage());
+        }
+        //
+        $result = $category->delete(
+            $category->getTable()->query()
+                ->setOption(QueryBuilder::OPTION_REDELETE_OKAY, true)
+        );
+        $this->assertSame(Junxa::RESULT_DELETE_FAIL, $result);
+        $this->assertFalse(Junxa::OK($result));
+        //
+        $result = $category->delete(
+            $category->getTable()->query()
+                ->setOption(QueryBuilder::OPTION_EMPTY_OKAY, true)
+                ->setOption(QueryBuilder::OPTION_REDELETE_OKAY, true)
+        );
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertTrue(Junxa::OK($result));
     }
 
     public function testGetForeignRow()
