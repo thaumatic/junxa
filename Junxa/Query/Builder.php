@@ -3,6 +3,8 @@
 namespace Thaumatic\Junxa\Query;
 
 use Thaumatic\Junxa;
+use Thaumatic\Junxa\Column;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidArgumentException;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Assignment;
