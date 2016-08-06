@@ -892,6 +892,24 @@ class Table
     }
 
     /**
+     * Retrieves whether a given table model addresses the same table as
+     * this model.
+     *
+     * @param Thaumatic\Junxa\Table table model to check
+     * @return bool
+     */
+    public function isSame(Table $table)
+    {
+        if ($this === $table) {
+            return true;
+        }
+        if ($this->getName() !== $table->getName()) {
+            return false;
+        }
+        return $this->getDatabase()->isSame($table->getDatabase());
+    }
+
+    /**
      * Returns a serialization representation for this table.
      *
      * @return string
