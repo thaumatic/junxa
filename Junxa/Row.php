@@ -1323,7 +1323,7 @@ class Row
     public function getPrimaryKeyUnset()
     {
         foreach ($this->junxaInternalTable->getPrimaryKey() as $column) {
-            if (!isset($this->fields[$column])) {
+            if (!isset($this->$column)) {
                 return true;
             }
         }
