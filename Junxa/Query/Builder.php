@@ -31,7 +31,11 @@ class Builder
 
     /**
      * @const int option: single element result sets should result in a null
-     * return value rather than raising an exception if they find no results
+     * return value rather than raising an exception if they find no results,
+     * and don't return {@see Thaumatic\Junxa::RESULT_INSERT_FAIL},
+     * {@see Thaumatic\Junxa::RESULT_UPDATE_FAIL}, or
+     * {@see Thaumatic\Junxa::RESULT_DELETE_FAIL} on their respective
+     * conditions
      */
     const OPTION_EMPTY_OKAY                 = 0x00000004;
 

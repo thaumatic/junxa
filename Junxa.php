@@ -1436,11 +1436,11 @@ class Junxa
         }
         $res = $this->link->query($query);
         if ($res) {
-            if ($insertIgnore && $this->getAffectedRows() <= 0) {
+            if ($insertIgnore && !$emptyOkay && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_INSERT_FAIL;
-            } elseif ($update && $this->getAffectedRows() <= 0) {
+            } elseif ($update && !$emptyOkay && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_UPDATE_FAIL;
-            } elseif ($delete && $this->getAffectedRows() <= 0) {
+            } elseif ($delete && !$emptyOkay && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_DELETE_FAIL;
             } else {
                 $this->queryStatus = self::RESULT_SUCCESS;
