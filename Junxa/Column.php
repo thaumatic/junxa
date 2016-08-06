@@ -961,4 +961,15 @@ class Column
         return $this->foreignKey;
     }
 
+    /**
+     * Retrieves whether a given column model specifies the same column as
+     * this model.
+     */
+    public function isSame(Column $column)
+    {
+        if ($column === $this) {
+            return true;
+        }
+    }
+
 }
