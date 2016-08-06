@@ -72,7 +72,7 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
         }
         self::$db = Junxa::make()
             ->setHostname('localhost')
-            ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
             ->ready()
         ;
     }

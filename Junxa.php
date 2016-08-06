@@ -497,9 +497,9 @@ class Junxa
                 $this->setHostname($def['hostname']);
                 unset($def['hostname']);
             }
-            if (array_key_exists('database', $def)) {
-                $this->setDatabase($def['database']);
-                unset($def['database']);
+            if (array_key_exists('databaseName', $def)) {
+                $this->setDatabaseName($def['databaseName']);
+                unset($def['databaseName']);
             }
             if (array_key_exists('username', $def)) {
                 $this->setUsername($def['username']);

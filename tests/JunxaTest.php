@@ -26,7 +26,7 @@ class JunxaTest extends DatabaseTestAbstract
     {
         $db1 = new Junxa([
             'hostname'                  => 'localhost',
-            'database'                  => DatabaseTestAbstract::TEST_DATABASE_NAME,
+            'databaseName'              => DatabaseTestAbstract::TEST_DATABASE_NAME,
             'username'                  => 'testUsername',
             'password'                  => '',
             'options'                   => Junxa::DB_PERSISTENT_CONNECTION,
@@ -56,7 +56,7 @@ class JunxaTest extends DatabaseTestAbstract
             'autoRowClassNamespace'     => 'FakeRowNamespace',
             'changeHandler'             => [
                 'hostname'              => 'localhost',
-                'database'              => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
+                'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
                 'username'              => 'unusableUsername',
                 'password'              => 'unusablePassword',
             ],
@@ -93,7 +93,7 @@ class JunxaTest extends DatabaseTestAbstract
             ->setAutoRowClassNamespace('FakeRowNamespace')
             ->setChangeHandler([
                 'hostname'              => 'localhost',
-                'database'              => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
+                'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
                 'username'              => 'unusableUsername',
                 'password'              => 'unusablePassword',
             ])
