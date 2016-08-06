@@ -1247,6 +1247,9 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
      * passed query definition has a clause that is present in
      * Thaumatic\Junxa\Row::DELETE_INVALID_CLAUSES
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if this
+     * row is already marked deleted and the working query definition does
+     * not have Thaumatic\Junxa\Query\Builder::OPTION_REDELETE_OKAY enabled
      */
     public function delete($queryDef = [])
     {
@@ -1272,6 +1275,9 @@ class Row
             }
         } else {
             $queryDef = $this->junxaInternalTable->query();
+        }
+        if ($this->getDeleted() && !$queryDef->getOption(QueryBuilder::OPTION_REDELETE_OKAY)) {
+            throw new JunxaInvalidQueryException('row has already been deleted');
         }
         $cond = $this->getMatchCondition();
         if (!$cond) {

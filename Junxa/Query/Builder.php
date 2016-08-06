@@ -66,9 +66,15 @@ class Builder
     const OPTION_LOW_PRIORITY               = 0x00000080;
 
     /**
+     * @const int option: don't raise an exception on a delete() of a row that
+     * has already been deleted
+     */
+    const OPTION_REDELETE_OKAY              = 0x00000100;
+
+    /**
      * @const int option: don't cache rows retrieved with this query
      */
-    const OPTION_SUPPRESS_CACHING           = 0x00000100;
+    const OPTION_SUPPRESS_CACHING           = 0x00000200;
 
     /**
      * @const array<string> the clauses for which incoming values need to be
