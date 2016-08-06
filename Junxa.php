@@ -320,6 +320,16 @@ class Junxa
     private $hostname;
 
     /**
+     * @var int the port to connect to MySQL on
+     */
+    private $port;
+
+    /**
+     * @var string the socket or named pipe to connect to MySQL on, if applicable
+     */
+    private $socket;
+
+    /**
      * @var string the name of the MySQL database to connect to
      */
     private $databaseName;
@@ -497,6 +507,14 @@ class Junxa
                 $this->setHostname($def['hostname']);
                 unset($def['hostname']);
             }
+            if (array_key_exists('port', $def)) {
+                $this->setPort($def['port']);
+                unset($def['port']);
+            }
+            if (array_key_exists('socket', $def)) {
+                $this->setPort($def['socket']);
+                unset($def['socket']);
+            }
             if (array_key_exists('databaseName', $def)) {
                 $this->setDatabaseName($def['databaseName']);
                 unset($def['databaseName']);
@@ -606,6 +624,7 @@ class Junxa
     /**
      * Sets the hostname to connect to MySQL on.
      *
+     * @param string hostname
      * @return $this
      */
     public function setHostname($val)
@@ -625,8 +644,53 @@ class Junxa
     }
 
     /**
+     * Sets the port to connect to MySQL on.
+     *
+     * @param int port number
+     * @return $this
+     */
+    public function setPort($val)
+    {
+        $this->port = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the port we connect to MySQL on.
+     *
+     * @return int
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * Sets the socket or named pipe to connect to MySQL on, if applicable.
+     *
+     * @param string socket
+     * @return $this
+     */
+    public function setSocket($val)
+    {
+        $this->socket = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the socket or named pipe we connect to MySQL on, if applicable.
+     *
+     * @return string
+     */
+    public function getSocket()
+    {
+        return $this->socket;
+    }
+
+    /**
      * Sets the name of the database to connect to.
      *
+     * @param string database name
      * @return $this
      */
     public function setDatabaseName($val)
@@ -648,6 +712,7 @@ class Junxa
     /**
      * Sets the username to use to connect to the database.
      *
+     * @param string username
      * @return $this
      */
     public function setUsername($val)
@@ -669,6 +734,7 @@ class Junxa
     /**
      * Sets the password to use to connect to the database.
      *
+     * @param string password
      * @return $this
      */
     public function setPassword($val)
@@ -1101,11 +1167,18 @@ class Junxa
         if (!$this->databaseName) {
             throw new JunxaConfigurationException('database to connect to has not been specified');
         }
-        if ($this->getOption(self::DB_PERSISTENT_CONNECTION)) {
-            $this->link = new \mysqli('p:' . $this->hostname, $this->username, $this->password, $this->databaseName);
-        } else {
-            $this->link = new \mysqli($this->hostname, $this->username, $this->password, $this->databaseName);
-        }
+        $this->link = new \mysqli(
+            (
+                $this->getOption(self::DB_PERSISTENT_CONNECTION)
+                ? 'p:' . $this->hostname
+                : $this->hostname
+            ),
+            $this->username,
+            $this->password,
+            $this->databaseName,
+            $this->port,
+            $this->socket
+        );
         return $this;
     }
 
@@ -1843,6 +1916,33 @@ class Junxa
     public function escapeString($text)
     {
         return $this->link->real_escape_string($text);
+    }
+
+    /**
+     * Retrieves whether a given database model addresses the same database
+     * as this one.
+     *
+     * @param Thaumatic\Junxa the database to check
+     * @return bool
+     */
+    public function isSame($database)
+    {
+        if ($database === $this) {
+            return true;
+        }
+        if ($this->databaseName !== $database->getDatabaseName()) {
+            return false;
+        }
+        if ($this->hostname !== $database->getHostname()) {
+            return false;
+        }
+        if ($this->port !== $database->getPort()) {
+            return false;
+        }
+        if ($this->socket !== $database->getSocket()) {
+            return false;
+        }
+        return true;
     }
 
     /**
