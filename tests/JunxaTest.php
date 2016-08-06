@@ -11,8 +11,6 @@ use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 class JunxaTest extends DatabaseTestAbstract
 {
 
-    const PATTERN_DATETIME_ANCHORED = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
-
     public function testBasicInteraction()
     {
         $this->assertInstanceOf('Thaumatic\Junxa', $this->db());
@@ -133,27 +131,22 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function runStringIntegrityTests()
     {
-        try {
-            $category = $this->db()->category->newRow();
-            $category->name = 'Start';
-            $category->created_at = Q::func('NOW');
-            $category->insert();
-            srand(1);
-            for ($i = $this->db()->category->name->getLength() / 10; $i >= 0; $i--) {
-                $name = '';
-                for ($j = $this->db()->category->name->getLength() - $i - 1; $j >= 0; $j--) {
-                    $name .= self::unichr(rand(1, 10000));
-                }
-                $category->name = $name;
-                $category->save();
-                $this->assertEquals($name, $category->name);
-                $categoryAlt = $this->db()->category->row($category->id);
-                $this->assertEquals($name, $categoryAlt->name);
+        $category = $this->db()->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Start';
+        $category->created_at = Q::func('NOW');
+        $category->insert();
+        srand(1);
+        for ($i = $this->db()->category->name->getLength() / 10; $i >= 0; $i--) {
+            $name = '';
+            for ($j = $this->db()->category->name->getLength() - $i - 1; $j >= 0; $j--) {
+                $name .= self::unichr(rand(1, 10000));
             }
-        } finally {
-            if (isset($category) && $category->id !== null) {
-                $category->delete();
-            }
+            $category->name = $name;
+            $category->save();
+            $this->assertEquals($name, $category->name);
+            $categoryAlt = $this->db()->category->row($category->id);
+            $this->assertEquals($name, $categoryAlt->name);
         }
     }
 

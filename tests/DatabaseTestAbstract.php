@@ -3,12 +3,40 @@
 namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 
 abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
 {
 
     const TEST_DATABASE_NAME = 'test_junxa';
     const TEST_DATABASE_SETUP_FILE_NAME = 'test.sql';
+
+    private $generatedRows = [];
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $toThrow = null;
+        foreach ($this->generatedRows as $row) {
+            if (!$row->getPrimaryKeyUnset() && !$row->getDeleted()) {
+                try {
+                    $row->delete();
+                } catch(JunxaInvalidQueryException $e) {
+                    if (!$toThrow) {
+                        $toThrow = $e;
+                    }
+                }
+            }
+        }
+        if ($toThrow) {
+            throw $toThrow;
+        }
+    }
+
+    protected function addGeneratedRow($row)
+    {
+        $this->generatedRows[] = $row;
+    }
 
     /**
      * @var mysqli link directly to the database, used for creating and

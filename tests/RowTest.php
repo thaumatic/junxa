@@ -13,105 +13,92 @@ use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 class RowTest extends DatabaseTestAbstract
 {
 
+    const PATTERN_DATETIME_ANCHORED = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+
     public function testFieldInteractionWithIsset()
     {
-        try {
-            $categoryRow = $this->db()->category->newRow();
-            $this->assertFalse(isset($categoryRow->id));
-            $this->assertFalse(isset($categoryRow->name));
-            $this->assertFalse(isset($categoryRow->type));
-            $this->assertFalse(isset($categoryRow->created_at));
-            $this->assertFalse(isset($categoryRow->changed_at));
-            $this->assertFalse(isset($categoryRow->nonexistent_column));
-            $categoryRow->name = 'Uncategorized';
-            $categoryRow->created_at = Q::func('NOW');
-            $this->assertFalse(isset($categoryRow->id));
-            $this->assertTrue(isset($categoryRow->name));
-            $this->assertFalse(isset($categoryRow->type));
-            $this->assertTrue(isset($categoryRow->created_at));
-            $this->assertFalse(isset($categoryRow->changed_at));
-            $this->assertFalse(isset($categoryRow->nonexistent_column));
-            $categoryRow->save();
-            $this->assertTrue(isset($categoryRow->id));
-            $this->assertTrue(isset($categoryRow->name));
-            $this->assertFalse(isset($categoryRow->type));
-            $this->assertTrue(isset($categoryRow->created_at));
-            $this->assertTrue(isset($categoryRow->changed_at));
-            $this->assertFalse(isset($categoryRow->nonexistent_column));
-        } finally {
-            if (isset($categoryRow) && $categoryRow->id !== null) {
-                $categoryRow->delete();
-            }
-        }
+        $categoryRow = $this->db()->category->newRow();
+        $this->addGeneratedRow($categoryRow);
+        $this->assertFalse(isset($categoryRow->id));
+        $this->assertFalse(isset($categoryRow->name));
+        $this->assertFalse(isset($categoryRow->type));
+        $this->assertFalse(isset($categoryRow->created_at));
+        $this->assertFalse(isset($categoryRow->changed_at));
+        $this->assertFalse(isset($categoryRow->nonexistent_column));
+        $categoryRow->name = 'Uncategorized';
+        $categoryRow->created_at = Q::func('NOW');
+        $this->assertFalse(isset($categoryRow->id));
+        $this->assertTrue(isset($categoryRow->name));
+        $this->assertFalse(isset($categoryRow->type));
+        $this->assertTrue(isset($categoryRow->created_at));
+        $this->assertFalse(isset($categoryRow->changed_at));
+        $this->assertFalse(isset($categoryRow->nonexistent_column));
+        $categoryRow->save();
+        $this->assertTrue(isset($categoryRow->id));
+        $this->assertTrue(isset($categoryRow->name));
+        $this->assertFalse(isset($categoryRow->type));
+        $this->assertTrue(isset($categoryRow->created_at));
+        $this->assertTrue(isset($categoryRow->changed_at));
+        $this->assertFalse(isset($categoryRow->nonexistent_column));
     }
 
     public function testFieldInteractionWithEmpty()
     {
-        try {
-            $categoryRow = $this->db()->category->newRow();
-            $this->assertTrue(empty($categoryRow->id));
-            $this->assertTrue(empty($categoryRow->name));
-            $this->assertTrue(empty($categoryRow->type));
-            $this->assertTrue(empty($categoryRow->created_at));
-            $this->assertTrue(empty($categoryRow->changed_at));
-            $this->assertTrue(empty($categoryRow->nonexistent_column));
-            $categoryRow->name = 'Uncategorized';
-            $categoryRow->created_at = Q::func('NOW');
-            $this->assertTrue(empty($categoryRow->id));
-            $this->assertFalse(empty($categoryRow->name));
-            $this->assertTrue(empty($categoryRow->type));
-            $this->assertFalse(empty($categoryRow->created_at));
-            $this->assertTrue(empty($categoryRow->changed_at));
-            $this->assertTrue(empty($categoryRow->nonexistent_column));
-            $categoryRow->save();
-            $this->assertFalse(empty($categoryRow->id));
-            $this->assertFalse(empty($categoryRow->name));
-            $this->assertTrue(empty($categoryRow->type));
-            $this->assertFalse(empty($categoryRow->created_at));
-            $this->assertFalse(empty($categoryRow->changed_at));
-            $this->assertTrue(empty($categoryRow->nonexistent_column));
-        } finally {
-            if (isset($categoryRow) && $categoryRow->id !== null) {
-                $categoryRow->delete();
-            }
-        }
+        $categoryRow = $this->db()->category->newRow();
+        $this->addGeneratedRow($categoryRow);
+        $this->assertTrue(empty($categoryRow->id));
+        $this->assertTrue(empty($categoryRow->name));
+        $this->assertTrue(empty($categoryRow->type));
+        $this->assertTrue(empty($categoryRow->created_at));
+        $this->assertTrue(empty($categoryRow->changed_at));
+        $this->assertTrue(empty($categoryRow->nonexistent_column));
+        $categoryRow->name = 'Uncategorized';
+        $categoryRow->created_at = Q::func('NOW');
+        $this->assertTrue(empty($categoryRow->id));
+        $this->assertFalse(empty($categoryRow->name));
+        $this->assertTrue(empty($categoryRow->type));
+        $this->assertFalse(empty($categoryRow->created_at));
+        $this->assertTrue(empty($categoryRow->changed_at));
+        $this->assertTrue(empty($categoryRow->nonexistent_column));
+        $categoryRow->save();
+        $this->assertFalse(empty($categoryRow->id));
+        $this->assertFalse(empty($categoryRow->name));
+        $this->assertTrue(empty($categoryRow->type));
+        $this->assertFalse(empty($categoryRow->created_at));
+        $this->assertFalse(empty($categoryRow->changed_at));
+        $this->assertTrue(empty($categoryRow->nonexistent_column));
     }
 
     public function testExceptionOnNonexistentColumn()
     {
+        $categoryRow = $this->db()->category->newRow();
+        $this->addGeneratedRow($categoryRow);
         try {
-            $categoryRow = $this->db()->category->newRow();
-            try {
-                $value = $categoryRow->nonexistent_column;
-                $this->fail('was able to access nonexistent_column');
-            } catch (JunxaNoSuchColumnException $e) {
-                $this->assertSame('nonexistent_column', $e->getColumnName());
-            }
-            try {
-                $categoryRow->nonexistent_column = 'value';
-                $this->fail('was able to mutate nonexistent_column');
-            } catch (JunxaNoSuchColumnException $e) {
-                $this->assertSame('nonexistent_column', $e->getColumnName());
-            }
-            $categoryRow->name = 'Uncategorized';
-            $categoryRow->created_at = Q::func('NOW');
-            $categoryRow->save();
-            try {
-                $value = $categoryRow->nonexistent_column;
-                $this->fail('was able to access nonexistent_column');
-            } catch (JunxaNoSuchColumnException $e) {
-                $this->assertSame('nonexistent_column', $e->getColumnName());
-            }
-            try {
-                $categoryRow->nonexistent_column = 'value';
-                $this->fail('was able to mutate nonexistent_column');
-            } catch (JunxaNoSuchColumnException $e) {
-                $this->assertSame('nonexistent_column', $e->getColumnName());
-            }
-        } finally {
-            if (isset($categoryRow) && $categoryRow->id !== null) {
-                $categoryRow->delete();
-            }
+            $value = $categoryRow->nonexistent_column;
+            $this->fail('was able to access nonexistent_column');
+        } catch (JunxaNoSuchColumnException $e) {
+            $this->assertSame('nonexistent_column', $e->getColumnName());
+        }
+        try {
+            $categoryRow->nonexistent_column = 'value';
+            $this->fail('was able to mutate nonexistent_column');
+        } catch (JunxaNoSuchColumnException $e) {
+            $this->assertSame('nonexistent_column', $e->getColumnName());
+        }
+        $categoryRow->name = 'Uncategorized';
+        $categoryRow->created_at = Q::func('NOW');
+        $categoryRow->save();
+        try {
+            $value = $categoryRow->nonexistent_column;
+            $this->fail('was able to access nonexistent_column');
+        } catch (JunxaNoSuchColumnException $e) {
+            $this->assertSame('nonexistent_column', $e->getColumnName());
+        }
+        try {
+            $categoryRow->nonexistent_column = 'value';
+            $this->fail('was able to mutate nonexistent_column');
+        } catch (JunxaNoSuchColumnException $e) {
+            $this->assertSame('nonexistent_column', $e->getColumnName());
         }
     }
 
@@ -1039,279 +1026,239 @@ class RowTest extends DatabaseTestAbstract
 
     public function testFind()
     {
-        try {
-            $createCategoryRow1 = $this->db()->category->newRow()
-                ->setField('name', 'Uncategorized')
-                ->setField('type', 'A\'s')
-                ->setField('created_at', Q::func('NOW'))
-                ->performSave();
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Uncategorized');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('type', 'A\'s');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Unknown');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
-            $this->assertNull($findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('type', 'B\'s');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
-            $this->assertNull($findCategoryRow->name);
-            //
-            $createCategoryRow2 = $this->db()->category->newRow()
-                ->setField('name', 'Categorized')
-                ->setField('type', 'A\'s')
-                ->setField('created_at', Q::func('NOW'))
-                ->performSave();
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Uncategorized');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Categorized');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Unknown');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
-            $this->assertNull($findCategoryRow->type);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('type', 'A\'s');
-            $result = $findCategoryRow->find();
-            $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            $this->assertSame('Uncategorized', $findCategoryRow->name);
-            //
-            $findCategoryRow = $this->db()->category->newRow()
-                ->setField('type', 'A\'s');
-            $result = $findCategoryRow->find(
-                $findCategoryRow->getTable()->query()
-                    ->order('id')
-                    ->desc()
-            );
-            $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
-            $this->assertSame('A\'s', $findCategoryRow->type);
-            $this->assertSame('Categorized', $findCategoryRow->name);
-        } finally {
-            if (isset($createCategoryRow1) && $createCategoryRow1->id !== null) {
-                $createCategoryRow1->delete();
-            }
-            if (isset($createCategoryRow2) && $createCategoryRow2->id !== null) {
-                $createCategoryRow2->delete();
-            }
-        }
+        $createCategoryRow1 = $this->db()->category->newRow()
+            ->setField('name', 'Uncategorized')
+            ->setField('type', 'A\'s')
+            ->setField('created_at', Q::func('NOW'))
+            ->performSave();
+        $this->addGeneratedRow($createCategoryRow1);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Uncategorized');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('type', 'A\'s');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Unknown');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+        $this->assertNull($findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('type', 'B\'s');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+        $this->assertNull($findCategoryRow->name);
+        //
+        $createCategoryRow2 = $this->db()->category->newRow()
+            ->setField('name', 'Categorized')
+            ->setField('type', 'A\'s')
+            ->setField('created_at', Q::func('NOW'))
+            ->performSave();
+        $this->addGeneratedRow($createCategoryRow2);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Uncategorized');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Categorized');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Unknown');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
+        $this->assertNull($findCategoryRow->type);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('type', 'A\'s');
+        $result = $findCategoryRow->find();
+        $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        $this->assertSame('Uncategorized', $findCategoryRow->name);
+        //
+        $findCategoryRow = $this->db()->category->newRow()
+            ->setField('type', 'A\'s');
+        $result = $findCategoryRow->find(
+            $findCategoryRow->getTable()->query()
+                ->order('id')
+                ->desc()
+        );
+        $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
+        $this->assertSame('A\'s', $findCategoryRow->type);
+        $this->assertSame('Categorized', $findCategoryRow->name);
     }
 
     public function testRefresh()
     {
+        $createCategoryRow = $this->db()->category->newRow()
+            ->setField('name', 'Uncategorized')
+            ->setField('type', 'A\'s')
+            ->setField('created_at', Q::func('NOW'))
+            ->performSave();
+        $this->addGeneratedRow($createCategoryRow);
+        //
+        $refreshCategoryRow = $this->db()->category->newRow()
+            ->setField('id', $createCategoryRow->id);
+        $result = $refreshCategoryRow->refresh();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('Uncategorized', $refreshCategoryRow->name);
+        $this->assertSame('A\'s', $refreshCategoryRow->type);
+        //
+        $refreshCategoryRow = $this->db()->category->newRow();
+        $result = $refreshCategoryRow->refresh();
+        $this->assertSame(Junxa::RESULT_REFRESH_FAIL, $result);
+        $this->assertNull($refreshCategoryRow->name);
+        $this->assertNull($refreshCategoryRow->type);
+        //
+        $refreshCategoryRow = $this->db()->category->newRow()
+            ->setField('id', $createCategoryRow->id + 1);
         try {
-            $createCategoryRow = $this->db()->category->newRow()
-                ->setField('name', 'Uncategorized')
-                ->setField('type', 'A\'s')
-                ->setField('created_at', Q::func('NOW'))
-                ->performSave();
-            //
-            $refreshCategoryRow = $this->db()->category->newRow()
-                ->setField('id', $createCategoryRow->id);
             $result = $refreshCategoryRow->refresh();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('Uncategorized', $refreshCategoryRow->name);
-            $this->assertSame('A\'s', $refreshCategoryRow->type);
-            //
-            $refreshCategoryRow = $this->db()->category->newRow();
-            $result = $refreshCategoryRow->refresh();
-            $this->assertSame(Junxa::RESULT_REFRESH_FAIL, $result);
-            $this->assertNull($refreshCategoryRow->name);
-            $this->assertNull($refreshCategoryRow->type);
-            //
-            $refreshCategoryRow = $this->db()->category->newRow()
-                ->setField('id', $createCategoryRow->id + 1);
-            try {
-                $result = $refreshCategoryRow->refresh();
-                $this->fail('refresh with invalid ID did not throw exception');
-            } catch(JunxaInvalidQueryException $e) {
-                // expected
-            }
-            $this->assertNull($refreshCategoryRow->name);
-            $this->assertNull($refreshCategoryRow->type);
-        } finally {
-            if (isset($createCategoryRow) && $createCategoryRow->id !== null) {
-                $createCategoryRow->delete();
-            }
+            $this->fail('refresh with invalid ID did not throw exception');
+        } catch(JunxaInvalidQueryException $e) {
+            // expected
         }
+        $this->assertNull($refreshCategoryRow->name);
+        $this->assertNull($refreshCategoryRow->type);
     }
 
     public function testInsert()
     {
-        try {
-            $category = $this->db()->category->newRow();
-            $category->name = 'Uncategorized';
-            $category->created_at = Q::func('NOW');
-            $category->insert();
-            //
-            $this->assertInternalType('int', $category->id);
-            $this->assertSame('Uncategorized', $category->name);
-            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $category->created_at);
-            $this->assertLessThanOrEqual(1, time() - strtotime($category->created_at));
-            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $category->changed_at);
-            $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
-            $this->assertTrue($category->active);
-            //
-            $item = $this->db()->item->newRow();
-            $item->category_id = $category->id;
-            $item->name = 'Widget';
-            $item->created_at = Q::func('NOW');
-            $item->insert();
-            //
-            $this->assertInternalType('int', $item->id);
-            $this->assertSame($category->id, $item->category_id);
-            $this->assertSame('Widget', $item->name);
-            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $item->created_at);
-            $this->assertLessThanOrEqual(1, time() - strtotime($item->created_at));
-            $this->assertRegExp(JunxaTest::PATTERN_DATETIME_ANCHORED, $item->changed_at);
-            $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
-            $this->assertTrue($item->active);
-        } finally {
-            if (isset($category) && $category->id !== null) {
-                $category->delete();
-            }
-            if (isset($item) && $item->id !== null) {
-                $item->delete();
-            }
-        }
+        $category = $this->db()->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->created_at = Q::func('NOW');
+        $category->insert();
+        //
+        $this->assertInternalType('int', $category->id);
+        $this->assertSame('Uncategorized', $category->name);
+        $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $category->created_at);
+        $this->assertLessThanOrEqual(1, time() - strtotime($category->created_at));
+        $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $category->changed_at);
+        $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
+        $this->assertTrue($category->active);
+        //
+        $item = $this->db()->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->category_id = $category->id;
+        $item->name = 'Widget';
+        $item->created_at = Q::func('NOW');
+        $item->insert();
+        //
+        $this->assertInternalType('int', $item->id);
+        $this->assertSame($category->id, $item->category_id);
+        $this->assertSame('Widget', $item->name);
+        $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $item->created_at);
+        $this->assertLessThanOrEqual(1, time() - strtotime($item->created_at));
+        $this->assertRegExp(self::PATTERN_DATETIME_ANCHORED, $item->changed_at);
+        $this->assertLessThanOrEqual(1, time() - strtotime($item->changed_at));
+        $this->assertTrue($item->active);
     }
 
     public function testUpdate()
     {
-        try {
-            $category = $this->db()->category->newRow();
-            $category->name = 'Uncategorized';
-            $category->created_at = Q::func('NOW');
-            $category->save();
-            //
-            $originalCategoryId = $category->id;
-            $category->name = 'Recategorized';
-            $result = $category->update();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('Recategorized', $category->name);
-            $this->assertSame($originalCategoryId, $category->id);
-            $categoryAlt = $this->db()->category->row($category->id);
-            $this->assertNotSame($category, $categoryAlt);
-            $this->assertSame($category->name, $categoryAlt->name);
-            $result = $category->update();
-            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
-            $this->assertTrue(Junxa::OK($result));
-            //
-            $item = $this->db()->item->newRow();
-            $item->category_id = $category->id;
-            $item->name = 'Widget';
-            $item->created_at = Q::func('NOW');
-            $item->insert();
-            $this->assertTrue($item->active);
-            //
-            $originalItemId = $item->id;
-            $item->name = 'Whatsit';
-            $result = $item->update();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertSame('Whatsit', $item->name);
-            $this->assertSame($originalItemId, $item->id);
-            $itemAlt = $this->db()->item->row($item->id);
-            $this->assertNotSame($item, $itemAlt);
-            $this->assertSame($item->name, $itemAlt->name);
-            $result = $item->update();
-            $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
-            $this->assertTrue(Junxa::OK($result));
-        } finally {
-            if (isset($category) && $category->id !== null) {
-                $category->delete();
-            }
-            if (isset($item) && $item->id !== null) {
-                $item->delete();
-            }
-        }
+        $category = $this->db()->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->created_at = Q::func('NOW');
+        $category->save();
+        //
+        $originalCategoryId = $category->id;
+        $category->name = 'Recategorized';
+        $result = $category->update();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('Recategorized', $category->name);
+        $this->assertSame($originalCategoryId, $category->id);
+        $categoryAlt = $this->db()->category->row($category->id);
+        $this->assertNotSame($category, $categoryAlt);
+        $this->assertSame($category->name, $categoryAlt->name);
+        $result = $category->update();
+        $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+        $this->assertTrue(Junxa::OK($result));
+        //
+        $item = $this->db()->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->category_id = $category->id;
+        $item->name = 'Widget';
+        $item->created_at = Q::func('NOW');
+        $item->insert();
+        $this->assertTrue($item->active);
+        //
+        $originalItemId = $item->id;
+        $item->name = 'Whatsit';
+        $result = $item->update();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('Whatsit', $item->name);
+        $this->assertSame($originalItemId, $item->id);
+        $itemAlt = $this->db()->item->row($item->id);
+        $this->assertNotSame($item, $itemAlt);
+        $this->assertSame($item->name, $itemAlt->name);
+        $result = $item->update();
+        $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
+        $this->assertTrue(Junxa::OK($result));
     }
 
     public function testDelete()
     {
-        try {
-            $category = $this->db()->category->newRow();
-            $category->name = 'Uncategorized';
-            $category->created_at = Q::func('NOW');
-            $category->save();
-            //
-            $item = $this->db()->item->newRow();
-            $item->category_id = $category->id;
-            $item->name = 'Widget';
-            $item->created_at = Q::func('NOW');
-            $item->insert();
-            $this->assertTrue($item->active);
-            //
-            $this->assertFalse($item->getDeleted());
-            $result = $item->delete();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertTrue(Junxa::OK($result));
-            $this->assertTrue($item->getDeleted());
-            //
-            $this->assertFalse($category->getDeleted());
-            $result = $category->delete();
-            $this->assertSame(Junxa::RESULT_SUCCESS, $result);
-            $this->assertTrue(Junxa::OK($result));
-            $this->assertTrue($category->getDeleted());
-        } finally {
-            if (isset($category) && $category->id !== null) {
-                $category->delete();
-            }
-            if (isset($item) && $item->id !== null) {
-                $item->delete();
-            }
-        }
+        $category = $this->db()->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->created_at = Q::func('NOW');
+        $category->save();
+        //
+        $item = $this->db()->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->category_id = $category->id;
+        $item->name = 'Widget';
+        $item->created_at = Q::func('NOW');
+        $item->insert();
+        $this->assertTrue($item->active);
+        //
+        $this->assertFalse($item->getDeleted());
+        $result = $item->delete();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertTrue(Junxa::OK($result));
+        $this->assertTrue($item->getDeleted());
+        //
+        $this->assertFalse($category->getDeleted());
+        $result = $category->delete();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertTrue(Junxa::OK($result));
+        $this->assertTrue($category->getDeleted());
     }
 
     public function testGetForeignRow()
     {
-        try {
-            $createCategoryRow = $this->db()->category->newRow();
-            $createCategoryRow->name = 'Uncategorized';
-            $createCategoryRow->created_at = Q::func('NOW');
-            $createCategoryRow->save();
-            $createItemRow = $this->db()->item->newRow();
-            $createItemRow->category_id = $createCategoryRow->id;
-            $createItemRow->name = 'Widget';
-            $createItemRow->created_at = Q::func('NOW');
-            $createItemRow->save();
-            $itemRow = $this->db()->item->row($createItemRow->id);
-            $this->assertEquals($createItemRow, $itemRow);
-            $this->assertEquals('Widget', $itemRow->name);
-            $categoryRow = $itemRow->getForeignRow('category_id');
-            $this->assertEquals($createCategoryRow, $categoryRow);
-            $this->assertEquals('Uncategorized', $categoryRow->name);
-        } finally {
-            if (isset($createCategoryRow) && $createCategoryRow->id !== null) {
-                $createCategoryRow->delete();
-            }
-            if (isset($createItemRow) && $createItemRow->id !== null) {
-                $createItemRow->delete();
-            }
-        }
+        $createCategoryRow = $this->db()->category->newRow();
+        $this->addGeneratedRow($createCategoryRow);
+        $createCategoryRow->name = 'Uncategorized';
+        $createCategoryRow->created_at = Q::func('NOW');
+        $createCategoryRow->save();
+        $createItemRow = $this->db()->item->newRow();
+        $this->addGeneratedRow($createItemRow);
+        $createItemRow->category_id = $createCategoryRow->id;
+        $createItemRow->name = 'Widget';
+        $createItemRow->created_at = Q::func('NOW');
+        $createItemRow->save();
+        $itemRow = $this->db()->item->row($createItemRow->id);
+        $this->assertEquals($createItemRow, $itemRow);
+        $this->assertEquals('Widget', $itemRow->name);
+        $categoryRow = $itemRow->getForeignRow('category_id');
+        $this->assertEquals($createCategoryRow, $categoryRow);
+        $this->assertEquals('Uncategorized', $categoryRow->name);
     }
 
 }
