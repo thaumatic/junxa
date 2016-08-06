@@ -1288,8 +1288,9 @@ class Row
             ->delete($this->junxaInternalTable)
             ->setMode(Junxa::QUERY_FORGET)
         ;
-        $this->junxaInternalTable->getDatabase()->query($queryDef);
-        $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
+        $db = $this->junxaInternalTable->getDatabase();
+        $db->query($queryDef);
+        $res = $db->getQueryStatus();
         if (Junxa::OK($res)) {
             $this->junxaInternalDeleted = true;
             $this->checkCaching(true);
