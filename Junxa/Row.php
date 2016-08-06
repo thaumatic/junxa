@@ -1281,7 +1281,7 @@ class Row
         }
         $cond = $this->getMatchCondition();
         if (!$cond) {
-            return Junxa::RESULT_DELETE_FAIL;
+            return Junxa::RESULT_DELETE_NOKEY;
         }
         $queryDef
             ->where($cond)

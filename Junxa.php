@@ -198,7 +198,7 @@ class Junxa
      * row did not have the primary key information necessary to automatically
      * generate a delete
      */
-    const RESULT_DELETE_FAIL            = -6;
+    const RESULT_DELETE_NOKEY           = -6;
 
     /**
      * @const int query result code: a table row find was called for and no
@@ -216,6 +216,11 @@ class Junxa
      * @const int query result code: an UPDATE query affected no rows
      */
     const RESULT_UPDATE_FAIL            = -9;
+
+    /**
+     * @const int query result code: a DELETE query affected no rows
+     */
+    const RESULT_DELETE_FAIL            = -10;
 
     /**
      * @const array<numeric:string> mapping of the RESULT_* constants to their
@@ -1328,6 +1333,7 @@ class Junxa
         $this->queryMessage = '';
         $insertIgnore = false;
         $update = false;
+        $delete = false;
         $errorOkay = false;
         $queryBuilder = null;
         switch (gettype($query)) {
@@ -1345,6 +1351,8 @@ class Junxa
                     } else {
                         if (preg_match('/^\s*UPDATE\s+/is', $query)) {
                             $update = true;
+                        } elseif (preg_match('/^\s*DELETE\s+/is', $query)) {
+                            $delete = true;
                         } elseif (preg_match('/^\s*INSERT[^(]+IGNORE\s+/is', $query)) {
                             $insertIgnore = true;
                         }
@@ -1392,6 +1400,8 @@ class Junxa
                 }
                 if ($queryType === 'update') {
                     $update = true;
+                } elseif ($queryType === 'delete') {
+                    $delete = true;
                 } elseif ($queryType === 'insert' && $query->getOption(QueryBuilder::OPTION_IGNORE)) {
                     $insertIgnore = true;
                 }
@@ -1430,6 +1440,8 @@ class Junxa
                 $this->queryStatus = self::RESULT_INSERT_FAIL;
             } elseif ($update && $this->getAffectedRows() <= 0) {
                 $this->queryStatus = self::RESULT_UPDATE_FAIL;
+            } elseif ($delete && $this->getAffectedRows() <= 0) {
+                $this->queryStatus = self::RESULT_DELETE_FAIL;
             } else {
                 $this->queryStatus = self::RESULT_SUCCESS;
             }
