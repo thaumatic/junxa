@@ -541,6 +541,42 @@ class Builder
     }
 
     /**
+     * Retrieves whether the query has an update on the specified column.
+     *
+     * @param string|Junxa\Column column to check for
+     * @return bool
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidArgumentException if an
+     * invalid value is passed as argument
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if a
+     * string column name is passed but this query is not attached to a table
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     */
+    public function hasUpdateOnColumn($column)
+    {
+        if (is_string($column)) {
+            if (!$this->table) {
+                throw new JunxaInvalidQueryException(
+                    'cannot use string column name with a query that is not '
+                    . 'attached to a table'
+                );
+            }
+            $column = $this->table->$column;
+        } elseif (!($column instanceof Column)) {
+            throw new JunxaInvalidArgumentException(
+                'column specification must be a string column name or a '
+                . 'Thaumatic\Junxa\Column'
+            );
+        }
+        foreach ($this->update as $update) {
+            if ($update->getColumn()->isSame($column)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Retrieves the update clause.
      *
      * @return array<mixed>
