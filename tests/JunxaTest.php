@@ -63,7 +63,7 @@ class JunxaTest extends DatabaseTestAbstract
         ]);
         $db2 = Junxa::make()
             ->setHostname('localhost')
-            ->setDatabase(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
             ->setUsername('testUsername')
             ->setPassword('')
             ->setOption(Junxa::DB_PERSISTENT_CONNECTION, true)
