@@ -431,8 +431,6 @@ class Builder
      * Retrieves the query mode.
      *
      * @return int Junxa::QUERY_* mode constant
-     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if more
-     * than 1 argument is given
      */
     public function getMode()
     {
@@ -454,7 +452,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException(
+                throw new JunxaInvalidArgumentException(
                     'too many arguments ('
                     . count($args)
                     . ')'
@@ -531,7 +529,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException(
+                throw new JunxaInvalidArgumentException(
                     'too many arguments ('
                     . count($args)
                     . ')'
@@ -589,7 +587,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException(
+                throw new JunxaInvalidArgumentException(
                     'too many arguments ('
                     . count($args)
                     . ')'
@@ -647,7 +645,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -778,7 +776,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -832,7 +830,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -902,7 +900,7 @@ class Builder
                 $this->changed();
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -960,7 +958,7 @@ class Builder
                 }
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -1034,7 +1032,7 @@ class Builder
                 }
                 break;
             default:
-                throw new JunxaInvalidQueryException('too many arguments (' . count($args) . ')');
+                throw new JunxaInvalidArgumentException('too many arguments (' . count($args) . ')');
         }
         return $this;
     }
@@ -1324,8 +1322,8 @@ class Builder
     {
         if (!$this->table) {
             throw new JunxaInvalidQueryException(
-                'cannot call row() on a query that was not generated from a '
-                . 'table'
+                'cannot call row() on a query that was not generated from '
+                . 'a table'
             );
         }
         return $this->table->row($this);
