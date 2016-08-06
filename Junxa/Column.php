@@ -964,12 +964,19 @@ class Column
     /**
      * Retrieves whether a given column model specifies the same column as
      * this model.
+     *
+     * @param Thaumatic\Junxa\Column column model to check
+     * @return bool
      */
     public function isSame(Column $column)
     {
         if ($column === $this) {
             return true;
         }
+        if ($column->getName() !== $this->getName()) {
+            return false;
+        }
+        return $this->getTable()->isSame($column->getTable());
     }
 
 }
