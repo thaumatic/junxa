@@ -23,5 +23,5 @@ CREATE TABLE `item` (
     PRIMARY KEY (`id`),
     UNIQUE KEY (`name`),
     FOREIGN KEY `categoryId` (`categoryId`) REFERENCES `category` (`id`),
-    KEY `categoryId_by_active` (`categoryId`, `active`)
+    KEY `categoryIdByActive` (`categoryId`, `active`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
