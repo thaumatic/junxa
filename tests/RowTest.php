@@ -1328,15 +1328,18 @@ class RowTest extends DatabaseTestAbstract
         $createCategoryRow->name = 'Uncategorized';
         $createCategoryRow->createdAt = Q::func('NOW');
         $createCategoryRow->save();
+        //
         $createItemRow = $this->db->item->newRow();
         $this->addGeneratedRow($createItemRow);
         $createItemRow->categoryId = $createCategoryRow->id;
         $createItemRow->name = 'Widget';
         $createItemRow->createdAt = Q::func('NOW');
         $createItemRow->save();
+        //
         $itemRow = $this->db->item->row($createItemRow->id);
         $this->assertEquals($createItemRow, $itemRow);
         $this->assertEquals('Widget', $itemRow->name);
+        //
         $categoryRow = $itemRow->getParentRow('categoryId');
         $this->assertEquals($createCategoryRow, $categoryRow);
         $this->assertNotSame($createCategoryRow, $categoryRow);
