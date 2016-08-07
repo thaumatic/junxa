@@ -1300,7 +1300,7 @@ class RowTest extends DatabaseTestAbstract
         $item->price = 1.00;
         $item->created_at = Q::func('NOW');
         $item->save();
-        $this->assertSame(1.00, $item->price);
+        $this->assertSame('1.00', $item->price);
         $this->assertTrue($item->active);
     }
 
