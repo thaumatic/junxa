@@ -1302,6 +1302,22 @@ class RowTest extends DatabaseTestAbstract
         $item->save();
         $this->assertSame('1.00', $item->price);
         $this->assertTrue($item->active);
+        //
+        $altItem = $this->db->item->newRow();
+        $this->addGeneratedRow($altItem);
+        $altItem->category_id = $category->id;
+        $altItem->name = 'Widget';
+        $altItem->price = 2.00;
+        $altItem->created_at = Q::func('NOW');
+        $result = $altItem->merge(
+            $this->db->item->query()
+                ->update('price', Q::add($this->db->item->price, 2.00))
+        );
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame($item->id, $altItem->id);
+        $this->assertNotSame($item, $altItem);
+        $this->assertSame('1.00', $item->price);
+        $this->assertSame('3.00', $altItem->price);
     }
 
     public function testGetForeignRow()
