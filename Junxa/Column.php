@@ -625,7 +625,13 @@ class Column
                 }
                 break;
             case 'float':
-                return doubleval($value);
+                switch ($this->type) {
+                    case 'float':
+                    case 'double':
+                        return doubleval($value);
+                    default:
+                        return $value;
+                }
             default:
                 throw new JunxaDatabaseModelingException('unknown type class ' . $this->typeClass);
         }
