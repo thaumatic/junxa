@@ -55,6 +55,11 @@ class JunxaTest extends DatabaseTestAbstract
             'autoColumnClassNamespace'  => 'FakeColumnNamespace',
             'autoRowClassNamespace'     => 'FakeRowNamespace',
             'foreignKeySuffix'          => '_id',
+            'inflectionLocale'          => 'fr',
+            'pluralToSingularMap'       => [
+                'boxen'                 => 'box',
+                'h4x0rz'                => 'h4x0r',
+            ],
             'changeHandler'             => [
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
@@ -93,6 +98,9 @@ class JunxaTest extends DatabaseTestAbstract
             ->setAutoColumnClassNamespace('FakeColumnNamespace')
             ->setAutoRowClassNamespace('FakeRowNamespace')
             ->setForeignKeySuffix('_id')
+            ->setInflectionLocale('fr')
+            ->setPluralToSingularMapping('boxen', 'box')
+            ->setPluralToSingularMapping('h4x0rz', 'h4x0r')
             ->setChangeHandler([
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
