@@ -1128,7 +1128,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $result = $refreshCategoryRow->refresh();
             $this->fail('refresh with invalid ID did not throw exception');
-        } catch(JunxaInvalidQueryException $e) {
+        } catch (JunxaInvalidQueryException $e) {
             // expected
         }
         $this->assertNull($refreshCategoryRow->name);
@@ -1247,7 +1247,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $category->delete();
             $this->fail('was able to redelete a deleted row');
-        } catch(JunxaInvalidQueryException $e) {
+        } catch (JunxaInvalidQueryException $e) {
             $this->assertSame('row has already been deleted', $e->getMessage());
         }
         //
