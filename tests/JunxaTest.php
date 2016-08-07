@@ -103,7 +103,7 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertEquals($db1, $db2);
     }
 
-    public function runEventSystemTests()
+    public function testEventSystem()
     {
         $listenedDatabase = null;
         $listenedSql = null;
@@ -131,7 +131,7 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertSame(1, $listenedQueryBuilder->getLimit());
     }
 
-    public function runStringIntegrityTests()
+    public function testStringIntegrity()
     {
         $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
