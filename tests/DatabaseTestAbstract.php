@@ -11,33 +11,6 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
     const TEST_DATABASE_NAME = 'test_junxa';
     const TEST_DATABASE_SETUP_FILE_NAME = 'test.sql';
 
-    private $generatedRows = [];
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        $toThrow = null;
-        foreach ($this->generatedRows as $row) {
-            if (!$row->getPrimaryKeyUnset() && !$row->getDeleted()) {
-                try {
-                    $row->delete();
-                } catch(JunxaInvalidQueryException $e) {
-                    if (!$toThrow) {
-                        $toThrow = $e;
-                    }
-                }
-            }
-        }
-        if ($toThrow) {
-            throw $toThrow;
-        }
-    }
-
-    protected function addGeneratedRow($row)
-    {
-        $this->generatedRows[] = $row;
-    }
-
     /**
      * @var mysqli link directly to the database, used for creating and
      * tearing down the test database
@@ -45,9 +18,20 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
     private static $rawLink;
 
     /**
-     * @var Thaumatic\Junxa Junxa model of the test database
+     * @var array<Thaumatic\Junxa\Row> array of rows that were generated
+     * by testing and may need to be deleted afterward
      */
-    private static $db;
+    private $generatedRows = [];
+
+    /**
+     * @var Thaumatic\Junxa Junxa model of the test database, class reference
+     */
+    private static $sharedDb;
+
+    /**
+     * @var Thaumatic\Junxa Junxa model of the test database, object reference
+     */
+    protected static $db;
 
     public static function setUpBeforeClass()
     {
@@ -70,11 +54,37 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
         while (self::$rawLink->more_results()) {
             self::$rawLink->next_result();
         }
-        self::$db = Junxa::make()
+        self::$sharedDb = Junxa::make()
             ->setHostname('localhost')
             ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
             ->ready()
         ;
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->db = self::$sharedDb;
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $toThrow = null;
+        foreach ($this->generatedRows as $row) {
+            if (!$row->getPrimaryKeyUnset() && !$row->getDeleted()) {
+                try {
+                    $row->delete();
+                } catch(JunxaInvalidQueryException $e) {
+                    if (!$toThrow) {
+                        $toThrow = $e;
+                    }
+                }
+            }
+        }
+        if ($toThrow) {
+            throw $toThrow;
+        }
     }
 
     public static function tearDownAfterClass()
@@ -83,14 +93,9 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
         self::$rawLink->query('DROP DATABASE `' . self::TEST_DATABASE_NAME . '`');
     }
 
-    public function db()
+    protected function addGeneratedRow($row)
     {
-        return self::$db;
-    }
-
-    public function rawLink()
-    {
-        return self::$rawLink;
+        $this->generatedRows[] = $row;
     }
 
 }

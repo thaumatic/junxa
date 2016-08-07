@@ -13,11 +13,11 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testBasicInteraction()
     {
-        $this->assertInstanceOf('Thaumatic\Junxa', $this->db());
-        $categoryTable = $this->db()->category;
+        $this->assertInstanceOf('Thaumatic\Junxa', $this->db);
+        $categoryTable = $this->db->category;
         $this->assertInstanceOf('Thaumatic\Junxa\Table', $categoryTable);
         $this->assertSame('category', $categoryTable->getName());
-        $itemTable = $this->db()->item;
+        $itemTable = $this->db->item;
         $this->assertInstanceOf('Thaumatic\Junxa\Table', $itemTable);
         $this->assertSame('item', $itemTable->getName());
     }
@@ -106,7 +106,7 @@ class JunxaTest extends DatabaseTestAbstract
         $listenedDatabase = null;
         $listenedSql = null;
         $listenedQueryBuilder = null;
-        $this->db()->getEventDispatcher()->addListener(
+        $this->db->getEventDispatcher()->addListener(
             JunxaQueryEvent::NAME,
             function (JunxaQueryEvent $event) use (&$listenedDatabase, &$listenedSql, &$listenedQueryBuilder) {
                 $listenedDatabase = $event->getDatabase();
@@ -115,37 +115,37 @@ class JunxaTest extends DatabaseTestAbstract
             }
         );
         $showTablesQuery = 'SHOW TABLES';
-        $this->db()->query($showTablesQuery);
-        $this->assertSame($this->db(), $listenedDatabase);
+        $this->db->query($showTablesQuery);
+        $this->assertSame($this->db, $listenedDatabase);
         $this->assertSame($showTablesQuery, $listenedSql);
         $this->assertNull($listenedQueryBuilder);
-        $category = $this->db()->category->row(1);
+        $category = $this->db->category->row(1);
         $this->assertNull($category);
-        $this->assertSame($this->db(), $listenedDatabase);
+        $this->assertSame($this->db, $listenedDatabase);
         $this->assertSame("SELECT *\n\tFROM `category`\n\tWHERE (`id` = 1)\n\tLIMIT 1", $listenedSql);
         $this->assertInstanceOf('Thaumatic\Junxa\Query\Builder', $listenedQueryBuilder);
-        $this->assertSame([$this->db()->category], $listenedQueryBuilder->getSelect());
+        $this->assertSame([$this->db->category], $listenedQueryBuilder->getSelect());
         $this->assertCount(1, $listenedQueryBuilder->getWhere());
         $this->assertSame(1, $listenedQueryBuilder->getLimit());
     }
 
     public function runStringIntegrityTests()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Start';
         $category->created_at = Q::func('NOW');
         $category->insert();
         srand(1);
-        for ($i = $this->db()->category->name->getLength() / 10; $i >= 0; $i--) {
+        for ($i = $this->db->category->name->getLength() / 10; $i >= 0; $i--) {
             $name = '';
-            for ($j = $this->db()->category->name->getLength() - $i - 1; $j >= 0; $j--) {
+            for ($j = $this->db->category->name->getLength() - $i - 1; $j >= 0; $j--) {
                 $name .= self::unichr(rand(1, 10000));
             }
             $category->name = $name;
             $category->save();
             $this->assertEquals($name, $category->name);
-            $categoryAlt = $this->db()->category->row($category->id);
+            $categoryAlt = $this->db->category->row($category->id);
             $this->assertEquals($name, $categoryAlt->name);
         }
     }

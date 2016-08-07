@@ -12,10 +12,10 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testColumnConfiguration()
     {
-        $categoryIdColumn = $this->db()->category->id;
+        $categoryIdColumn = $this->db->category->id;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryIdColumn);
-        $this->assertSame($this->db(), $categoryIdColumn->getDatabase());
-        $this->assertSame($this->db()->category, $categoryIdColumn->getTable());
+        $this->assertSame($this->db, $categoryIdColumn->getDatabase());
+        $this->assertSame($this->db->category, $categoryIdColumn->getTable());
         $this->assertSame('id', $categoryIdColumn->getName());
         $this->assertSame('mediumint(8) unsigned', $categoryIdColumn->getFullType());
         $this->assertSame('mediumint', $categoryIdColumn->getType());
@@ -25,10 +25,10 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryIdColumn->getDefault());
         $this->assertFalse($categoryIdColumn->hasDefault());
         $this->assertNull($categoryIdColumn->getDefaultValue());
-        $categoryNameColumn = $this->db()->category->name;
+        $categoryNameColumn = $this->db->category->name;
         $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryNameColumn);
-        $this->assertSame($this->db(), $categoryNameColumn->getDatabase());
-        $this->assertSame($this->db()->category, $categoryNameColumn->getTable());
+        $this->assertSame($this->db, $categoryNameColumn->getDatabase());
+        $this->assertSame($this->db->category, $categoryNameColumn->getTable());
         $this->assertSame('name', $categoryNameColumn->getName());
         $this->assertSame('varchar(250)', $categoryNameColumn->getFullType());
         $this->assertSame('varchar', $categoryNameColumn->getType());
@@ -43,7 +43,7 @@ class ColumnTest extends DatabaseTestAbstract
     public function testSetOptionsAndGetOptions()
     {
         try {
-            $column = $this->db()->category->id;
+            $column = $this->db->category->id;
             $this->assertSame(0, $column->getOptions());
             $column->setOptions(Column::OPTION_MERGE_NO_UPDATE);
             $this->assertSame(Column::OPTION_MERGE_NO_UPDATE, $column->getOptions());
@@ -66,7 +66,7 @@ class ColumnTest extends DatabaseTestAbstract
     public function testSetOptionAndGetOption()
     {
         try {
-            $column = $this->db()->category->id;
+            $column = $this->db->category->id;
             $this->assertFalse($column->getOption(Column::OPTION_MERGE_NO_UPDATE));
             $this->assertFalse($column->getOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
             $column->setOption(Column::OPTION_MERGE_NO_UPDATE, true);
@@ -84,7 +84,7 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testGetFlagNames()
     {
-        $categoryTable = $this->db()->category;
+        $categoryTable = $this->db->category;
         $this->assertSame(
             [
                 'NOT_NULL',
@@ -139,7 +139,7 @@ class ColumnTest extends DatabaseTestAbstract
             ],
             $categoryTable->changed_at->getFlagNames()
         );
-        $itemTable = $this->db()->item;
+        $itemTable = $this->db->item;
         $this->assertSame(
             [
                 'NOT_NULL',
@@ -207,7 +207,7 @@ class ColumnTest extends DatabaseTestAbstract
     public function testGetFlagNamesWithManipulation()
     {
         try {
-            $column = $this->db()->category->changed_at;
+            $column = $this->db->category->changed_at;
             $refClass = new \ReflectionClass(get_class($column));
             $flagsProp = $refClass->getProperty('flags');
             $flagsProp->setAccessible(true);
@@ -250,7 +250,7 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testGetFlag()
     {
-        $categoryTable = $this->db()->category;
+        $categoryTable = $this->db->category;
         $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_NOT_NULL));
         $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_PRI_KEY));
         $this->assertTrue($categoryTable->id->getFlag(Column::MYSQL_FLAG_UNSIGNED));
@@ -352,7 +352,7 @@ class ColumnTest extends DatabaseTestAbstract
             )
         );
         $this->assertFalse($categoryTable->changed_at->getFlag(Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
-        $itemTable = $this->db()->item;
+        $itemTable = $this->db->item;
         $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_NOT_NULL));
         $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_PRI_KEY));
         $this->assertTrue($itemTable->id->getFlag(Column::MYSQL_FLAG_UNSIGNED));
@@ -471,7 +471,7 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testGetEachFlag()
     {
-        $categoryTable = $this->db()->category;
+        $categoryTable = $this->db->category;
         $this->assertTrue(
             $categoryTable->id->getEachFlag(
                 Column::MYSQL_FLAG_NOT_NULL
@@ -556,7 +556,7 @@ class ColumnTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
-        $itemTable = $this->db()->item;
+        $itemTable = $this->db->item;
         $this->assertTrue(
             $itemTable->id->getEachFlag(
                 Column::MYSQL_FLAG_NOT_NULL
@@ -656,14 +656,14 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testGetValues()
     {
-        $categoryTable = $this->db()->category;
+        $categoryTable = $this->db->category;
         $this->assertNull($categoryTable->id->getValues());
         $this->assertNull($categoryTable->name->getValues());
         $this->assertSame([null, 'A\'s', 'B\'s', 'C\'s'], $categoryTable->type->getValues());
         $this->assertNull($categoryTable->active->getValues());
         $this->assertNull($categoryTable->created_at->getValues());
         $this->assertNull($categoryTable->changed_at->getValues());
-        $itemTable = $this->db()->item;
+        $itemTable = $this->db->item;
         $this->assertNull($itemTable->id->getValues());
         $this->assertNull($itemTable->category_id->getValues());
         $this->assertNull($itemTable->name->getValues());
@@ -676,7 +676,7 @@ class ColumnTest extends DatabaseTestAbstract
     public function testGetEachOption()
     {
         try {
-            $column = $this->db()->category->id;
+            $column = $this->db->category->id;
             $this->assertFalse($column->getEachOption(Column::OPTION_MERGE_NO_UPDATE));
             $this->assertFalse($column->getEachOption(Column::OPTION_NO_AUTO_FOREIGN_KEY));
             $this->assertFalse(
@@ -712,7 +712,7 @@ class ColumnTest extends DatabaseTestAbstract
 
     public function testDynamicDefaults()
     {
-        $table = $this->db()->category;
+        $table = $this->db->category;
         $table->created_at->setDynamicDefault(Q::func('NOW'));
         $row1 = $table->newRow();
         $row1->name = 'Arbitrary';

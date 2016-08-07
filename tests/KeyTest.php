@@ -10,7 +10,7 @@ class KeyTest extends DatabaseTestAbstract
 
     public function testKeyConfiguration()
     {
-        $keys = $this->db()->category->getKeys();
+        $keys = $this->db->category->getKeys();
         $this->assertCount(3, $keys);
         $this->assertArrayHasKey('PRIMARY', $keys);
         $this->assertArrayHasKey('name', $keys);

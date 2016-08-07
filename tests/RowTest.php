@@ -17,7 +17,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testFieldInteractionWithIsset()
     {
-        $categoryRow = $this->db()->category->newRow();
+        $categoryRow = $this->db->category->newRow();
         $this->addGeneratedRow($categoryRow);
         $this->assertFalse(isset($categoryRow->id));
         $this->assertFalse(isset($categoryRow->name));
@@ -44,7 +44,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testFieldInteractionWithEmpty()
     {
-        $categoryRow = $this->db()->category->newRow();
+        $categoryRow = $this->db->category->newRow();
         $this->addGeneratedRow($categoryRow);
         $this->assertTrue(empty($categoryRow->id));
         $this->assertTrue(empty($categoryRow->name));
@@ -71,7 +71,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testExceptionOnNonexistentColumn()
     {
-        $categoryRow = $this->db()->category->newRow();
+        $categoryRow = $this->db->category->newRow();
         $this->addGeneratedRow($categoryRow);
         try {
             $value = $categoryRow->nonexistent_column;
@@ -104,7 +104,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumns()
     {
-        $categoryRow = $this->db()->category->newRow();
+        $categoryRow = $this->db->category->newRow();
         $this->assertSame([
             'id',
             'name',
@@ -113,7 +113,7 @@ class RowTest extends DatabaseTestAbstract
             'created_at',
             'changed_at',
         ], $categoryRow->getColumns());
-        $itemRow = $this->db()->item->newRow();
+        $itemRow = $this->db->item->newRow();
         $this->assertSame([
             'id',
             'category_id',
@@ -127,14 +127,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnType()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame('mediumint', $category->getColumnType('id'));
         $this->assertSame('varchar', $category->getColumnType('name'));
         $this->assertSame('enum', $category->getColumnType('type'));
         $this->assertSame('tinyint', $category->getColumnType('active'));
         $this->assertSame('datetime', $category->getColumnType('created_at'));
         $this->assertSame('timestamp', $category->getColumnType('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame('mediumint', $item->getColumnType('id'));
         $this->assertSame('mediumint', $item->getColumnType('category_id'));
         $this->assertSame('varchar', $item->getColumnType('name'));
@@ -146,14 +146,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnFullType()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame('mediumint(8) unsigned', $category->getColumnFullType('id'));
         $this->assertSame('varchar(250)', $category->getColumnFullType('name'));
         $this->assertSame('enum(\'A\'\'s\',\'B\'\'s\',\'C\'\'s\')', $category->getColumnFullType('type'));
         $this->assertSame('tinyint(1)', $category->getColumnFullType('active'));
         $this->assertSame('datetime', $category->getColumnFullType('created_at'));
         $this->assertSame('timestamp', $category->getColumnFullType('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('id'));
         $this->assertSame('mediumint(8) unsigned', $item->getColumnFullType('category_id'));
         $this->assertSame('varchar(250)', $item->getColumnFullType('name'));
@@ -165,14 +165,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnTypeClass()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame('int', $category->getColumnTypeClass('id'));
         $this->assertSame('text', $category->getColumnTypeClass('name'));
         $this->assertSame('text', $category->getColumnTypeClass('type'));
         $this->assertSame('int', $category->getColumnTypeClass('active'));
         $this->assertSame('datetime', $category->getColumnTypeClass('created_at'));
         $this->assertSame('datetime', $category->getColumnTypeClass('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame('int', $item->getColumnTypeClass('id'));
         $this->assertSame('int', $item->getColumnTypeClass('category_id'));
         $this->assertSame('text', $item->getColumnTypeClass('name'));
@@ -184,14 +184,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnLength()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame(8, $category->getColumnLength('id'));
         $this->assertSame(250, $category->getColumnLength('name'));
         $this->assertNull($category->getColumnLength('type'));
         $this->assertSame(1, $category->getColumnLength('active'));
         $this->assertNull($category->getColumnLength('created_at'));
         $this->assertNull($category->getColumnLength('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame(8, $item->getColumnLength('id'));
         $this->assertSame(8, $item->getColumnLength('category_id'));
         $this->assertSame(250, $item->getColumnLength('name'));
@@ -203,14 +203,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnPrecision()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertNull($category->getColumnPrecision('id'));
         $this->assertNull($category->getColumnPrecision('name'));
         $this->assertNull($category->getColumnPrecision('type'));
         $this->assertNull($category->getColumnPrecision('active'));
         $this->assertNull($category->getColumnPrecision('created_at'));
         $this->assertNull($category->getColumnPrecision('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertNull($item->getColumnPrecision('id'));
         $this->assertNull($item->getColumnPrecision('category_id'));
         $this->assertNull($item->getColumnPrecision('name'));
@@ -222,7 +222,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnFlags()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame(
             Column::MYSQL_FLAG_NOT_NULL
             | Column::MYSQL_FLAG_PRI_KEY
@@ -265,7 +265,7 @@ class RowTest extends DatabaseTestAbstract
             | Column::MYSQL_FLAG_ON_UPDATE_NOW,
             $category->getColumnFlags('changed_at')
         );
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame(
             Column::MYSQL_FLAG_NOT_NULL
             | Column::MYSQL_FLAG_PRI_KEY
@@ -320,7 +320,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnFlagNames()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertSame(
             [
                 'NOT_NULL',
@@ -375,7 +375,7 @@ class RowTest extends DatabaseTestAbstract
             ],
             $category->getColumnFlagNames('changed_at')
         );
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertSame(
             [
                 'NOT_NULL',
@@ -442,7 +442,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnFlag()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertTrue($category->getColumnFlag('id', Column::MYSQL_FLAG_NOT_NULL));
         $this->assertTrue($category->getColumnFlag('id', Column::MYSQL_FLAG_PRI_KEY));
         $this->assertTrue($category->getColumnFlag('id', Column::MYSQL_FLAG_UNSIGNED));
@@ -555,7 +555,7 @@ class RowTest extends DatabaseTestAbstract
             )
         );
         $this->assertFalse($category->getColumnFlag('changed_at', Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertTrue($item->getColumnFlag('id', Column::MYSQL_FLAG_NOT_NULL));
         $this->assertTrue($item->getColumnFlag('id', Column::MYSQL_FLAG_PRI_KEY));
         $this->assertTrue($item->getColumnFlag('id', Column::MYSQL_FLAG_UNSIGNED));
@@ -686,7 +686,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnEachFlag()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertTrue(
             $category->getColumnEachFlag(
                 'id',
@@ -783,7 +783,7 @@ class RowTest extends DatabaseTestAbstract
                 | Column::MYSQL_FLAG_FIELD_IN_PART_FUNC
             )
         );
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertTrue(
             $item->getColumnEachFlag(
                 'id',
@@ -901,14 +901,14 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetColumnValues()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->assertNull($category->getColumnValues('id'));
         $this->assertNull($category->getColumnValues('name'));
         $this->assertSame([null, 'A\'s', 'B\'s', 'C\'s'], $category->getColumnValues('type'));
         $this->assertNull($category->getColumnValues('active'));
         $this->assertNull($category->getColumnValues('created_at'));
         $this->assertNull($category->getColumnValues('changed_at'));
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->assertNull($item->getColumnValues('id'));
         $this->assertNull($item->getColumnValues('category_id'));
         $this->assertNull($item->getColumnValues('name'));
@@ -921,8 +921,8 @@ class RowTest extends DatabaseTestAbstract
     public function testGetColumnOptions()
     {
         try {
-            $category = $this->db()->category->newRow();
-            $column = $this->db()->category->id;
+            $category = $this->db->category->newRow();
+            $column = $this->db->category->id;
             $this->assertSame(0, $category->getColumnOptions('id'));
             $column->setOptions(Column::OPTION_MERGE_NO_UPDATE);
             $this->assertSame(Column::OPTION_MERGE_NO_UPDATE, $category->getColumnOptions('id'));
@@ -945,8 +945,8 @@ class RowTest extends DatabaseTestAbstract
     public function testGetColumnOption()
     {
         try {
-            $category = $this->db()->category->newRow();
-            $column = $this->db()->category->id;
+            $category = $this->db->category->newRow();
+            $column = $this->db->category->id;
             $this->assertFalse($category->getColumnOption('id', Column::OPTION_MERGE_NO_UPDATE));
             $this->assertFalse($category->getColumnOption('id', Column::OPTION_NO_AUTO_FOREIGN_KEY));
             $this->assertFalse(
@@ -986,8 +986,8 @@ class RowTest extends DatabaseTestAbstract
     public function testGetColumnEachOption()
     {
         try {
-            $category = $this->db()->category->newRow();
-            $column = $this->db()->category->id;
+            $category = $this->db->category->newRow();
+            $column = $this->db->category->id;
             $this->assertFalse($category->getColumnEachOption('id', Column::OPTION_MERGE_NO_UPDATE));
             $this->assertFalse($category->getColumnEachOption('id', Column::OPTION_NO_AUTO_FOREIGN_KEY));
             $this->assertFalse(
@@ -1026,70 +1026,70 @@ class RowTest extends DatabaseTestAbstract
 
     public function testFind()
     {
-        $createCategoryRow1 = $this->db()->category->newRow()
+        $createCategoryRow1 = $this->db->category->newRow()
             ->setField('name', 'Uncategorized')
             ->setField('type', 'A\'s')
             ->setField('created_at', Q::func('NOW'))
             ->performSave();
         $this->addGeneratedRow($createCategoryRow1);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Uncategorized');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('A\'s', $findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('type', 'A\'s');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('A\'s', $findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Unknown');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
         $this->assertNull($findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('type', 'B\'s');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
         $this->assertNull($findCategoryRow->name);
         //
-        $createCategoryRow2 = $this->db()->category->newRow()
+        $createCategoryRow2 = $this->db->category->newRow()
             ->setField('name', 'Categorized')
             ->setField('type', 'A\'s')
             ->setField('created_at', Q::func('NOW'))
             ->performSave();
         $this->addGeneratedRow($createCategoryRow2);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Uncategorized');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('A\'s', $findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Categorized');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('A\'s', $findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Unknown');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_FIND_FAIL, $result);
         $this->assertNull($findCategoryRow->type);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('type', 'A\'s');
         $result = $findCategoryRow->find();
         $this->assertSame(Junxa::RESULT_FIND_EXCESS, $result);
         $this->assertSame('A\'s', $findCategoryRow->type);
         $this->assertSame('Uncategorized', $findCategoryRow->name);
         //
-        $findCategoryRow = $this->db()->category->newRow()
+        $findCategoryRow = $this->db->category->newRow()
             ->setField('type', 'A\'s');
         $result = $findCategoryRow->find(
             $findCategoryRow->getTable()->query()
@@ -1103,27 +1103,27 @@ class RowTest extends DatabaseTestAbstract
 
     public function testRefresh()
     {
-        $createCategoryRow = $this->db()->category->newRow()
+        $createCategoryRow = $this->db->category->newRow()
             ->setField('name', 'Uncategorized')
             ->setField('type', 'A\'s')
             ->setField('created_at', Q::func('NOW'))
             ->performSave();
         $this->addGeneratedRow($createCategoryRow);
         //
-        $refreshCategoryRow = $this->db()->category->newRow()
+        $refreshCategoryRow = $this->db->category->newRow()
             ->setField('id', $createCategoryRow->id);
         $result = $refreshCategoryRow->refresh();
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('Uncategorized', $refreshCategoryRow->name);
         $this->assertSame('A\'s', $refreshCategoryRow->type);
         //
-        $refreshCategoryRow = $this->db()->category->newRow();
+        $refreshCategoryRow = $this->db->category->newRow();
         $result = $refreshCategoryRow->refresh();
         $this->assertSame(Junxa::RESULT_REFRESH_FAIL, $result);
         $this->assertNull($refreshCategoryRow->name);
         $this->assertNull($refreshCategoryRow->type);
         //
-        $refreshCategoryRow = $this->db()->category->newRow()
+        $refreshCategoryRow = $this->db->category->newRow()
             ->setField('id', $createCategoryRow->id + 1);
         try {
             $result = $refreshCategoryRow->refresh();
@@ -1137,7 +1137,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testInsert()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
         $category->created_at = Q::func('NOW');
@@ -1151,7 +1151,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertLessThanOrEqual(1, time() - strtotime($category->changed_at));
         $this->assertTrue($category->active);
         //
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->addGeneratedRow($item);
         $item->category_id = $category->id;
         $item->name = 'Widget';
@@ -1170,7 +1170,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testUpdate()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
         $category->created_at = Q::func('NOW');
@@ -1182,14 +1182,14 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('Recategorized', $category->name);
         $this->assertSame($originalCategoryId, $category->id);
-        $categoryAlt = $this->db()->category->row($category->id);
+        $categoryAlt = $this->db->category->row($category->id);
         $this->assertNotSame($category, $categoryAlt);
         $this->assertSame($category->name, $categoryAlt->name);
         $result = $category->update();
         $this->assertSame(Junxa::RESULT_UPDATE_NOOP, $result);
         $this->assertTrue(Junxa::OK($result));
         //
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->addGeneratedRow($item);
         $item->category_id = $category->id;
         $item->name = 'Widget';
@@ -1203,7 +1203,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertSame('Whatsit', $item->name);
         $this->assertSame($originalItemId, $item->id);
-        $itemAlt = $this->db()->item->row($item->id);
+        $itemAlt = $this->db->item->row($item->id);
         $this->assertNotSame($item, $itemAlt);
         $this->assertSame($item->name, $itemAlt->name);
         $result = $item->update();
@@ -1213,13 +1213,13 @@ class RowTest extends DatabaseTestAbstract
 
     public function testDelete()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
         $category->created_at = Q::func('NOW');
         $category->save();
         //
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->addGeneratedRow($item);
         $item->category_id = $category->id;
         $item->name = 'Widget';
@@ -1269,7 +1269,7 @@ class RowTest extends DatabaseTestAbstract
 
     public function testMerge()
     {
-        $category = $this->db()->category->newRow();
+        $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
         $category->type = 'A\'s';
@@ -1277,7 +1277,7 @@ class RowTest extends DatabaseTestAbstract
         $category->save();
         $this->assertSame('A\'s', $category->type);
         //
-        $altCategory = $this->db()->category->newRow();
+        $altCategory = $this->db->category->newRow();
         $this->addGeneratedRow($altCategory);
         $altCategory->name = 'Uncategorized';
         $altCategory->type = 'B\'s';
@@ -1293,7 +1293,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('B\'s', $category->type);
         $this->assertSame('B\'s', $altCategory->type);
         //
-        $item = $this->db()->item->newRow();
+        $item = $this->db->item->newRow();
         $this->addGeneratedRow($item);
         $item->category_id = $category->id;
         $item->name = 'Widget';
@@ -1306,18 +1306,18 @@ class RowTest extends DatabaseTestAbstract
 
     public function testGetForeignRow()
     {
-        $createCategoryRow = $this->db()->category->newRow();
+        $createCategoryRow = $this->db->category->newRow();
         $this->addGeneratedRow($createCategoryRow);
         $createCategoryRow->name = 'Uncategorized';
         $createCategoryRow->created_at = Q::func('NOW');
         $createCategoryRow->save();
-        $createItemRow = $this->db()->item->newRow();
+        $createItemRow = $this->db->item->newRow();
         $this->addGeneratedRow($createItemRow);
         $createItemRow->category_id = $createCategoryRow->id;
         $createItemRow->name = 'Widget';
         $createItemRow->created_at = Q::func('NOW');
         $createItemRow->save();
-        $itemRow = $this->db()->item->row($createItemRow->id);
+        $itemRow = $this->db->item->row($createItemRow->id);
         $this->assertEquals($createItemRow, $itemRow);
         $this->assertEquals('Widget', $itemRow->name);
         $categoryRow = $itemRow->getForeignRow('category_id');
