@@ -436,6 +436,20 @@ class Junxa
     private $defaultTableClass;
 
     /**
+     * @var string interpret this suffix as conventionally used in the database
+     * to designate a foreign key column; for example, if this is 'Id', then
+     * the column 'itemId' will be interpreted as a foreign key into the table
+     * 'item'
+     */
+    private $foreignKeySuffix;
+
+    /**
+     * @var string an internally used regular expression for matching column
+     * names based on the foreign key suffix
+     */
+    private $foreignKeySuffixPattern;
+
+    /**
      * @var mysql the mysqli connection object
      */
     private $link;
@@ -578,6 +592,10 @@ class Junxa
             if (array_key_exists('rowClasses', $def)) {
                 $this->setRowClasses($def['rowClasses']);
                 unset($def['rowClasses']);
+            }
+            if (array_key_exists('foreignKeySuffix', $def)) {
+                $this->setForeignKeySuffix($def['foreignKeySuffix']);
+                unset($def['foreignKeySuffix']);
             }
             if (array_key_exists('changeHandler', $def)) {
                 $this->setChangeHandler($def['changeHandler']);
@@ -1102,6 +1120,58 @@ class Junxa
     public function getRowClasses()
     {
         return $this->rowClasses;
+    }
+
+    /**
+     * Sets a suffix that will be interpreted as conventionally used in the
+     * database to designate a foreign key column; for example, if this is
+     * 'Id', then the column 'itemId' will be interpreted as a foreign key
+     * into the table 'item'.
+     *
+     * @param string foreign key suffix
+     * @return $this
+     */
+    public function setForeignKeySuffix($val)
+    {
+        $this->foreignKeySuffix = $val;
+        $this->foreignKeySuffixPattern =
+            $this->foreignKeySuffix === null
+            ? null
+            : (
+                '/^(.+)'
+                . preg_quote($this->foreignKeySuffix, '/')
+                . '$/'
+            )
+        ;
+        return $this;
+    }
+
+    /**
+     * Retrieves the foreign key suffix, if any.
+     *
+     * @return string|null
+     */
+    public function getForeignKeySuffix()
+    {
+        return $this->foreignKeySuffix;
+    }
+
+    /**
+     * Matches a column name against the foreign key suffix pattern, and if
+     * the column name ends in the pattern, returns the base part of the
+     * column name without the suffix.
+     *
+     * @param string column name
+     * @return string|null
+     */
+    public function getForeignKeySuffixMatch($columnName) {
+        if ($this->foreignKeySuffixPattern === null) {
+            return null;
+        }
+        if (preg_match($this->foreignKeySuffixPattern, $columnName, $match)) {
+            return $match[1];
+        }
+        return null;
     }
 
     /**

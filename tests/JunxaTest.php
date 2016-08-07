@@ -54,6 +54,7 @@ class JunxaTest extends DatabaseTestAbstract
             'autoTableClassNamespace'   => 'FakeTableNamespace',
             'autoColumnClassNamespace'  => 'FakeColumnNamespace',
             'autoRowClassNamespace'     => 'FakeRowNamespace',
+            'foreignKeySuffix'          => '_id',
             'changeHandler'             => [
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
@@ -91,6 +92,7 @@ class JunxaTest extends DatabaseTestAbstract
             ->setAutoTableClassNamespace('FakeTableNamespace')
             ->setAutoColumnClassNamespace('FakeColumnNamespace')
             ->setAutoRowClassNamespace('FakeRowNamespace')
+            ->setForeignKeySuffix('_id')
             ->setChangeHandler([
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',

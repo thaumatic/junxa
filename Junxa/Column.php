@@ -856,20 +856,6 @@ class Column
     }
 
     /**
-     * Determine the name of the foreign table that a column name may refer
-     * to, if any.  Defaults to looking for a name ending in Id or _id and
-     * stripping that part off to determine the table name.  Intended to be
-     * overridden if custom logic is needed.
-     */
-    protected function extractForeignTableNameFromColumnName($ColumnName)
-    {
-        if (preg_match('/(.*)(?:Id|_id)$/i', $this->getName(), $match)) {
-            return $match[1];
-        }
-        return null;
-    }
-
-    /**
      * If this column's foreign key configuration is not established, establish it.
      */
     private function determineForeignKey()
@@ -878,8 +864,8 @@ class Column
             if ((!$this->foreignKeyTableName || !$this->foreignKeyColumnName)
                 && !$this->getOption(self::OPTION_NO_AUTO_FOREIGN_KEY)
             ) {
-                $tableName = $this->extractForeignTableNameFromColumnName($this->getName());
-                if ($tableName) {
+                $tableName = $this->getDatabase()->getForeignKeySuffixMatch($this->getName());
+                if ($tableName !== null) {
                     if (!$this->foreignKeyTableName && $this->getDatabase()->tableExists($tableName)) {
                         $this->foreignKeyTableName = $tableName;
                     }

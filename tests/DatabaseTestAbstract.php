@@ -57,6 +57,7 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
         self::$sharedDb = Junxa::make()
             ->setHostname('localhost')
             ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setForeignKeySuffix('Id')
             ->ready()
         ;
     }
