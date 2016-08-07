@@ -103,6 +103,29 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertEquals($db1, $db2);
     }
 
+    public function testGetSingularFromPlural()
+    {
+        $originalMap = $this->db->getPluralToSingularMap();
+        try {
+            $this->assertSame('category', $this->db->getSingularFromPlural('categories'));
+            $this->assertSame('item', $this->db->getSingularFromPlural('items'));
+            $this->assertSame('child', $this->db->getSingularFromPlural('children'));
+            $this->assertSame('index', $this->db->getSingularFromPlural('indices'));
+            $this->assertSame('medium', $this->db->getSingularFromPlural('media'));
+            $this->assertSame('matrix', $this->db->getSingularFromPlural('matrices'));
+            $this->assertSame('foo', $this->db->getSingularFromPlural('foo'));
+            $this->db->setPluralToSingularMapping('foo', 'bar');
+            $this->assertSame('bar', $this->db->getSingularFromPlural('foo'));
+            $this->db->setPluralToSingularMapping('categories', 'categoron');
+            $this->assertSame('categoron', $this->db->getSingularFromPlural('categories'));
+            $this->db->setPluralToSingularMap($originalMap);
+            $this->assertSame('foo', $this->db->getSingularFromPlural('foo'));
+            $this->assertSame('category', $this->db->getSingularFromPlural('categories'));
+        } finally {
+            $this->db->setPluralToSingularMap($originalMap);
+        }
+    }
+
     public function testEventSystem()
     {
         $listenedDatabase = null;

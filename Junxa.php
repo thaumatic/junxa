@@ -2,6 +2,7 @@
 
 namespace Thaumatic;
 
+use ICanBoogie\Inflector;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Events\JunxaQueryEvent;
@@ -55,6 +56,12 @@ class Junxa
      * @const int database-level behavioral option: use a persistent connection
      */
     const DB_PERSISTENT_CONNECTION      = 0x00000004;
+
+    /**
+     * @const int database-level behavioral option: interpret tables names as
+     * plurals
+     */
+    const DB_TABLES_ARE_PLURALS         = 0x00000008;
 
     /**
      * @const int query output type: raw result from database interface module
@@ -450,6 +457,23 @@ class Junxa
     private $foreignKeySuffixPattern;
 
     /**
+     * @var array<string:string> mapping of plural nouns to singular, used to
+     * allow specified overrides of the default inflection behavior
+     */
+    private $pluralToSingularMap = [];
+
+    /**
+     * @var string locale to use for grammatical inflection (see
+     * {@link https://github.com/ICanBoogie/Inflector} for supported locales)
+     */
+    private $inflectionLocale = Inflector::DEFAULT_LOCALE;
+
+    /**
+     * @var ICanBoogie\Inflector grammatical inflector interface object
+     */
+    private $inflector;
+
+    /**
      * @var mysql the mysqli connection object
      */
     private $link;
@@ -596,6 +620,14 @@ class Junxa
             if (array_key_exists('foreignKeySuffix', $def)) {
                 $this->setForeignKeySuffix($def['foreignKeySuffix']);
                 unset($def['foreignKeySuffix']);
+            }
+            if (array_key_exists('pluralToSingularMap', $def)) {
+                $this->setPluralToSingularMap($def['pluralToSingularMap']);
+                unset($def['pluralToSingularMap']);
+            }
+            if (array_key_exists('inflectionLocale', $def)) {
+                $this->setInflectionLocale($def['inflectionLocale']);
+                unset($def['inflectionLocale']);
             }
             if (array_key_exists('changeHandler', $def)) {
                 $this->setChangeHandler($def['changeHandler']);
@@ -1170,6 +1202,137 @@ class Junxa
         }
         if (preg_match($this->foreignKeySuffixPattern, $columnName, $match)) {
             return $match[1];
+        }
+        return null;
+    }
+
+    /**
+     * Sets the plural to singular map to use for overriding the default
+     * grammatical inflection behavior.
+     *
+     * @param array<string:string> plural to singular map
+     * @return $this
+     */
+    public function setPluralToSingularMap(array $val)
+    {
+        $this->pluralToSingularMap = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the plural to singular map used for overriding the default
+     * grammatical inflection behavior.
+     *
+     * @return array<string:string> plural to singular map
+     */
+    public function getPluralToSingularMap()
+    {
+        return $this->pluralToSingularMap;
+    }
+
+    /**
+     * Sets the singular for a given plural in the plural to singular map.
+     *
+     * @param string plural
+     * @param string singular
+     * @return $this
+     */
+    public function setPluralToSingularMapping($plural, $singular)
+    {
+        $this->pluralToSingularMap[$plural] = $singular;
+        return $this;
+    }
+
+    /**
+     * Retrieves the specifically-mapped singular for the given plural,
+     * if any.  (Does *not* perform non-mapped grammatical inflection.)
+     *
+     * @param string plural
+     * @return string|null
+     */
+    public function getPluralToSingularMapping($plural)
+    {
+        return
+            isset($this->pluralToSingularMap[$plural])
+            ? $this->pluralToSingularMap[$plural]
+            : null
+        ;
+    }
+
+    /**
+     * Sets the locale to use for grammatical inflection (see
+     * {@link https://github.com/ICanBoogie/Inflector} for supported locales).
+     *
+     * @param string locale
+     * @return $this
+     */
+    public function setInflectionLocale($val)
+    {
+        $this->inflectionLocale = $val;
+        $this->inflector = null;
+        return $this;
+    }
+
+    /**
+     * Retrieves the locale to use for grammatical inflection.
+     *
+     * @return string
+     */
+    public function getInflectionLocale()
+    {
+        return $this->inflectionLocale;
+    }
+
+    /**
+     * Retrieves the grammatical inflection interface object, instancing it if
+     * necessary.
+     *
+     * @return ICanBoogie\Inflector
+     */
+    private function getInflector()
+    {
+        if ($this->inflector === null) {
+            $this->inflector = Inflector::get($this->getInflectionLocale());
+        }
+        return $this->inflector;
+    }
+
+    /**
+     * Retrieves the singular version of a given plural noun, as best we cna
+     * determine.
+     *
+     * @param string plural noun
+     * @return string singular noun
+     */
+    public function getSingularFromPlural($plural)
+    {
+        $singular = $this->getPluralToSingularMapping($plural);
+        if ($singular !== null) {
+            return $singular;
+        }
+        return $this->getInflector()->singularize($plural);
+    }
+
+    /**
+     * Given a property name, returns a table model if there is a table in this
+     * database for which the property name would constitute a reasonable name
+     * under which to retrieve multiple rows based on a one-to-many foreign key
+     * relationship.
+     *
+     * @param string property name
+     * @return Thaumatic\Junxa\Table|null
+     */
+    public function getChildTableFromPropertyName($propertyName)
+    {
+        if ($this->getOption(self::DB_TABLES_ARE_PLURALS)) {
+            if ($this->tableExists($propertyName)) {
+                return $this->table($propertyName);
+            }
+        } else {
+            $singular = $this->getSingularFromPlural($propertyName);
+            if ($this->tableExists($singular)) {
+                return $this->table($singular);
+            }
         }
         return null;
     }

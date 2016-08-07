@@ -107,6 +107,19 @@ class Row
     ];
 
     /**
+     * @const array<string> query clauses that may not be defined in a query
+     * definition passed to Row::getChildRows()
+     */
+    const GET_CHILD_ROWS_INVALID_CLAUSES = [
+        'select',
+        'insert',
+        'replace',
+        'update',
+        'delete',
+        'group',
+    ];
+
+    /**
      * The "database values" for the columns on this row; more precisely, the
      * import()ed version of the values obtained from the database for this
      * row when the row was generated.  Will be null for a row generated as
@@ -230,7 +243,8 @@ class Row
     }
 
     /**
-     * Property-mode accessor for field values and foreign rows.
+     * Property-mode accessor that can retrieve 1) a field value 2) a parent
+     * row 3) an array of child rows.
      *
      * @param string field name
      * @return mixed
@@ -243,19 +257,21 @@ class Row
     public function __get($name)
     {
         if (!$this->junxaInternalTable->hasColumn($name)) {
-            $foreignKeySuffix = $this->junxaInternalTable->getDatabase()->getForeignKeySuffix();
+            $db = $this->junxaInternalTable->getDatabase();
+            $foreignKeySuffix = $db->getForeignKeySuffix();
             if ($foreignKeySuffix !== null) {
                 $foreignKeyName = $name . $foreignKeySuffix;
                 if (property_exists($this, $foreignKeyName)
                     || $this->junxaInternalTable->hasColumn($foreignKeyName)
                 ) {
-                    return $this->getForeignRow($foreignKeyName);
-                } else {
-                    throw new JunxaNoSuchColumnException($name);
+                    return $this->getParentRow($foreignKeyName);
                 }
-            } else {
-                throw new JunxaNoSuchColumnException($name);
             }
+            $childTable = $db->getChildTableFromPropertyName($name);
+            if ($childTable) {
+                return $this->getChildRows($childTable);
+            }
+            throw new JunxaNoSuchColumnException($name);
         }
         if ($this->junxaInternalTable->getColumnDemandLoad($name)
             && !$this->getPrimaryKeyUnset()
@@ -1353,17 +1369,17 @@ class Row
      * @param string column name
      * @return Thaumatic\Junxa\Row|null foreign row, or null if the field value
      * in the local row is null
-     * @throws Thaumatic\Junxa\JunxaNoSuchColumnException if the specified
-     * column does not exist
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if the specified
-     * column is not a foreign key
-     * @throws Thaumatic\Junxa\JunxaInvalidQueryException if the foreign column
-     * is not part of a primary key or unique key
-     * @throws Thaumatic\Junxa\JunxaReferentialIntegrityException if there is
-     * no row in the foreign table corresponding to a non-null value in the
-     * local field
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
+     * specified column does not exist
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * specified column is not a foreign key
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * foreign column is not part of a primary key or unique key
+     * @throws Thaumatic\Junxa\Exceptions\JunxaReferentialIntegrityException
+     * if there is no row in the foreign table corresponding to a non-null
+     * value in the local field
      */
-    public function getForeignRow($columnName)
+    public function getParentRow($columnName)
     {
         $column = $this->junxaInternalTable->$columnName;
         $localValue = $this->$columnName;
@@ -1451,6 +1467,106 @@ class Row
                 );
             }
         }
+    }
+
+    /**
+     * Retrieves all rows from the specified table which have this row as a
+     * parent row.
+     *
+     * @param Thaumatic\Junxa\Table foreign table
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the *child* table's
+     * query() method
+     * @return array<Thaumatic\Junxa\Row>
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * specified table has no relationships with this table such that its rows
+     * would be child rows of this table's rows
+     */
+    public function getChildRows(Table $childTable, $queryDef = [])
+    {
+        $field = $this->junxaInternalTable->getAutoIncrementPrimary();
+        if (!$field) {
+            throw new JunxaInvalidQueryException(
+                'cannot retrieve child rows without auto-increment primary key'
+            );
+        }
+        $useColumn = null;
+        foreach ($childTable->getColumnModels() as $columnName => $column) {
+            $foreignColumn = $column->getForeignColumn();
+            if ($foreignColumn
+                && $foreignColumn->getName() === $field
+                && $this->junxaInternalTable->isSame($foreignColumn->getTable())
+            ) {
+                $useColumn = $column;
+                break;
+            }
+        }
+        if (!$useColumn) {
+            throw new JunxaInvalidQueryException(
+                'no foreign keys found on '
+                . $childTable->getName()
+                . ' that imply a child table relationship with '
+                . $this->junxaInternalTable->getName()
+            );
+        }
+        if ($queryDef) {
+            if (is_array($queryDef)) {
+                foreach (self::GET_CHILD_ROWS_INVALID_CLAUSES as $clause) {
+                    if (isset($queryDef[$clause])) {
+                        throw new JunxaInvalidQueryException(
+                            'query definition for getChildRows() may not define '
+                            . $clause
+                        );
+                    }
+                }
+                $queryDef = $childTable->query($queryDef);
+            } elseif ($queryDef instanceof QueryBuilder) {
+                $clause = $queryDef->checkClauses(self::GET_CHILD_ROWS_INVALID_CLAUSES);
+                if ($clause) {
+                    throw new JunxaInvalidQueryException(
+                        'query definition for getChildRows() may not define '
+                        . $clause
+                    );
+                }
+            } else {
+                throw new JunxaInvalidQueryException(
+                    'query definition for getChildRows() must be a '
+                    . 'Thaumatic\Junxa\Query\Builder or an array '
+                    . 'query definition'
+                );
+            }
+        } else {
+            $queryDef = $childTable->query();
+        }
+        $childField = $childTable->getAutoIncrementPrimary();
+        if ($childField) {
+            $queryDef->defaultOrder($childField);
+        }
+        return $queryDef
+            ->where($useColumn, $this->$field)
+            ->rows();
+    }
+
+    /**
+     * Retrieves all rows from the named table which have this row as a
+     * parent row.
+     *
+     * @param string foreign table name
+     * @param array<string:mixed>|Thaumatic\Junxa\Query\Builder query
+     * specification to use instead of default empty query as a base; a
+     * query builder passed should be generated using the *child* table's
+     * query() method
+     * @return array<Thaumatic\Junxa\Row>
+     * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
+     * specified table has no relationships with this table such that its rows
+     * would be child rows of this table's rows
+     * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if the
+     * named table does not exist
+     */
+    public function getChildRowsByTableName($tableName, $queryDef = [])
+    {
+        return $this->getChildRows($this->getDatabase()->$tableName, $queryDef);
     }
 
 }

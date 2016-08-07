@@ -6,6 +6,7 @@ use Thaumatic\Junxa;
 use Thaumatic\Junxa\Column;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException;
+use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Query\Builder as QueryBuilder;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
@@ -1320,7 +1321,7 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame('3.00', $altItem->price);
     }
 
-    public function testGetForeignRow()
+    public function testGetParentRow()
     {
         $createCategoryRow = $this->db->category->newRow();
         $this->addGeneratedRow($createCategoryRow);
@@ -1336,14 +1337,240 @@ class RowTest extends DatabaseTestAbstract
         $itemRow = $this->db->item->row($createItemRow->id);
         $this->assertEquals($createItemRow, $itemRow);
         $this->assertEquals('Widget', $itemRow->name);
-        $categoryRow = $itemRow->getForeignRow('categoryId');
+        $categoryRow = $itemRow->getParentRow('categoryId');
         $this->assertEquals($createCategoryRow, $categoryRow);
         $this->assertNotSame($createCategoryRow, $categoryRow);
         $this->assertSame('Uncategorized', $categoryRow->name);
-        $propCategoryRow = $itemRow->category;
-        $this->assertEquals($categoryRow, $propCategoryRow);
-        $this->assertNotSame($categoryRow, $propCategoryRow);
-        $this->assertSame('Uncategorized', $propCategoryRow->name);
+    }
+
+    public function testPropertyModeParentRowRetrieval()
+    {
+        $createCategoryRow = $this->db->category->newRow();
+        $this->addGeneratedRow($createCategoryRow);
+        $createCategoryRow->name = 'Uncategorized';
+        $createCategoryRow->createdAt = Q::func('NOW');
+        $createCategoryRow->save();
+        $createItemRow = $this->db->item->newRow();
+        $this->addGeneratedRow($createItemRow);
+        $createItemRow->categoryId = $createCategoryRow->id;
+        $createItemRow->name = 'Widget';
+        $createItemRow->createdAt = Q::func('NOW');
+        $createItemRow->save();
+        $itemRow = $this->db->item->row($createItemRow->id);
+        $this->assertEquals($createItemRow, $itemRow);
+        $this->assertEquals('Widget', $itemRow->name);
+        $categoryRow = $itemRow->category;
+        $this->assertEquals($categoryRow, $categoryRow);
+        $this->assertNotSame($createCategoryRow, $categoryRow);
+        $this->assertSame('Uncategorized', $categoryRow->name);
+    }
+
+    public function testGetChildRows()
+    {
+        $categoryRow1 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow1);
+        $categoryRow1->name = 'Uncategorized';
+        $categoryRow1->createdAt = Q::func('NOW');
+        $categoryRow1->save();
+        //
+        $itemRows = $categoryRow1->getChildRows($this->db->item);
+        $this->assertCount(0, $itemRows);
+        //
+        $itemRow1 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow1);
+        $itemRow1->categoryId = $categoryRow1->id;
+        $itemRow1->name = 'Widget';
+        $itemRow1->createdAt = Q::func('NOW');
+        $itemRow1->save();
+        //
+        $itemRows = $categoryRow1->getChildRows($this->db->item);
+        $this->assertCount(1, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        //
+        $itemRow2 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow2);
+        $itemRow2->categoryId = $categoryRow1->id;
+        $itemRow2->name = 'Whosit';
+        $itemRow2->createdAt = Q::func('NOW');
+        $itemRow2->save();
+        //
+        $itemRows = $categoryRow1->getChildRows($this->db->item);
+        $this->assertCount(2, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        $this->assertEquals($itemRow2, $itemRows[1]);
+        //
+        $categoryRow2 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow2);
+        $categoryRow2->name = 'Categorized';
+        $categoryRow2->createdAt = Q::func('NOW');
+        $categoryRow2->save();
+        //
+        $itemRow3 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow3);
+        $itemRow3->categoryId = $categoryRow2->id;
+        $itemRow3->name = 'Whatsit';
+        $itemRow3->createdAt = Q::func('NOW');
+        $itemRow3->save();
+        //
+        $itemRows1 = $categoryRow1->getChildRows($this->db->item);
+        $this->assertCount(2, $itemRows1);
+        $this->assertEquals($itemRow1, $itemRows1[0]);
+        $this->assertEquals($itemRow2, $itemRows1[1]);
+        $itemRows2 = $categoryRow2->getChildRows($this->db->item);
+        $this->assertCount(1, $itemRows2);
+        $this->assertEquals($itemRow3, $itemRows2[0]);
+        //
+        try {
+            $categoryRows = $itemRow1->getChildRows($this->db->category);
+            $this->fail('was able to retrieve category child rows from item');
+        } catch(JunxaInvalidQueryException $e) {
+            $this->assertSame(
+                'no foreign keys found on category that imply a '
+                . 'child table relationship with item',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function testGetChildRowsByTableName()
+    {
+        $categoryRow1 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow1);
+        $categoryRow1->name = 'Uncategorized';
+        $categoryRow1->createdAt = Q::func('NOW');
+        $categoryRow1->save();
+        //
+        $itemRows = $categoryRow1->getChildRowsByTableName('item');
+        $this->assertCount(0, $itemRows);
+        //
+        $itemRow1 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow1);
+        $itemRow1->categoryId = $categoryRow1->id;
+        $itemRow1->name = 'Widget';
+        $itemRow1->createdAt = Q::func('NOW');
+        $itemRow1->save();
+        //
+        $itemRows = $categoryRow1->getChildRowsByTableName('item');
+        $this->assertCount(1, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        //
+        $itemRow2 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow2);
+        $itemRow2->categoryId = $categoryRow1->id;
+        $itemRow2->name = 'Whosit';
+        $itemRow2->createdAt = Q::func('NOW');
+        $itemRow2->save();
+        //
+        $itemRows = $categoryRow1->getChildRowsByTableName('item');
+        $this->assertCount(2, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        $this->assertEquals($itemRow2, $itemRows[1]);
+        //
+        $categoryRow2 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow2);
+        $categoryRow2->name = 'Categorized';
+        $categoryRow2->createdAt = Q::func('NOW');
+        $categoryRow2->save();
+        //
+        $itemRow3 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow3);
+        $itemRow3->categoryId = $categoryRow2->id;
+        $itemRow3->name = 'Whatsit';
+        $itemRow3->createdAt = Q::func('NOW');
+        $itemRow3->save();
+        //
+        $itemRows1 = $categoryRow1->getChildRowsByTableName('item');
+        $this->assertCount(2, $itemRows1);
+        $this->assertEquals($itemRow1, $itemRows1[0]);
+        $this->assertEquals($itemRow2, $itemRows1[1]);
+        $itemRows2 = $categoryRow2->getChildRowsByTableName('item');
+        $this->assertCount(1, $itemRows2);
+        $this->assertEquals($itemRow3, $itemRows2[0]);
+        //
+        try {
+            $categoryRows = $itemRow1->getChildRowsByTableName('category');
+            $this->fail('was able to retrieve category child rows from item');
+        } catch(JunxaInvalidQueryException $e) {
+            $this->assertSame(
+                'no foreign keys found on category that imply a '
+                . 'child table relationship with item',
+                $e->getMessage()
+            );
+        }
+        //
+        try {
+            $itemRows = $categoryRow1->getChildRowsByTableName('nonexistent');
+            $this->fail('was able to retrieve nonexistent child rows from category');
+        } catch(JunxaNoSuchTableException $e) {
+            $this->assertSame('nonexistent', $e->getTableName());
+        }
+    }
+
+    public function testPropertyModeChildRowsRetrieval()
+    {
+        $categoryRow1 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow1);
+        $categoryRow1->name = 'Uncategorized';
+        $categoryRow1->createdAt = Q::func('NOW');
+        $categoryRow1->save();
+        //
+        $itemRows = $categoryRow1->items;
+        $this->assertCount(0, $itemRows);
+        //
+        $itemRow1 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow1);
+        $itemRow1->categoryId = $categoryRow1->id;
+        $itemRow1->name = 'Widget';
+        $itemRow1->createdAt = Q::func('NOW');
+        $itemRow1->save();
+        //
+        $itemRows = $categoryRow1->items;
+        $this->assertCount(1, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        //
+        $itemRow2 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow2);
+        $itemRow2->categoryId = $categoryRow1->id;
+        $itemRow2->name = 'Whosit';
+        $itemRow2->createdAt = Q::func('NOW');
+        $itemRow2->save();
+        //
+        $itemRows = $categoryRow1->items;
+        $this->assertCount(2, $itemRows);
+        $this->assertEquals($itemRow1, $itemRows[0]);
+        $this->assertEquals($itemRow2, $itemRows[1]);
+        //
+        $categoryRow2 = $this->db->category->newRow();
+        $this->addGeneratedRow($categoryRow2);
+        $categoryRow2->name = 'Categorized';
+        $categoryRow2->createdAt = Q::func('NOW');
+        $categoryRow2->save();
+        //
+        $itemRow3 = $this->db->item->newRow();
+        $this->addGeneratedRow($itemRow3);
+        $itemRow3->categoryId = $categoryRow2->id;
+        $itemRow3->name = 'Whatsit';
+        $itemRow3->createdAt = Q::func('NOW');
+        $itemRow3->save();
+        //
+        $itemRows1 = $categoryRow1->items;
+        $this->assertCount(2, $itemRows1);
+        $this->assertEquals($itemRow1, $itemRows1[0]);
+        $this->assertEquals($itemRow2, $itemRows1[1]);
+        $itemRows2 = $categoryRow2->getChildRows($this->db->item);
+        $this->assertCount(1, $itemRows2);
+        $this->assertEquals($itemRow3, $itemRows2[0]);
+        //
+        try {
+            $categoryRows = $itemRow1->categories;
+            $this->fail('was able to retrieve category child rows from item');
+        } catch(JunxaInvalidQueryException $e) {
+            $this->assertSame(
+                'no foreign keys found on category that imply a '
+                . 'child table relationship with item',
+                $e->getMessage()
+            );
+        }
     }
 
 }

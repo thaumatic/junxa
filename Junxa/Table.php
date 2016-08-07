@@ -434,6 +434,15 @@ class Table
     }
 
     /**
+     * @return array<string:Thaumatic\Junxa\Column> the map (by name) of column
+     * models for this table
+     */
+    public function getColumnModels()
+    {
+        return $this->columnModels;
+    }
+
+    /**
      * @param string column name
      * @return bool whether the table has a column of a given name
      */
@@ -769,8 +778,8 @@ class Table
         }
         $query
             ->clearSelect()
-            ->select($this->selectTarget())
-            ->setMode(Junxa::QUERY_ARRAYS)
+            ->select($this->getSelectTarget())
+            ->setMode(Junxa::QUERY_ASSOCS)
         ;
         $class = $this->database->rowClass($this->name);
         $rows = $this->database->query($query);
