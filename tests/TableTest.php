@@ -15,17 +15,17 @@ class TableTest extends DatabaseTestAbstract
             'name',
             'type',
             'active',
-            'created_at',
-            'changed_at',
+            'createdAt',
+            'changedAt',
         ], $this->db->category->getColumns());
         $this->assertSame([
             'id',
-            'category_id',
+            'categoryId',
             'name',
             'price',
             'active',
-            'created_at',
-            'changed_at',
+            'createdAt',
+            'changedAt',
         ], $this->db->item->getColumns());
     }
 

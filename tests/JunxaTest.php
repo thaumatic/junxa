@@ -134,7 +134,7 @@ class JunxaTest extends DatabaseTestAbstract
         $category = $this->db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Start';
-        $category->created_at = Q::func('NOW');
+        $category->createdAt = Q::func('NOW');
         $category->insert();
         srand(1);
         for ($i = $this->db->category->name->getLength() / 10; $i >= 0; $i--) {

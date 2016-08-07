@@ -1360,7 +1360,7 @@ class Row
         }
         $foreignColumn = $column->getForeignColumn();
         if (!$foreignColumn) {
-            throw new InvalidQueryException(
+            throw new JunxaInvalidQueryException(
                 $columnName
                 . ' on '
                 . $this->junxaInternalTable->getName()
@@ -1370,7 +1370,7 @@ class Row
         $foreignTable = $foreignColumn->getTable();
         $toPrimary = $foreignColumn->getFlag(Column::MYSQL_FLAG_PRI_KEY);
         if (!$toPrimary && !$foreignColumn->getFlag(Column::MYSQL_FLAG_UNIQUE_KEY)) {
-            throw new InvalidQueryException(
+            throw new JunxaInvalidQueryException(
                 'foreign column '
                 . $foreignColumn->getName()
                 . ' on '
@@ -1393,7 +1393,7 @@ class Row
                 }
                 return $out;
             } else {
-                throw new InvalidQueryException(
+                throw new JunxaInvalidQueryException(
                     'foreign row retrieval by multipart primary key '
                     . 'not presently supported'
                 );
@@ -1426,12 +1426,12 @@ class Row
                 $possible[] = $key;
             }
             if ($possible) {
-                throw new InvalidQueryException(
+                throw new JunxaInvalidQueryException(
                     'foreign row retrieval by multipart unique key '
                     . 'not presently supported'
                 );
             } else {
-                throw new InvalidQueryException(
+                throw new JunxaInvalidQueryException(
                     'no unique key exists that would allow a foreign row from '
                     . $foreignColumn->getTable()->getName()
                     . ' to be retrieved based on '

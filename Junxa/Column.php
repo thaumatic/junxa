@@ -401,8 +401,8 @@ class Column
      * use Thaumatic\Junxa\Query as Q;
      *
      * $db = new Junxa...;
-     * // set the created_at column to default to the SQL function NOW()
-     * $db->table_name->created_at->setDynamicDefault(Q::func('NOW'));
+     * // set the createdAt column to default to the SQL function NOW()
+     * $db->table_name->createdAt->setDynamicDefault(Q::func('NOW'));
      *
      * @param Thaumatic\Junxa\Query\Element expression for default
      * @return $this
@@ -856,6 +856,20 @@ class Column
     }
 
     /**
+     * Determine the name of the foreign table that a column name may refer
+     * to, if any.  Defaults to looking for a name ending in Id or _id and
+     * stripping that part off to determine the table name.  Intended to be
+     * overridden if custom logic is needed.
+     */
+    protected function extractForeignTableNameFromColumnName($ColumnName)
+    {
+        if (preg_match('/(.*)(?:Id|_id)$/i', $this->getName(), $match)) {
+            return $match[1];
+        }
+        return null;
+    }
+
+    /**
      * If this column's foreign key configuration is not established, establish it.
      */
     private function determineForeignKey()
@@ -864,12 +878,10 @@ class Column
             if ((!$this->foreignKeyTableName || !$this->foreignKeyColumnName)
                 && !$this->getOption(self::OPTION_NO_AUTO_FOREIGN_KEY)
             ) {
-                if (preg_match('/(.*)_id$/i', $this->getName(), $match)) {
-                    if (!$this->foreignKeyTableName) {
-                        $tableName = $match[1];
-                        if ($this->getDatabase()->tableExists($tableName)) {
-                            $this->foreignKeyTableName = $tableName;
-                        }
+                $tableName = $this->extractForeignTableNameFromColumnName($this->getName());
+                if ($tableName) {
+                    if (!$this->foreignKeyTableName && $this->getDatabase()->tableExists($tableName)) {
+                        $this->foreignKeyTableName = $tableName;
                     }
                     if (!$this->foreignKeyColumnName && $this->foreignKeyTableName) {
                         if ($this->getDatabase()->{$this->foreignKeyTableName}->hasColumn('id')) {
