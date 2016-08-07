@@ -75,7 +75,7 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
             if (!$row->getPrimaryKeyUnset() && !$row->getDeleted()) {
                 try {
                     $row->delete();
-                } catch(JunxaInvalidQueryException $e) {
+                } catch (JunxaInvalidQueryException $e) {
                     if (!$toThrow) {
                         $toThrow = $e;
                     }
