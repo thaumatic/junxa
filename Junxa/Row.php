@@ -230,7 +230,7 @@ class Row
     }
 
     /**
-     * Property-mode accessor for field values.
+     * Property-mode accessor for field values and foreign rows.
      *
      * @param string field name
      * @return mixed
@@ -243,7 +243,19 @@ class Row
     public function __get($name)
     {
         if (!$this->junxaInternalTable->hasColumn($name)) {
-            throw new JunxaNoSuchColumnException($name);
+            $foreignKeySuffix = $this->junxaInternalTable->getDatabase()->getForeignKeySuffix();
+            if ($foreignKeySuffix !== null) {
+                $foreignKeyName = $name . $foreignKeySuffix;
+                if (property_exists($this, $foreignKeyName)
+                    || $this->junxaInternalTable->hasColumn($foreignKeyName)
+                ) {
+                    return $this->getForeignRow($foreignKeyName);
+                } else {
+                    throw new JunxaNoSuchColumnException($name);
+                }
+            } else {
+                throw new JunxaNoSuchColumnException($name);
+            }
         }
         if ($this->junxaInternalTable->getColumnDemandLoad($name)
             && !$this->getPrimaryKeyUnset()

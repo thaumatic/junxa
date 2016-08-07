@@ -1338,7 +1338,12 @@ class RowTest extends DatabaseTestAbstract
         $this->assertEquals('Widget', $itemRow->name);
         $categoryRow = $itemRow->getForeignRow('categoryId');
         $this->assertEquals($createCategoryRow, $categoryRow);
-        $this->assertEquals('Uncategorized', $categoryRow->name);
+        $this->assertNotSame($createCategoryRow, $categoryRow);
+        $this->assertSame('Uncategorized', $categoryRow->name);
+        $propCategoryRow = $itemRow->category;
+        $this->assertEquals($categoryRow, $propCategoryRow);
+        $this->assertNotSame($categoryRow, $propCategoryRow);
+        $this->assertSame('Uncategorized', $propCategoryRow->name);
     }
 
 }
