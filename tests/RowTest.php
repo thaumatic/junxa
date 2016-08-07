@@ -1267,6 +1267,43 @@ class RowTest extends DatabaseTestAbstract
         $this->assertTrue(Junxa::OK($result));
     }
 
+    public function testMerge()
+    {
+        $category = $this->db()->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->type = 'A\'s';
+        $category->created_at = Q::func('NOW');
+        $category->save();
+        $this->assertSame('A\'s', $category->type);
+        //
+        $altCategory = $this->db()->category->newRow();
+        $this->addGeneratedRow($altCategory);
+        $altCategory->name = 'Uncategorized';
+        $altCategory->type = 'B\'s';
+        $altCategory->created_at = Q::func('NOW');
+        $result = $altCategory->merge();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame($category->id, $altCategory->id);
+        $this->assertNotSame($category, $altCategory);
+        $this->assertSame('A\'s', $category->type);
+        $this->assertSame('B\'s', $altCategory->type);
+        $result = $category->refresh();
+        $this->assertSame(Junxa::RESULT_SUCCESS, $result);
+        $this->assertSame('B\'s', $category->type);
+        $this->assertSame('B\'s', $altCategory->type);
+        //
+        $item = $this->db()->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->category_id = $category->id;
+        $item->name = 'Widget';
+        $item->price = 1.00;
+        $item->created_at = Q::func('NOW');
+        $item->save();
+        $this->assertSame(1.00, $item->price);
+        $this->assertTrue($item->active);
+    }
+
     public function testGetForeignRow()
     {
         $createCategoryRow = $this->db()->category->newRow();
