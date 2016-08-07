@@ -71,7 +71,6 @@ class Row
         'select',
         'insert',
         'replace',
-        'update',
         'delete',
         'group',
         'having',
