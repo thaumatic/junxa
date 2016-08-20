@@ -632,6 +632,7 @@ class Column
                     default:
                         return $value;
                 }
+                break;
             default:
                 throw new JunxaDatabaseModelingException('unknown type class ' . $this->typeClass);
         }

@@ -1426,7 +1426,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $categoryRows = $itemRow1->getChildRows($this->db->category);
             $this->fail('was able to retrieve category child rows from item');
-        } catch(JunxaInvalidQueryException $e) {
+        } catch (JunxaInvalidQueryException $e) {
             $this->assertSame(
                 'no foreign keys found on category that imply a '
                 . 'child table relationship with item',
@@ -1493,7 +1493,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $categoryRows = $itemRow1->getChildRowsByTableName('category');
             $this->fail('was able to retrieve category child rows from item');
-        } catch(JunxaInvalidQueryException $e) {
+        } catch (JunxaInvalidQueryException $e) {
             $this->assertSame(
                 'no foreign keys found on category that imply a '
                 . 'child table relationship with item',
@@ -1504,7 +1504,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $itemRows = $categoryRow1->getChildRowsByTableName('nonexistent');
             $this->fail('was able to retrieve nonexistent child rows from category');
-        } catch(JunxaNoSuchTableException $e) {
+        } catch (JunxaNoSuchTableException $e) {
             $this->assertSame('nonexistent', $e->getTableName());
         }
     }
@@ -1567,7 +1567,7 @@ class RowTest extends DatabaseTestAbstract
         try {
             $categoryRows = $itemRow1->categories;
             $this->fail('was able to retrieve category child rows from item');
-        } catch(JunxaInvalidQueryException $e) {
+        } catch (JunxaInvalidQueryException $e) {
             $this->assertSame(
                 'no foreign keys found on category that imply a '
                 . 'child table relationship with item',

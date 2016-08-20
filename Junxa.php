@@ -1196,7 +1196,8 @@ class Junxa
      * @param string column name
      * @return string|null
      */
-    public function getForeignKeySuffixMatch($columnName) {
+    public function getForeignKeySuffixMatch($columnName)
+    {
         if ($this->foreignKeySuffixPattern === null) {
             return null;
         }
