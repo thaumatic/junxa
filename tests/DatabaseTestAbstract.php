@@ -99,4 +99,14 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
         $this->generatedRows[] = $row;
     }
 
+    protected function minimalDb()
+    {
+        return Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(self::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+        ;
+    }
+
 }

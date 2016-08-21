@@ -113,11 +113,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testDefaultTableClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setDefaultTableClass('Thaumatic\Junxa\Tests\Table\Generic')
             ->ready();
         $table = $db->category;
@@ -128,11 +124,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testDefaultColumnClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setDefaultColumnClass('Thaumatic\Junxa\Tests\Column\Generic')
             ->ready();
         $column = $db->category->name;
@@ -143,11 +135,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testDefaultRowClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setDefaultRowClass('Thaumatic\Junxa\Tests\Row\Generic')
             ->ready();
         $row = $db->category->newRow();
@@ -159,11 +147,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetTableClasses()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setTableClasses([
                 'category'  => 'Thaumatic\Junxa\Tests\Table\Category',
                 'item'      => 'Thaumatic\Junxa\Tests\Table\Item',
@@ -181,11 +165,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetTableClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setTableClass('category', 'Thaumatic\Junxa\Tests\Table\Category')
             ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
             ->ready();
@@ -201,11 +181,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetTableClassesNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setTableClasses([
                 'category'  => 'Thaumatic\Junxa\Tests\Table\Category',
             ])
@@ -223,11 +199,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetTableClassNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
             ->ready();
         $table = $db->category;
@@ -243,11 +215,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetTableClassWithDefault()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
             ->setDefaultTableClass('Thaumatic\Junxa\Tests\Table\Generic')
             ->ready();
@@ -265,11 +233,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetRowClasses()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setRowClasses([
                 'category'  => 'Thaumatic\Junxa\Tests\Row\Category',
                 'item'      => 'Thaumatic\Junxa\Tests\Row\Item',
@@ -305,11 +269,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetRowClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setRowClass('category', 'Thaumatic\Junxa\Tests\Row\Category')
             ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
             ->ready();
@@ -327,11 +287,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetRowClassesNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setRowClasses([
                 'category'  => 'Thaumatic\Junxa\Tests\Row\Category',
             ])
@@ -351,11 +307,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetRowClassNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
             ->ready();
         $row = $db->category->newRow();
@@ -373,11 +325,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetRowClassWithDefault()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
             ->setDefaultRowClass('Thaumatic\Junxa\Tests\Row\Generic')
             ->ready();
@@ -397,11 +345,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetColumnClasses()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setColumnClasses([
                 'name'      => 'Thaumatic\Junxa\Tests\Column\Name',
                 'createdAt' => 'Thaumatic\Junxa\Tests\Column\CreatedAt',
@@ -452,11 +396,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetColumnClass()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setColumnClass('name', 'Thaumatic\Junxa\Tests\Column\Name')
             ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
             ->ready();
@@ -505,11 +445,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetColumnClassesNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setColumnClasses([
                 'name'      => 'Thaumatic\Junxa\Tests\Column\Name',
             ])
@@ -563,11 +499,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetColumnClassNoCrosstalk()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
             ->ready();
         $categoryName = $db->category->name;
@@ -619,11 +551,7 @@ class JunxaTest extends DatabaseTestAbstract
 
     public function testSetColumnClassWithDefault()
     {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
+        $db = $this->minimalDb()
             ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
             ->setDefaultColumnClass('Thaumatic\Junxa\Tests\Column\Generic')
             ->ready();
