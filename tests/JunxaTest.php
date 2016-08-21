@@ -151,6 +151,7 @@ class JunxaTest extends DatabaseTestAbstract
             ->setDefaultRowClass('Thaumatic\Junxa\Tests\Row\Generic')
             ->ready();
         $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
         $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Generic', $row);
         $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
         $this->assertTrue($row->isTestGenericRow());
@@ -260,6 +261,138 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
         $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
         $this->assertTrue($table->isTestItemTable());
+    }
+
+    public function testSetRowClasses()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setRowClasses([
+                'category'  => 'Thaumatic\Junxa\Tests\Row\Category',
+                'item'      => 'Thaumatic\Junxa\Tests\Row\Item',
+            ])
+            ->ready();
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestCategoryRow());
+        $row->name = 'Uncategorized';
+        $row->createdAt = Q::func('NOW');
+        $row->save();
+        $altRow = $db->category->row($row->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTestCategoryRow());
+        $categoryId = $altRow->id;
+        $row = $db->item->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestItemRow());
+        $row->categoryId = $categoryId;
+        $row->name = 'Widget';
+        $row->createdAt = Q::func('NOW');
+        $row->save();
+        $altRow = $db->item->row($row->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTestItemRow());
+    }
+
+    public function testSetRowClass()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setRowClass('category', 'Thaumatic\Junxa\Tests\Row\Category')
+            ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
+            ->ready();
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestCategoryRow());
+        $row = $db->item->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestItemRow());
+    }
+
+    public function testSetRowClassesNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setRowClasses([
+                'category'  => 'Thaumatic\Junxa\Tests\Row\Category',
+            ])
+            ->ready();
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestCategoryRow());
+        $row = $db->item->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertFalse(method_exists($row, 'isTestItemRow'));
+    }
+
+    public function testSetRowClassNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
+            ->ready();
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertFalse(method_exists($row, 'isTestCategoryRow'));
+        $row = $db->item->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestItemRow());
+    }
+
+    public function testSetRowClassWithDefault()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setRowClass('item', 'Thaumatic\Junxa\Tests\Row\Item')
+            ->setDefaultRowClass('Thaumatic\Junxa\Tests\Row\Generic')
+            ->ready();
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Generic', $row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestGenericRow());
+        $this->assertFalse(method_exists($row, 'isTestCategoryRow'));
+        $row = $db->item->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Item', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestItemRow());
     }
 
     public function testGetSingularFromPlural()
