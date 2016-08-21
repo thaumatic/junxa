@@ -1033,6 +1033,36 @@ class Junxa
     }
 
     /**
+     * Sets the class to be used for the table model for tables whose
+     * names match the specified regexp pattern.  This is equivalent
+     * to one key-value pair in the mapping sent to
+     * {@see setRegexpTableClasses}.
+     *
+     * @param string the regexp pattern
+     * @param string the class name
+     * @return $this
+     */
+    public function setRegexpTableClass($pattern, $className)
+    {
+        $this->regexpTableClasses[$pattern] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string regexp pattern
+     * @return string|null the table class defined for the specified regexp
+     * pattern by {@see setRegexpTableClasses} and/or
+     * {@see setRegexpTableClass}, if any
+     */
+    public function getRegexpTableClass($pattern)
+    {
+        return
+            isset($this->regexpTableClasses[$pattern])
+            ? $this->regexpTableClasses[$pattern]
+            : null;
+    }
+
+    /**
      * Sets a mapping of regular expressions to class names; if no more
      * specific column model is found, this mapping will be searched and
      * for the first regular expression that matches the table name, the
@@ -1058,6 +1088,36 @@ class Junxa
     }
 
     /**
+     * Sets the class to be used for the column model for columns whose
+     * names match the specified regexp pattern.  This is equivalent
+     * to one key-value pair in the mapping sent to
+     * {@see setRegexpColumnClasses}.
+     *
+     * @param string the regexp pattern
+     * @param string the class name
+     * @return $this
+     */
+    public function setRegexpColumnClass($pattern, $className)
+    {
+        $this->regexpColumnClasses[$pattern] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string regexp pattern
+     * @return string|null the column class defined for the specified regexp
+     * pattern by {@see setRegexpColumnClasses} and/or
+     * {@see setRegexpColumnClass}, if any
+     */
+    public function getRegexpColumnClass($pattern)
+    {
+        return
+            isset($this->regexpColumnClasses[$pattern])
+            ? $this->regexpColumnClasses[$pattern]
+            : null;
+    }
+
+    /**
      * Sets a mapping of regular expressions to class names; if no more
      * specific row model is found, this mapping will be searched and
      * for the first regular expression that matches the table name, the
@@ -1080,6 +1140,36 @@ class Junxa
     public function getRegexpRowClasses()
     {
         return $this->regexpRowClasses;
+    }
+
+    /**
+     * Sets the class to be used for the table model for rows whose
+     * tables' names match the specified regexp pattern.  This is
+     * equivalent to one key-value pair in the mapping sent to
+     * {@see setRegexpRowClasses}.
+     *
+     * @param string the regexp pattern
+     * @param string the class name
+     * @return $this
+     */
+    public function setRegexpRowClass($pattern, $className)
+    {
+        $this->regexpRowClasses[$pattern] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string regexp pattern
+     * @return string|null the row class defined for the specified regexp
+     * pattern by {@see setRegexpRowClasses} and/or
+     * {@see setRegexpRowClass}, if any
+     */
+    public function getRegexpRowClass($pattern)
+    {
+        return
+            isset($this->regexpRowClasses[$pattern])
+            ? $this->regexpRowClasses[$pattern]
+            : null;
     }
 
     /**
