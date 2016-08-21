@@ -34,22 +34,22 @@ class JunxaTest extends DatabaseTestAbstract
             'defaultColumnClass'        => 'FakeColumnClass',
             'defaultRowClass'           => 'FakeRowClass',
             'tableClasses'              => [
-                'fake_table'            => 'FakeTableSpecificClass',
+                'fakeTable'             => 'FakeTableSpecificClass',
             ],
             'columnClasses'             => [
-                'fake_column'           => 'FakeColumnSpecificClass',
+                'fakeColumn'            => 'FakeColumnSpecificClass',
             ],
             'rowClasses'                => [
-                'fake_row'              => 'FakeRowSpecificClass',
+                'fakeRow'               => 'FakeRowSpecificClass',
             ],
             'regexpTableClasses'        => [
-                '/fake_table_pattern/'  => 'FakeTableSetClass',
+                '/fakeTablePattern/'    => 'FakeTableSetClass',
             ],
             'regexpColumnClasses'       => [
-                '/fake_column_pattern/' => 'FakeColumnSetClass',
+                '/fakeColumnPattern/'   => 'FakeColumnSetClass',
             ],
             'regexpRowClasses'          => [
-                '/fake_row_pattern/'    => 'FakeRowSetClass',
+                '/fakeRowPattern/'      => 'FakeRowSetClass',
             ],
             'autoTableClassNamespace'   => 'FakeTableNamespace',
             'autoColumnClassNamespace'  => 'FakeColumnNamespace',
@@ -77,22 +77,22 @@ class JunxaTest extends DatabaseTestAbstract
             ->setDefaultColumnClass('FakeColumnClass')
             ->setDefaultRowClass('FakeRowClass')
             ->setTableClasses([
-                'fake_table'            => 'FakeTableSpecificClass',
+                'fakeTable'             => 'FakeTableSpecificClass',
             ])
             ->setColumnClasses([
-                'fake_column'           => 'FakeColumnSpecificClass',
+                'fakeColumn'            => 'FakeColumnSpecificClass',
             ])
             ->setRowClasses([
-                'fake_row'              => 'FakeRowSpecificClass',
+                'fakeRow'               => 'FakeRowSpecificClass',
             ])
             ->setRegexpTableClasses([
-                '/fake_table_pattern/'  => 'FakeTableSetClass',
+                '/fakeTablePattern/'    => 'FakeTableSetClass',
             ])
             ->setRegexpColumnClasses([
-                '/fake_column_pattern/' => 'FakeColumnSetClass',
+                '/fakeColumnPattern/'   => 'FakeColumnSetClass',
             ])
             ->setRegexpRowClasses([
-                '/fake_row_pattern/'    => 'FakeRowSetClass',
+                '/fakeRowPattern/'      => 'FakeRowSetClass',
             ])
             ->setAutoTableClassNamespace('FakeTableNamespace')
             ->setAutoColumnClassNamespace('FakeColumnNamespace')
