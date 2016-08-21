@@ -395,6 +395,291 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertTrue($row->isTestItemRow());
     }
 
+    public function testSetColumnClasses()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setColumnClasses([
+                'name'      => 'Thaumatic\Junxa\Tests\Column\Name',
+                'createdAt' => 'Thaumatic\Junxa\Tests\Column\CreatedAt',
+            ])
+            ->ready();
+        $categoryName = $db->category->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryName);
+        $this->assertTrue($categoryName->isTestNameColumn());
+        $categoryCreatedAt = $db->category->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryCreatedAt);
+        $this->assertTrue($categoryCreatedAt->isTestCreatedAtColumn());
+        $categoryType = $db->category->type;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryType);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryType);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryType);
+        $this->assertFalse(method_exists($categoryType, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryType, 'isTestCreatedAtColumn'));
+        $itemName = $db->item->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemName);
+        $this->assertTrue($itemName->isTestNameColumn());
+        $itemCreatedAt = $db->item->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCreatedAt);
+        $this->assertTrue($itemCreatedAt->isTestCreatedAtColumn());
+        $itemCategoryId = $db->item->categoryId;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCategoryId);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCategoryId);
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestCreatedAtColumn'));
+        //
+        $category = $db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->save();
+        $this->assertGreaterThan(time() - 1, strtotime($category->createdAt));
+        $item = $db->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->categoryId = $category->id;
+        $item->name = 'Widget';
+        $item->price = 5.00;
+        $item->save();
+        $this->assertGreaterThan(time() - 1, strtotime($item->createdAt));
+    }
+
+    public function testSetColumnClass()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setColumnClass('name', 'Thaumatic\Junxa\Tests\Column\Name')
+            ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
+            ->ready();
+        $categoryName = $db->category->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryName);
+        $this->assertTrue($categoryName->isTestNameColumn());
+        $categoryCreatedAt = $db->category->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryCreatedAt);
+        $this->assertTrue($categoryCreatedAt->isTestCreatedAtColumn());
+        $categoryType = $db->category->type;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryType);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryType);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryType);
+        $this->assertFalse(method_exists($categoryType, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryType, 'isTestCreatedAtColumn'));
+        $itemName = $db->item->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemName);
+        $this->assertTrue($itemName->isTestNameColumn());
+        $itemCreatedAt = $db->item->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCreatedAt);
+        $this->assertTrue($itemCreatedAt->isTestCreatedAtColumn());
+        $itemCategoryId = $db->item->categoryId;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCategoryId);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCategoryId);
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestCreatedAtColumn'));
+        //
+        $category = $db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->save();
+        $this->assertGreaterThan(time() - 1, strtotime($category->createdAt));
+        $item = $db->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->categoryId = $category->id;
+        $item->name = 'Widget';
+        $item->price = 5.00;
+        $item->save();
+        $this->assertGreaterThan(time() - 1, strtotime($item->createdAt));
+    }
+
+    public function testSetColumnClassesNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setColumnClasses([
+                'name'      => 'Thaumatic\Junxa\Tests\Column\Name',
+            ])
+            ->ready();
+        $categoryName = $db->category->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryName);
+        $this->assertTrue($categoryName->isTestNameColumn());
+        $categoryCreatedAt = $db->category->createdAt;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryCreatedAt);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryCreatedAt);
+        $this->assertFalse(method_exists($categoryCreatedAt, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryCreatedAt, 'isTestCreatedAtColumn'));
+        $categoryType = $db->category->type;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryType);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryType);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryType);
+        $this->assertFalse(method_exists($categoryType, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryType, 'isTestCreatedAtColumn'));
+        $itemName = $db->item->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemName);
+        $this->assertTrue($itemName->isTestNameColumn());
+        $itemCreatedAt = $db->item->createdAt;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCreatedAt);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCreatedAt);
+        $this->assertFalse(method_exists($itemCreatedAt, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCreatedAt, 'isTestCreatedAtColumn'));
+        $itemCategoryId = $db->item->categoryId;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCategoryId);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCategoryId);
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestCreatedAtColumn'));
+        //
+        $category = $db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->save();
+        $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
+        $item = $db->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->categoryId = $category->id;
+        $item->name = 'Widget';
+        $item->price = 5.00;
+        $item->save();
+        $this->assertSame('0000-00-00 00:00:00', $item->createdAt);
+    }
+
+    public function testSetColumnClassNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
+            ->ready();
+        $categoryName = $db->category->name;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryName);
+        $this->assertFalse(method_exists($categoryName, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryName, 'isTestCreatedAtColumn'));
+        $categoryCreatedAt = $db->category->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryCreatedAt);
+        $this->assertTrue($categoryCreatedAt->isTestCreatedAtColumn());
+        $categoryType = $db->category->type;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryType);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryType);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryType);
+        $this->assertFalse(method_exists($categoryType, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryType, 'isTestCreatedAtColumn'));
+        $itemName = $db->item->name;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemName);
+        $this->assertFalse(method_exists($itemName, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemName, 'isTestCreatedAtColumn'));
+        $itemCreatedAt = $db->item->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCreatedAt);
+        $this->assertTrue($itemCreatedAt->isTestCreatedAtColumn());
+        $itemCategoryId = $db->item->categoryId;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCategoryId);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCategoryId);
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestCreatedAtColumn'));
+        //
+        $category = $db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->save();
+        $this->assertGreaterThan(time() - 1, strtotime($category->createdAt));
+        $item = $db->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->categoryId = $category->id;
+        $item->name = 'Widget';
+        $item->price = 5.00;
+        $item->save();
+        $this->assertGreaterThan(time() - 1, strtotime($item->createdAt));
+    }
+
+    public function testSetColumnClassWithDefault()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setColumnClass('createdAt', 'Thaumatic\Junxa\Tests\Column\CreatedAt')
+            ->setDefaultColumnClass('Thaumatic\Junxa\Tests\Column\Generic')
+            ->ready();
+        $categoryName = $db->category->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Generic', $categoryName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryName);
+        $this->assertTrue($categoryName->isTestGenericColumn());
+        $this->assertFalse(method_exists($categoryName, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryName, 'isTestCreatedAtColumn'));
+        $categoryCreatedAt = $db->category->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryCreatedAt);
+        $this->assertTrue($categoryCreatedAt->isTestCreatedAtColumn());
+        $categoryType = $db->category->type;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $categoryType);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $categoryType);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $categoryType);
+        $this->assertFalse(method_exists($categoryType, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($categoryType, 'isTestCreatedAtColumn'));
+        $itemName = $db->item->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Generic', $itemName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemName);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemName);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemName);
+        $this->assertTrue($itemName->isTestGenericColumn());
+        $this->assertFalse(method_exists($itemName, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemName, 'isTestCreatedAtColumn'));
+        $itemCreatedAt = $db->item->createdAt;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCreatedAt);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCreatedAt);
+        $this->assertTrue($itemCreatedAt->isTestCreatedAtColumn());
+        $itemCategoryId = $db->item->categoryId;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Generic', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\Name', $itemCategoryId);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Column\CreatedAt', $itemCategoryId);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $itemCategoryId);
+        $this->assertTrue($itemCategoryId->isTestGenericColumn());
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestNameColumn'));
+        $this->assertFalse(method_exists($itemCategoryId, 'isTestCreatedAtColumn'));
+        //
+        $category = $db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->save();
+        $this->assertGreaterThan(time() - 1, strtotime($category->createdAt));
+        $item = $db->item->newRow();
+        $this->addGeneratedRow($item);
+        $item->categoryId = $category->id;
+        $item->name = 'Widget';
+        $item->price = 5.00;
+        $item->save();
+        $this->assertGreaterThan(time() - 1, strtotime($item->createdAt));
+    }
+
     public function testGetSingularFromPlural()
     {
         $originalMap = $this->db->getPluralToSingularMap();
