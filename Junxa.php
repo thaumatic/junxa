@@ -1107,11 +1107,39 @@ class Junxa
     }
 
     /**
-     * Sets a mapping of table names to class names.  If a table name appears
+     * Sets the class to be used for the table model for a particular table.
+     * This is equivalent to one key-value pair in the mapping sent to
+     * {@see setTableClasses}.
+     *
+     * @param string the table name
+     * @param string the class name
+     * @return $this
+     */
+    public function setTableClass($tableName, $className)
+    {
+        $this->tableClasses[$tableName] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string table name
+     * @return string|null the table class defined for the specified table by
+     * {@see setTableClasses} and/or {@see setTableClass}, if any
+     */
+    public function getTableClass($tableName)
+    {
+        return
+            isset($this->tableClasses[$tableName])
+            ? $this->tableClasses[$tableName]
+            : null;
+    }
+
+    /**
+     * Sets a mapping of table names to class names.  If a column name appears
      * in this mapping, the corresponding class name will be used for the
      * column model.  This is the most specific column class specification.
      *
-     * @param array<string:string> map of table names to class names
+     * @param array<string:string> map of column names to class names
      * @return $this
      */
     public function setColumnClasses(array $val)
@@ -1128,6 +1156,35 @@ class Junxa
     public function getColumnClasses()
     {
         return $this->columnClasses;
+    }
+
+    /**
+     * Sets the class to be used for the column model for columns of a
+     * particular name.  This is equivalent to one key-value pair in the
+     * mapping sent to {@see setColumnClasses}.
+     *
+     * @param string the column name
+     * @param string the class name
+     * @return $this
+     */
+    public function setColumnClass($columnName, $className)
+    {
+        $this->columnClasses[$columnName] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string column name
+     * @return string|null the column class defined for the specified
+     * column name by {@see setColumnClasses} and/or {@see setColumnClass},
+     * if any
+     */
+    public function getColumnClass($columnName)
+    {
+        return
+            isset($this->columnClasses[$columnName])
+            ? $this->columnClasses[$columnName]
+            : null;
     }
 
     /**
@@ -1152,6 +1209,35 @@ class Junxa
     public function getRowClasses()
     {
         return $this->rowClasses;
+    }
+
+    /**
+     * Sets the class to be used for the row model for a particular table.
+     * This is equivalent to one key-value pair in the mapping sent to
+     * {@see setRowClasses}.
+     *
+     * @param string the table name
+     * @param string the class name
+     * @return $this
+     */
+    public function setRowClass($tableName, $className)
+    {
+        $this->rowClasses[$tableName] = $className;
+        return $this;
+    }
+
+    /**
+     * @param string table name
+     * @return string|null the row class defined for the specified
+     * table by {@see setRowClasses} and/or {@see setRowClass},
+     * if any
+     */
+    public function getRowClass($tableName)
+    {
+        return
+            isset($this->rowClasses[$tableName])
+            ? $this->rowClasses[$tableName]
+            : null;
     }
 
     /**
