@@ -111,6 +111,21 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertEquals($db1, $db2);
     }
 
+    public function testDefaultTableClass()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setDefaultTableClass('Thaumatic\Junxa\Tests\Table\Generic')
+            ->ready();
+        $table = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Generic', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestGenericTable());
+    }
+
     public function testDefaultColumnClass()
     {
         $db = Junxa::make()
@@ -139,21 +154,6 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Generic', $row);
         $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
         $this->assertTrue($row->isTestGenericRow());
-    }
-
-    public function testDefaultTableClass()
-    {
-        $db = Junxa::make()
-            ->setHostname('localhost')
-            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
-            ->setUsername('testUsername')
-            ->setPassword('')
-            ->setDefaultTableClass('Thaumatic\Junxa\Tests\Table\Generic')
-            ->ready();
-        $table = $db->category;
-        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Generic', $table);
-        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
-        $this->assertTrue($table->isTestGenericTable());
     }
 
     public function testGetSingularFromPlural()
