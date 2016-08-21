@@ -156,6 +156,112 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertTrue($row->isTestGenericRow());
     }
 
+    public function testSetTableClasses()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setTableClasses([
+                'category'  => 'Thaumatic\Junxa\Tests\Table\Category',
+                'item'      => 'Thaumatic\Junxa\Tests\Table\Item',
+            ])
+            ->ready();
+        $table = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Category', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestCategoryTable());
+        $table = $db->item;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestItemTable());
+    }
+
+    public function testSetTableClass()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setTableClass('category', 'Thaumatic\Junxa\Tests\Table\Category')
+            ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
+            ->ready();
+        $table = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Category', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestCategoryTable());
+        $table = $db->item;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestItemTable());
+    }
+
+    public function testSetTableClassesNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setTableClasses([
+                'category'  => 'Thaumatic\Junxa\Tests\Table\Category',
+            ])
+            ->ready();
+        $table = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Category', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestCategoryTable());
+        $table = $db->item;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Table\Category', $table);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertFalse(method_exists($table, 'isTestItemTable'));
+    }
+
+    public function testSetTableClassNoCrosstalk()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
+            ->ready();
+        $table = $db->category;
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Table\Category', $table);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertFalse(method_exists($table, 'isTestCategoryTable'));
+        $table = $db->item;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestItemTable());
+    }
+
+    public function testSetTableClassWithDefault()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setTableClass('item', 'Thaumatic\Junxa\Tests\Table\Item')
+            ->setDefaultTableClass('Thaumatic\Junxa\Tests\Table\Generic')
+            ->ready();
+        $table = $db->category;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Generic', $table);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestGenericTable());
+        $this->assertFalse(method_exists($table, 'isTestCategoryTable'));
+        $table = $db->item;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Table\Item', $table);
+        $this->assertInstanceOf('Thaumatic\Junxa\Table', $table);
+        $this->assertTrue($table->isTestItemTable());
+    }
+
     public function testGetSingularFromPlural()
     {
         $originalMap = $this->db->getPluralToSingularMap();
