@@ -111,6 +111,21 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertEquals($db1, $db2);
     }
 
+    public function testDefaultColumnClass()
+    {
+        $db = Junxa::make()
+            ->setHostname('localhost')
+            ->setDatabaseName(DatabaseTestAbstract::TEST_DATABASE_NAME)
+            ->setUsername('testUsername')
+            ->setPassword('')
+            ->setDefaultColumnClass('Thaumatic\Junxa\Tests\Column\Generic')
+            ->ready();
+        $column = $db->category->name;
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Column\Generic', $column);
+        $this->assertInstanceOf('Thaumatic\Junxa\Column', $column);
+        $this->assertTrue($column->isTestGenericColumn());
+    }
+
     public function testGetSingularFromPlural()
     {
         $originalMap = $this->db->getPluralToSingularMap();
