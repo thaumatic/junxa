@@ -938,7 +938,8 @@ class Junxa
     /**
      * Sets the namespace that will be searched for a class to use for the
      * table model if no more specific table model is found (looking for a
-     * class name that is the PascalCase version of the table name).
+     * class name that is the table name processed by
+     * {@see toNameSpaceElement}).
      *
      * @param string namespace prefix, without trailing backslash
      * @return $this
@@ -962,7 +963,8 @@ class Junxa
     /**
      * Sets the namespace that will be searched for a class to use for the
      * column model if no more specific column model is found (looking for a
-     * class name that is the PascalCase version of the table name).
+     * class name that is the column name processed by
+     * {@see toNamespaceElement}).
      *
      * @param string namespace prefix, without trailing backslash
      * @return $this
@@ -986,7 +988,8 @@ class Junxa
     /**
      * Sets the namespace that will be searched for a class to use for the
      * row model if no more specific row model is found (looking for a
-     * class name that is the PascalCase version of the table name).
+     * class name that is the table name processed by
+     * {@see toNamespaceElement}).
      *
      * @param string namespace prefix, without trailing backslash
      * @return $this
@@ -1609,7 +1612,7 @@ class Junxa
             }
         }
         if (!empty($this->autoTableClassNamespace)) {
-            $name = $this->autoTableClassNamespace . '\\' . self::pascalCase($table);
+            $name = $this->autoTableClassNamespace . '\\' . self::toNamespaceElement($table);
             if (class_exists($name)) {
                 return $name;
             }
@@ -1637,7 +1640,7 @@ class Junxa
             }
         }
         if (!empty($this->autoColumnClassNamespace)) {
-            $name = $this->autoColumnClassNamespace . '\\' . self::pascalCase($column);
+            $name = $this->autoColumnClassNamespace . '\\' . self::toNamespaceElement($column);
             if (class_exists($name)) {
                 return $name;
             }
@@ -1665,7 +1668,7 @@ class Junxa
             }
         }
         if (!empty($this->autoRowClassNamespace)) {
-            $name = $this->autoRowClassNamespace . '\\' . self::pascalCase($table);
+            $name = $this->autoRowClassNamespace . '\\' . self::toNamespaceElement($table);
             if (class_exists($name)) {
                 return $name;
             }
@@ -2356,12 +2359,36 @@ class Junxa
     }
 
     /**
-     * Converts text to Pascal case.
+     * Derive (lossily) text that can be present in the PHP class namespace
+     * from specified text.
+     *
+     * Sample results:
+     *   name       => Name
+     *   someName   => SomeName
+     *   some_name  => SomeName
+     *   some name  => SomeName
+     *   4 name     => _4Name
      *
      * @param string text to convert
      * @return string
      */
-    public static function pascalCase($text)
+    public static function toNamespaceElement($text)
+    {
+        $text = preg_replace('/\W+/', '_', $text);
+        $text = self::underscoresToPascalCase($text);
+        if (preg_match('/^\d/', $text)) {
+            $text = '_' . $text;
+        }
+        return $text;
+    }
+
+    /**
+     * Converts underscore-separated text to Pascal case.
+     *
+     * @param string text to convert
+     * @return string
+     */
+    public static function underscoresToPascalCase($text)
     {
         return ucfirst(
             preg_replace_callback(
@@ -2369,27 +2396,9 @@ class Junxa
                 function ($match) {
                     return ucfirst($match[1]);
                 },
-                strtolower($text)
+                $text
             )
         );
-    }
-
-    /**
-     * Converts text to camel case.
-     *
-     * @param string text to convert
-     * @return string
-     */
-    public static function camelCase($text)
-    {
-        return
-            preg_replace_callback(
-                '/_([^_])/',
-                function ($match) {
-                    return ucfirst($match[1]);
-                },
-                strtolower($text)
-            );
     }
 
     /**

@@ -1215,6 +1215,30 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertSame(1, $listenedQueryBuilder->getLimit());
     }
 
+    public function testToNamespaceElement()
+    {
+        $this->assertSame('Name', Junxa::toNamespaceElement('name'));
+        $this->assertSame('SomeName', Junxa::toNamespaceElement('someName'));
+        $this->assertSame('SomeOtherName', Junxa::toNamespaceElement('some_other_name'));
+        $this->assertSame('SomeName', Junxa::toNamespaceElement('some_name'));
+        $this->assertSame('SomeName', Junxa::toNamespaceElement('some name'));
+        $this->assertSame('SomeOtherName', Junxa::toNamespaceElement('some other name'));
+        $this->assertSame('_4Name', Junxa::toNamespaceElement('4_name'));
+        $this->assertSame('_4Name', Junxa::toNamespaceElement('4 name'));
+        $this->assertSame('_4OtherName', Junxa::toNamespaceElement('4 other name'));
+        $this->assertSame('_4name', Junxa::toNamespaceElement('4name'));
+        $this->assertSame('NonsenseName', Junxa::toNamespaceElement('nonsense!^@!@#*name'));
+    }
+
+    public function testUnderscoresToPascalCase()
+    {
+        $this->assertSame('Name', Junxa::underscoresToPascalCase('name'));
+        $this->assertSame('SomeName', Junxa::underscoresToPascalCase('some_name'));
+        $this->assertSame('SomeOtherName', Junxa::underscoresToPascalCase('some_other_name'));
+        $this->assertSame('4Name', Junxa::underscoresToPascalCase('4_name'));
+        $this->assertSame('4name', Junxa::underscoresToPascalCase('4name'));
+    }
+
     public function testStringIntegrity()
     {
         $category = $this->db->category->newRow();
