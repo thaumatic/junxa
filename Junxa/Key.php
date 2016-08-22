@@ -9,7 +9,7 @@ use Thaumatic\Junxa\KeyPart;
 /**
  * Models a database key.
  */
-class Key
+final class Key
 {
 
     /**

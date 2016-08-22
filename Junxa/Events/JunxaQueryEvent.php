@@ -41,7 +41,7 @@ class JunxaQueryEvent extends Event
      * @param Thaumatic\Junxa\Query\Builder|null the query builder the query
      * was rendered from, if any
      */
-    public function __construct(
+    final public function __construct(
         Junxa $database,
         $sql,
         QueryBuilder $queryBuilder = null
@@ -49,12 +49,21 @@ class JunxaQueryEvent extends Event
         $this->database = $database;
         $this->sql = $sql;
         $this->queryBuilder = $queryBuilder;
+        $this->init();
+    }
+
+    /**
+     * Initialization function to be called upon the event model being set
+     * up.  Intended to be overridden by child classes.
+     */
+    protected function init()
+    {
     }
 
     /**
      * @return Thaumatic\Junxa the database model the event is taking place on
      */
-    public function getDatabase()
+    final public function getDatabase()
     {
         return $this->database;
     }
@@ -62,7 +71,7 @@ class JunxaQueryEvent extends Event
     /**
      * @return string the final rendered SQL for the query
      */
-    public function getSql()
+    final public function getSql()
     {
         return $this->sql;
     }
@@ -71,7 +80,7 @@ class JunxaQueryEvent extends Event
      * @return Thaumatic\Junxa\Query\Builder the query builder the query was
      * rendered from, if any
      */
-    public function getQueryBuilder()
+    final public function getQueryBuilder()
     {
         return $this->queryBuilder;
     }
@@ -82,7 +91,7 @@ class JunxaQueryEvent extends Event
      *
      * @param bool whether to prevent the query from executing
      */
-    public function setPreventQuery($flag)
+    final public function setPreventQuery($flag)
     {
         $this->preventQuery = $flag;
     }
@@ -90,7 +99,7 @@ class JunxaQueryEvent extends Event
     /**
      * @return bool whether to prevent the query from executing
      */
-    public function getPreventQuery()
+    final public function getPreventQuery()
     {
         return $this->preventQuery;
     }

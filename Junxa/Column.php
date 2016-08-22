@@ -257,7 +257,7 @@ class Column
      */
     private $foreignKeyColumnName;
 
-    public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
+    final public function __construct($table, $name, $info, $colinfo, $dynamicAlias)
     {
         $this->table = $table;
         $this->name = $name;
@@ -348,7 +348,7 @@ class Column
     /**
      * @return Thaumatic\Junxa the database model this column is part of
      */
-    public function getDatabase()
+    final public function getDatabase()
     {
         return $this->table->getDatabase();
     }
@@ -359,7 +359,7 @@ class Column
      * @return Thaumatic\Junxa\Table actual class will be as defined by
      * Junxa::getTableClass()
      */
-    public function getTable()
+    final public function getTable()
     {
         return $this->table;
     }
@@ -367,7 +367,7 @@ class Column
     /**
      * @return string the column's name
      */
-    public function getName()
+    final public function getName()
     {
         return $this->name;
     }
@@ -378,7 +378,7 @@ class Column
      *
      * @return bool
      */
-    public function isDynamic()
+    final public function isDynamic()
     {
         return $this->dynamicAlias ? true : false;
     }
@@ -389,7 +389,7 @@ class Column
      *
      * @return Thaumatic\Junxa\Query\Element|null
      */
-    public function getDynamicAlias()
+    final public function getDynamicAlias()
     {
         return $this->dynamicAlias;
     }
@@ -407,7 +407,7 @@ class Column
      * @param Thaumatic\Junxa\Query\Element expression for default
      * @return $this
      */
-    public function setDynamicDefault(Element $default)
+    final public function setDynamicDefault(Element $default)
     {
         $this->dynamicDefault = $default;
         $this->table->setDynamicDefaultsPresent(true);
@@ -420,7 +420,7 @@ class Column
      *
      * @return Thaumatic\Junxa\Query\Element expression for default
      */
-    public function getDynamicDefault()
+    final public function getDynamicDefault()
     {
         return $this->dynamicDefault;
     }
@@ -428,7 +428,7 @@ class Column
     /**
      * @return int the column's Column::MYSQL_FLAG_* bitmask
      */
-    public function getFlags()
+    final public function getFlags()
     {
         return $this->flags;
     }
@@ -436,7 +436,7 @@ class Column
     /**
      * return array<string> the names of the flags set on the column
      */
-    public function getFlagNames()
+    final public function getFlagNames()
     {
         $out = [];
         foreach (self::MYSQL_FLAG_NAMES as $bit => $name) {
@@ -455,7 +455,7 @@ class Column
      * @param int Thaumatic\Junxa\Column::MYSQL_FLAG_*
      * @return bool
      */
-    public function getFlag($flag)
+    final public function getFlag($flag)
     {
         return (bool) ($this->flags & $flag);
     }
@@ -467,7 +467,7 @@ class Column
      * @param int Thaumatic\Junxa\Column::MYSQL_FLAG_*
      * @return bool
      */
-    public function getEachFlag($flags)
+    final public function getEachFlag($flags)
     {
         return ($this->flags & $flags) === $flags;
     }
@@ -475,7 +475,7 @@ class Column
     /**
      * @return int|null the column's length specification, if any
      */
-    public function getLength()
+    final public function getLength()
     {
         return $this->length;
     }
@@ -483,7 +483,7 @@ class Column
     /**
      * @return int|null the column's precision specification, if any
      */
-    public function getPrecision()
+    final public function getPrecision()
     {
         return $this->precision;
     }
@@ -491,7 +491,7 @@ class Column
     /**
      * @return string the column's type class
      */
-    public function getTypeClass()
+    final public function getTypeClass()
     {
         return $this->typeClass;
     }
@@ -499,7 +499,7 @@ class Column
     /**
      * @return string the column's type
      */
-    public function getType()
+    final public function getType()
     {
         return $this->type;
     }
@@ -507,7 +507,7 @@ class Column
     /**
      * @return string the column's full type specification
      */
-    public function getFullType()
+    final public function getFullType()
     {
         return $this->fullType;
     }
@@ -515,7 +515,7 @@ class Column
     /**
      * @return string|null the specification of the column's default value
      */
-    public function getDefault()
+    final public function getDefault()
     {
         return $this->default;
     }
@@ -523,7 +523,7 @@ class Column
     /**
      * @return bool whether the column has a default value
      */
-    public function hasDefault()
+    final public function hasDefault()
     {
         return $this->default !== null;
     }
@@ -531,7 +531,7 @@ class Column
     /**
      * @return mixed the PHP native version of the column's default value
      */
-    public function getDefaultValue()
+    final public function getDefaultValue()
     {
         return $this->defaultValue;
     }
@@ -540,7 +540,7 @@ class Column
      * @return array<string>|null the values this column can have, if an enum
      * or set
      */
-    public function getValues()
+    final public function getValues()
     {
         return $this->values;
     }
@@ -553,7 +553,7 @@ class Column
      * @param string the clause of the query that is being rendered
      * @return bool
      */
-    public function contextNull(QueryBuilder $query = null, $context = null)
+    final public function contextNull(QueryBuilder $query = null, $context = null)
     {
         if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
             return true;
@@ -574,7 +574,7 @@ class Column
      * @param string the clause of the query that is being rendered
      * @return mixed
      */
-    public function represent(
+    final public function represent(
         $value,
         QueryBuilder $query = null,
         $context = 'select'
@@ -645,7 +645,7 @@ class Column
      * @param mixed the database value to import
      * @return mixed
      */
-    public function import($value)
+    final public function import($value)
     {
         if (($value === null) && !$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
             return null;
@@ -701,7 +701,7 @@ class Column
     /**
      * @return string a summary of the column's type information
      */
-    public function getTypeSummary()
+    final public function getTypeSummary()
     {
         $out = $this->type;
         if (isset($this->length)) {
@@ -731,7 +731,7 @@ class Column
      * null (as with an inner/outer join)
      * @return $this
      */
-    public function tableScan(&$tables, &$null)
+    final public function tableScan(&$tables, &$null)
     {
         $tables[$this->table->getName()] = true;
         return $this;
@@ -746,7 +746,7 @@ class Column
      * @param Thaumatic\Junxa\Column the column we are rendering in context of
      * @param mixed the parent model of our current query
      */
-    public function express(
+    final public function express(
         QueryBuilder $query,
         $context,
         Column $column = null,
@@ -767,7 +767,7 @@ class Column
      *
      * @return string
      */
-    public function serialize()
+    final public function serialize()
     {
         $table = $this->table();
         return 'column:' . $table->getName() . "\0" . $this->getName();
@@ -780,7 +780,7 @@ class Column
      * @param bool whether to treat the column as demand-only
      * @return $this
      */
-    public function setDemandOnly($flag)
+    final public function setDemandOnly($flag)
     {
         $this->table()->setColumnDemandOnly($this->getName(), $flag);
         return $this;
@@ -793,7 +793,7 @@ class Column
      *
      * @return bool
      */
-    public function queryDemandOnly()
+    final public function queryDemandOnly()
     {
         return $this->table()->queryColumnDemandOnly($this->getName());
     }
@@ -802,7 +802,7 @@ class Column
      * @param int Thaumatic\Junxa\Column::OPTION_* bitmask for the column
      * @return $this
      */
-    public function setOptions($val)
+    final public function setOptions($val)
     {
         $this->options = $val;
         return $this;
@@ -811,7 +811,7 @@ class Column
     /**
      * @return int Thaumatic\Junxa\Column::OPTION_* bitmask for the column
      */
-    public function getOptions()
+    final public function getOptions()
     {
         return $this->options;
     }
@@ -823,7 +823,7 @@ class Column
      * @param bool whether we want the option on or off
      * @return $this
      */
-    public function setOption($option, $flag)
+    final public function setOption($option, $flag)
     {
         if ($flag) {
             $this->options |= $option;
@@ -840,7 +840,7 @@ class Column
      * @param int Thaumatic\Junxa\Column::OPTION_*
      * @return bool
      */
-    public function getOption($option)
+    final public function getOption($option)
     {
         return (bool) ($this->options & $option);
     }
@@ -851,7 +851,7 @@ class Column
      * @param int Thaumatic\Junxa\Column::OPTION_*
      * @return bool
      */
-    public function getEachOption($options)
+    final public function getEachOption($options)
     {
         return ($this->options & $options) === $options;
     }
@@ -895,7 +895,7 @@ class Column
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
      * parameter is invalid
      */
-    public function setForeignKeyTableName($val)
+    final public function setForeignKeyTableName($val)
     {
         if (!is_string($val)) {
             throw new JunxaConfigurationException(
@@ -913,7 +913,7 @@ class Column
      *
      * @return string|null
      */
-    public function getForeignKeyTableName()
+    final public function getForeignKeyTableName()
     {
         $this->determineForeignKey();
         return $this->foreignKeyTableName;
@@ -927,7 +927,7 @@ class Column
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
      * parameter is invalid
      */
-    public function setForeignKeyColumnName($val)
+    final public function setForeignKeyColumnName($val)
     {
         if (!is_string($val)) {
             throw new JunxaConfigurationException(
@@ -945,7 +945,7 @@ class Column
      *
      * @return string|null
      */
-    public function getForeignKeyColumnName()
+    final public function getForeignKeyColumnName()
     {
         $this->determineForeignKey();
         return $this->foreignKeyColumnName;
@@ -960,7 +960,7 @@ class Column
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if a
      * column requested does not exist
      */
-    public function getForeignColumn()
+    final public function getForeignColumn()
     {
         $this->determineForeignKey();
         return $this->foreignKey;
@@ -973,7 +973,7 @@ class Column
      * @param Thaumatic\Junxa\Column column model to check
      * @return bool
      */
-    public function isSame(Column $column)
+    final public function isSame(Column $column)
     {
         if ($column === $this) {
             return true;

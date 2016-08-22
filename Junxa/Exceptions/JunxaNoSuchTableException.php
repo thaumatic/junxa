@@ -10,13 +10,13 @@ class JunxaNoSuchTableException extends JunxaException
 
     private $tableName;
 
-    public function __construct($tableName)
+    final public function __construct($tableName)
     {
         $this->tableName = $tableName;
         parent::__construct('no such table: ' . $tableName);
     }
 
-    public function getTableName()
+    final public function getTableName()
     {
         return $this->tableName;
     }

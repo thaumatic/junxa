@@ -10,7 +10,7 @@ use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
  * replace, and update queries.  Mostly used internally; application developers
  * should not normally have to work with it explicitly.
  */
-class Assignment
+final class Assignment
 {
 
     /**

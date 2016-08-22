@@ -534,7 +534,7 @@ class Junxa
      * @param array<string:mixed> array of configuration parameters; see set
      * functions for each for details
      */
-    public static function make(array $def = null)
+    final public static function make(array $def = null)
     {
         return new self($def);
     }
@@ -666,7 +666,7 @@ class Junxa
      * database model's configuration is invalid
      * @return $this
      */
-    public function ready()
+    final public function ready()
     {
         $this->connect();
         $this->determineTables();
@@ -688,7 +688,7 @@ class Junxa
      * @param string hostname
      * @return $this
      */
-    public function setHostname($val)
+    final public function setHostname($val)
     {
         $this->hostname = $val;
         return $this;
@@ -699,7 +699,7 @@ class Junxa
      *
      * @return string
      */
-    public function getHostname()
+    final public function getHostname()
     {
         return $this->hostname;
     }
@@ -710,7 +710,7 @@ class Junxa
      * @param int port number
      * @return $this
      */
-    public function setPort($val)
+    final public function setPort($val)
     {
         $this->port = $val;
         return $this;
@@ -721,7 +721,7 @@ class Junxa
      *
      * @return int
      */
-    public function getPort()
+    final public function getPort()
     {
         return $this->port;
     }
@@ -732,7 +732,7 @@ class Junxa
      * @param string socket
      * @return $this
      */
-    public function setSocket($val)
+    final public function setSocket($val)
     {
         $this->socket = $val;
         return $this;
@@ -743,7 +743,7 @@ class Junxa
      *
      * @return string
      */
-    public function getSocket()
+    final public function getSocket()
     {
         return $this->socket;
     }
@@ -754,7 +754,7 @@ class Junxa
      * @param string database name
      * @return $this
      */
-    public function setDatabaseName($val)
+    final public function setDatabaseName($val)
     {
         $this->databaseName = $val;
         return $this;
@@ -765,7 +765,7 @@ class Junxa
      *
      * @return string
      */
-    public function getDatabaseName()
+    final public function getDatabaseName()
     {
         return $this->databaseName;
     }
@@ -776,7 +776,7 @@ class Junxa
      * @param string username
      * @return $this
      */
-    public function setUsername($val)
+    final public function setUsername($val)
     {
         $this->username = $val;
         return $this;
@@ -787,7 +787,7 @@ class Junxa
      *
      * @return string
      */
-    public function getUsername()
+    final public function getUsername()
     {
         return $this->username;
     }
@@ -798,7 +798,7 @@ class Junxa
      * @param string password
      * @return $this
      */
-    public function setPassword($val)
+    final public function setPassword($val)
     {
         $this->password = $val;
         return $this;
@@ -809,19 +809,9 @@ class Junxa
      *
      * @return string
      */
-    public function getPassword()
+    final public function getPassword()
     {
         return $this->password;
-    }
-
-    /**
-     * Standard magic method: when a Junxa object is deserialized, reconnect it to its database.
-     *
-     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
-     */
-    public function __wakeup()
-    {
-        $this->connect();
     }
 
     /**
@@ -830,7 +820,7 @@ class Junxa
      * @param int bitmask of Thaumatic\Junxa::DB_* values
      * @return $this
      */
-    public function setOptions($val)
+    final public function setOptions($val)
     {
         $this->options = $val;
         return $this;
@@ -841,7 +831,7 @@ class Junxa
      *
      * @return int bitmask of Thaumatic\Junxa::DB_* values
      */
-    public function getOptions($val)
+    final public function getOptions($val)
     {
         return $this->options;
     }
@@ -853,7 +843,7 @@ class Junxa
      * @param bool whether we want the option on or off
      * @return $this
      */
-    public function setOption($option, $flag)
+    final public function setOption($option, $flag)
     {
         if ($flag) {
             $this->options |= $option;
@@ -869,7 +859,7 @@ class Junxa
      * @param Thaumatic_Junxa::DB_* option to check
      * @return bool
      */
-    public function getOption($option)
+    final public function getOption($option)
     {
         return (bool) ($this->options & $option);
     }
@@ -881,7 +871,7 @@ class Junxa
      * @param string class name
      * @return $this
      */
-    public function setDefaultTableClass($val)
+    final public function setDefaultTableClass($val)
     {
         $this->defaultTableClass = $val;
         return $this;
@@ -893,7 +883,7 @@ class Junxa
      *
      * @return string
      */
-    public function getDefaultTableClass()
+    final public function getDefaultTableClass()
     {
         return $this->defaultTableClass;
     }
@@ -905,7 +895,7 @@ class Junxa
      * @param string class name
      * @return $this
      */
-    public function setDefaultColumnClass($val)
+    final public function setDefaultColumnClass($val)
     {
         $this->defaultColumnClass = $val;
         return $this;
@@ -917,7 +907,7 @@ class Junxa
      *
      * @return string
      */
-    public function getDefaultColumnClass()
+    final public function getDefaultColumnClass()
     {
         return $this->defaultColumnClass;
     }
@@ -929,7 +919,7 @@ class Junxa
      * @param string class name
      * @return $this
      */
-    public function setDefaultRowClass($val)
+    final public function setDefaultRowClass($val)
     {
         $this->defaultRowClass = $val;
         return $this;
@@ -941,7 +931,7 @@ class Junxa
      *
      * @return string
      */
-    public function getDefaultRowClass()
+    final public function getDefaultRowClass()
     {
         return $this->defaultRowClass;
     }
@@ -955,7 +945,7 @@ class Junxa
      * @param string namespace prefix, without trailing backslash
      * @return $this
      */
-    public function setAutoTableClassNamespace($val)
+    final public function setAutoTableClassNamespace($val)
     {
         $this->autoTableClassNamespace = $val;
         return $this;
@@ -966,7 +956,7 @@ class Junxa
      *
      * @return string
      */
-    public function getAutoTableClassNamespace($val)
+    final public function getAutoTableClassNamespace($val)
     {
         return $this->autoTableClassNamespace;
     }
@@ -980,7 +970,7 @@ class Junxa
      * @param string namespace prefix, without trailing backslash
      * @return $this
      */
-    public function setAutoColumnClassNamespace($val)
+    final public function setAutoColumnClassNamespace($val)
     {
         $this->autoColumnClassNamespace = $val;
         return $this;
@@ -991,7 +981,7 @@ class Junxa
      *
      * @return string
      */
-    public function getAutoColumnClassNamespace($val)
+    final public function getAutoColumnClassNamespace($val)
     {
         return $this->autoColumnClassNamespace;
     }
@@ -1005,7 +995,7 @@ class Junxa
      * @param string namespace prefix, without trailing backslash
      * @return $this
      */
-    public function setAutoRowClassNamespace($val)
+    final public function setAutoRowClassNamespace($val)
     {
         $this->autoRowClassNamespace = $val;
         return $this;
@@ -1016,7 +1006,7 @@ class Junxa
      *
      * @return string
      */
-    public function getAutoRowClassNamespace($val)
+    final public function getAutoRowClassNamespace($val)
     {
         return $this->autoRowClassNamespace;
     }
@@ -1031,7 +1021,7 @@ class Junxa
      * App\Row\Thing\Widget
      * @return $this
      */
-    public function setIndividualRowClassColumns(array $val)
+    final public function setIndividualRowClassColumns(array $val)
     {
         $this->individualRowClassColumns = $val;
         return $this;
@@ -1042,7 +1032,7 @@ class Junxa
      * combination with an autoRowClassNamespace, class names for individual
      * rows can be sourced from
      */
-    public function getIndividualRowClassColumns()
+    final public function getIndividualRowClassColumns()
     {
         return $this->individualRowClassColumns;
     }
@@ -1057,7 +1047,7 @@ class Junxa
      * @param string column name
      * @return $this
      */
-    public function setIndividualRowClassColumn($table, $column)
+    final public function setIndividualRowClassColumn($table, $column)
     {
         $this->individualRowClassColumns[$table] = $column;
         return $this;
@@ -1069,7 +1059,7 @@ class Junxa
      * specified table by {@see setIndividualRowClassColumns} and/or
      * {@see setIndividualRowClassColumn}, if any
      */
-    public function getIndividualRowClassColumn($table)
+    final public function getIndividualRowClassColumn($table)
     {
         return
             isset($this->individualRowClassColumns[$table])
@@ -1086,7 +1076,7 @@ class Junxa
      * @param array<string:string> map of regular expressions to class names
      * @return $this
      */
-    public function setRegexpTableClasses(array $val)
+    final public function setRegexpTableClasses(array $val)
     {
         $this->regexpTableClasses = $val;
         return $this;
@@ -1097,7 +1087,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getRegexpTableClasses()
+    final public function getRegexpTableClasses()
     {
         return $this->regexpTableClasses;
     }
@@ -1112,7 +1102,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setRegexpTableClass($pattern, $className)
+    final public function setRegexpTableClass($pattern, $className)
     {
         $this->regexpTableClasses[$pattern] = $className;
         return $this;
@@ -1124,7 +1114,7 @@ class Junxa
      * pattern by {@see setRegexpTableClasses} and/or
      * {@see setRegexpTableClass}, if any
      */
-    public function getRegexpTableClass($pattern)
+    final public function getRegexpTableClass($pattern)
     {
         return
             isset($this->regexpTableClasses[$pattern])
@@ -1141,7 +1131,7 @@ class Junxa
      * @param array<string:string> map of regular expressions to class names
      * @return $this
      */
-    public function setRegexpColumnClasses(array $val)
+    final public function setRegexpColumnClasses(array $val)
     {
         $this->regexpColumnClasses = $val;
         return $this;
@@ -1152,7 +1142,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getRegexpColumnClasses()
+    final public function getRegexpColumnClasses()
     {
         return $this->regexpColumnClasses;
     }
@@ -1167,7 +1157,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setRegexpColumnClass($pattern, $className)
+    final public function setRegexpColumnClass($pattern, $className)
     {
         $this->regexpColumnClasses[$pattern] = $className;
         return $this;
@@ -1179,7 +1169,7 @@ class Junxa
      * pattern by {@see setRegexpColumnClasses} and/or
      * {@see setRegexpColumnClass}, if any
      */
-    public function getRegexpColumnClass($pattern)
+    final public function getRegexpColumnClass($pattern)
     {
         return
             isset($this->regexpColumnClasses[$pattern])
@@ -1196,7 +1186,7 @@ class Junxa
      * @param array<string:string> map of regular expressions to class names
      * @return $this
      */
-    public function setRegexpRowClasses(array $val)
+    final public function setRegexpRowClasses(array $val)
     {
         $this->regexpRowClasses = $val;
         return $this;
@@ -1207,7 +1197,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getRegexpRowClasses()
+    final public function getRegexpRowClasses()
     {
         return $this->regexpRowClasses;
     }
@@ -1222,7 +1212,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setRegexpRowClass($pattern, $className)
+    final public function setRegexpRowClass($pattern, $className)
     {
         $this->regexpRowClasses[$pattern] = $className;
         return $this;
@@ -1234,7 +1224,7 @@ class Junxa
      * pattern by {@see setRegexpRowClasses} and/or
      * {@see setRegexpRowClass}, if any
      */
-    public function getRegexpRowClass($pattern)
+    final public function getRegexpRowClass($pattern)
     {
         return
             isset($this->regexpRowClasses[$pattern])
@@ -1250,7 +1240,7 @@ class Junxa
      * @param array<string:string> map of table names to class names
      * @return $this
      */
-    public function setTableClasses(array $val)
+    final public function setTableClasses(array $val)
     {
         $this->tableClasses = $val;
         return $this;
@@ -1261,7 +1251,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getTableClasses()
+    final public function getTableClasses()
     {
         return $this->tableClasses;
     }
@@ -1275,7 +1265,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setTableClass($tableName, $className)
+    final public function setTableClass($tableName, $className)
     {
         $this->tableClasses[$tableName] = $className;
         return $this;
@@ -1286,7 +1276,7 @@ class Junxa
      * @return string|null the table class defined for the specified table by
      * {@see setTableClasses} and/or {@see setTableClass}, if any
      */
-    public function getTableClass($tableName)
+    final public function getTableClass($tableName)
     {
         return
             isset($this->tableClasses[$tableName])
@@ -1302,7 +1292,7 @@ class Junxa
      * @param array<string:string> map of column names to class names
      * @return $this
      */
-    public function setColumnClasses(array $val)
+    final public function setColumnClasses(array $val)
     {
         $this->columnClasses = $val;
         return $this;
@@ -1313,7 +1303,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getColumnClasses()
+    final public function getColumnClasses()
     {
         return $this->columnClasses;
     }
@@ -1327,7 +1317,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setColumnClass($columnName, $className)
+    final public function setColumnClass($columnName, $className)
     {
         $this->columnClasses[$columnName] = $className;
         return $this;
@@ -1339,7 +1329,7 @@ class Junxa
      * column name by {@see setColumnClasses} and/or {@see setColumnClass},
      * if any
      */
-    public function getColumnClass($columnName)
+    final public function getColumnClass($columnName)
     {
         return
             isset($this->columnClasses[$columnName])
@@ -1355,7 +1345,7 @@ class Junxa
      * @param array<string:string> map of table names to class names
      * @return $this
      */
-    public function setRowClasses(array $val)
+    final public function setRowClasses(array $val)
     {
         $this->rowClasses = $val;
         return $this;
@@ -1366,7 +1356,7 @@ class Junxa
      *
      * @return array<string:string>
      */
-    public function getRowClasses()
+    final public function getRowClasses()
     {
         return $this->rowClasses;
     }
@@ -1380,7 +1370,7 @@ class Junxa
      * @param string the class name
      * @return $this
      */
-    public function setRowClass($tableName, $className)
+    final public function setRowClass($tableName, $className)
     {
         $this->rowClasses[$tableName] = $className;
         return $this;
@@ -1392,7 +1382,7 @@ class Junxa
      * table by {@see setRowClasses} and/or {@see setRowClass},
      * if any
      */
-    public function getRowClass($tableName)
+    final public function getRowClass($tableName)
     {
         return
             isset($this->rowClasses[$tableName])
@@ -1409,7 +1399,7 @@ class Junxa
      * @param string foreign key suffix
      * @return $this
      */
-    public function setForeignKeySuffix($val)
+    final public function setForeignKeySuffix($val)
     {
         $this->foreignKeySuffix = $val;
         $this->foreignKeySuffixPattern =
@@ -1429,7 +1419,7 @@ class Junxa
      *
      * @return string|null
      */
-    public function getForeignKeySuffix()
+    final public function getForeignKeySuffix()
     {
         return $this->foreignKeySuffix;
     }
@@ -1442,7 +1432,7 @@ class Junxa
      * @param string column name
      * @return string|null
      */
-    public function getForeignKeySuffixMatch($columnName)
+    final public function getForeignKeySuffixMatch($columnName)
     {
         if ($this->foreignKeySuffixPattern === null) {
             return null;
@@ -1460,7 +1450,7 @@ class Junxa
      * @param array<string:string> plural to singular map
      * @return $this
      */
-    public function setPluralToSingularMap(array $val)
+    final public function setPluralToSingularMap(array $val)
     {
         $this->pluralToSingularMap = $val;
         return $this;
@@ -1472,7 +1462,7 @@ class Junxa
      *
      * @return array<string:string> plural to singular map
      */
-    public function getPluralToSingularMap()
+    final public function getPluralToSingularMap()
     {
         return $this->pluralToSingularMap;
     }
@@ -1484,7 +1474,7 @@ class Junxa
      * @param string singular
      * @return $this
      */
-    public function setPluralToSingularMapping($plural, $singular)
+    final public function setPluralToSingularMapping($plural, $singular)
     {
         $this->pluralToSingularMap[$plural] = $singular;
         return $this;
@@ -1497,7 +1487,7 @@ class Junxa
      * @param string plural
      * @return string|null
      */
-    public function getPluralToSingularMapping($plural)
+    final public function getPluralToSingularMapping($plural)
     {
         return
             isset($this->pluralToSingularMap[$plural])
@@ -1513,7 +1503,7 @@ class Junxa
      * @param string locale
      * @return $this
      */
-    public function setInflectionLocale($val)
+    final public function setInflectionLocale($val)
     {
         $this->inflectionLocale = $val;
         $this->inflector = null;
@@ -1525,7 +1515,7 @@ class Junxa
      *
      * @return string
      */
-    public function getInflectionLocale()
+    final public function getInflectionLocale()
     {
         return $this->inflectionLocale;
     }
@@ -1551,7 +1541,7 @@ class Junxa
      * @param string plural noun
      * @return string singular noun
      */
-    public function getSingularFromPlural($plural)
+    final public function getSingularFromPlural($plural)
     {
         $singular = $this->getPluralToSingularMapping($plural);
         if ($singular !== null) {
@@ -1569,7 +1559,7 @@ class Junxa
      * @param string property name
      * @return Thaumatic\Junxa\Table|null
      */
-    public function getChildTableFromPropertyName($propertyName)
+    final public function getChildTableFromPropertyName($propertyName)
     {
         if ($this->getOption(self::DB_TABLES_ARE_PLURALS)) {
             if ($this->tableExists($propertyName)) {
@@ -1594,7 +1584,7 @@ class Junxa
      * Junxa instance (will be instanced on demand)
      * @return $this
      */
-    public function setChangeHandler($val)
+    final public function setChangeHandler($val)
     {
         $this->changeHandler = $val;
         return $this;
@@ -1605,7 +1595,7 @@ class Junxa
      *
      * @return Thaumatic\Junxa|array
      */
-    public function getChangeHandler()
+    final public function getChangeHandler()
     {
         return $this->changeHandler;
     }
@@ -1618,7 +1608,7 @@ class Junxa
      * @throws Thaumatic\Junxa\Exception\JunxaConfigurationException if the
      * change handler configuration is invalid
      */
-    public function getChangeHandlerObject()
+    final public function getChangeHandlerObject()
     {
         if ($this->changeHandlerObject === null) {
             if ($this->changeHandler === null) {
@@ -1642,7 +1632,7 @@ class Junxa
      * @return $this
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
      */
-    public function connect()
+    final public function connect()
     {
         if (!$this->databaseName) {
             throw new JunxaConfigurationException('database to connect to has not been specified');
@@ -1668,7 +1658,7 @@ class Junxa
      * @param string the table name
      * @return string
      */
-    public function tableClass($table)
+    final public function tableClass($table)
     {
         if (!empty($this->tableClasses[$table])) {
             return $this->tableClasses[$table];
@@ -1696,7 +1686,7 @@ class Junxa
      * @param string the column name
      * @return string
      */
-    public function columnClass($column)
+    final public function columnClass($column)
     {
         if (!empty($this->columnClasses[$column])) {
             return $this->columnClasses[$column];
@@ -1727,7 +1717,7 @@ class Junxa
      * available
      * @return string
      */
-    public function rowClass($table, array $rowData = null)
+    final public function rowClass($table, array $rowData = null)
     {
         if (!empty($this->rowClasses[$table])) {
             return $this->rowClasses[$table];
@@ -1763,7 +1753,7 @@ class Junxa
      *
      * @return array<string>
      */
-    public function tables()
+    final public function tables()
     {
         return $this->tables;
     }
@@ -1774,7 +1764,7 @@ class Junxa
      * @param string the table name
      * @return bool
      */
-    public function tableExists($table)
+    final public function tableExists($table)
     {
         return in_array($table, $this->tables);
     }
@@ -1786,7 +1776,7 @@ class Junxa
      * @return Thaumatic\Junxa\Table
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if the table does not exist
      */
-    public function table($name)
+    final public function table($name)
     {
         if (empty($this->tableModels[$name])) {
             if (!in_array($name, $this->tables)) {
@@ -1810,7 +1800,7 @@ class Junxa
      * @return $this
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if a table specified does not exist
      */
-    public function loadTables()
+    final public function loadTables()
     {
         $baseTables = func_get_args();
         switch (count($baseTables)) {
@@ -1860,7 +1850,10 @@ class Junxa
         return $this;
     }
 
-    public function reportQueryStatistics()
+    /**
+     * @return string HTML-formatted report on the database's query statistics
+     */
+    final public function reportQueryStatistics()
     {
         $stats = $this->queryStatistics;
         arsort($stats);
@@ -1888,7 +1881,7 @@ class Junxa
         return $out;
     }
 
-    public function query($query = null, $mode = 0, $emptyOkay = false)
+    final public function query($query = null, $mode = 0, $emptyOkay = false)
     {
         if ($query === null) {
             return new QueryBuilder($this);
@@ -2185,7 +2178,7 @@ class Junxa
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
      * any of the table names are invalid identifiers
      */
-    public function determineTables()
+    final public function determineTables()
     {
         $this->tables = [];
         $res = $this->link->query('SHOW TABLES');
@@ -2200,7 +2193,7 @@ class Junxa
     /**
      * @return numeric the number of rows affected by the last query
      */
-    public function getAffectedRows()
+    final public function getAffectedRows()
     {
         return $this->link->affected_rows;
     }
@@ -2212,7 +2205,7 @@ class Junxa
      * @return Thaumatic\Junxa\Table
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if the table does not exist
      */
-    public function __get($name)
+    final public function __get($name)
     {
         return $this->table($name);
     }
@@ -2225,7 +2218,7 @@ class Junxa
      * @param mixed property value
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException
      */
-    public function __set($name, $value)
+    final public function __set($name, $value)
     {
         throw new JunxaConfigurationException('cannot set property ' . $name);
     }
@@ -2235,7 +2228,7 @@ class Junxa
      *
      * @var int Thaumatic\Junxa::RESULT_*
      */
-    public function getQueryStatus()
+    final public function getQueryStatus()
     {
         return $this->queryStatus;
     }
@@ -2245,9 +2238,19 @@ class Junxa
      *
      * @var string
      */
-    public function getQueryMessage()
+    final public function getQueryMessage()
     {
         return $this->queryMessage;
+    }
+
+    /**
+     * Retrieves the last insert ID from a database query.
+     *
+     * @return numeric
+     */
+    final public function getInsertId()
+    {
+        return $this->insertId;
     }
 
     /**
@@ -2257,7 +2260,7 @@ class Junxa
      *
      * @return array<string:int>
      */
-    public function getQueryStatistics()
+    final public function getQueryStatistics()
     {
         return $this->queryStatistics;
     }
@@ -2269,7 +2272,7 @@ class Junxa
      *
      * @return array<string:int>
      */
-    public function getOverallQueryStatisticsDynamic()
+    final public function getOverallQueryStatisticsDynamic()
     {
         return self::$overallQueryStatistics;
     }
@@ -2281,7 +2284,7 @@ class Junxa
      *
      * @return array<string:int>
      */
-    public static function getOverallQueryStatistics()
+    final public static function getOverallQueryStatistics()
     {
         return self::$overallQueryStatistics;
     }
@@ -2292,7 +2295,7 @@ class Junxa
      *
      * @return Symfony\Component\EventDispatcher\EventDispatcher
      */
-    public function getEventDispatcher()
+    final public function getEventDispatcher()
     {
         if (!$this->eventDispatcher) {
             $this->eventDispatcher = new EventDispatcher;
@@ -2306,19 +2309,9 @@ class Junxa
      *
      * @return bool
      */
-    public function isEventDispatcherLoaded()
+    final public function isEventDispatcherLoaded()
     {
         return $this->eventDispatcher !== null;
-    }
-
-    /**
-     * Retrieves the last insert ID from a database query.
-     *
-     * @return numeric
-     */
-    public function getInsertId()
-    {
-        return $this->insertId;
     }
 
     /**
@@ -2331,7 +2324,7 @@ class Junxa
      * being prepared for
      * @param Thaumatic\Junxa\Query\Builder the parent query, if any
      */
-    public function resolve($item, QueryBuilder $query, $context, $column, $parent)
+    final public function resolve($item, QueryBuilder $query, $context, $column, $parent)
     {
         if (is_array($item)) {
             $elem = [];
@@ -2368,7 +2361,7 @@ class Junxa
      * @param mixed the data to escape
      * @return string|numeric
      */
-    public function quote($data)
+    final public function quote($data)
     {
         if (!isset($data)) {
             return 'NULL';
@@ -2405,7 +2398,7 @@ class Junxa
      * @param string the text to escape
      * @return string
      */
-    public function escapeString($text)
+    final public function escapeString($text)
     {
         return $this->link->real_escape_string($text);
     }
@@ -2417,7 +2410,7 @@ class Junxa
      * @param Thaumatic\Junxa the database to check
      * @return bool
      */
-    public function isSame($database)
+    final public function isSame($database)
     {
         if ($database === $this) {
             return true;
@@ -2438,6 +2431,16 @@ class Junxa
     }
 
     /**
+     * Standard magic method: when a Junxa object is deserialized, reconnect it to its database.
+     *
+     * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the object's configuration is invalid
+     */
+    public function __wakeup()
+    {
+        $this->connect();
+    }
+
+    /**
      * Derive (lossily) text that can be present in the PHP class namespace
      * from specified text.
      *
@@ -2452,7 +2455,7 @@ class Junxa
      * @param string text to convert
      * @return string
      */
-    public static function toNamespaceElement($text)
+    final public static function toNamespaceElement($text)
     {
         $text = preg_replace('/\W+/', '_', $text);
         $text = self::underscoresToPascalCase($text);
@@ -2468,7 +2471,7 @@ class Junxa
      * @param string text to convert
      * @return string
      */
-    public static function underscoresToPascalCase($text)
+    final public static function underscoresToPascalCase($text)
     {
         return ucfirst(
             preg_replace_callback(
@@ -2499,7 +2502,7 @@ class Junxa
      * @param int the result code to check
      * @return bool
      */
-    public static function OK($code)
+    final public static function OK($code)
     {
         return $code > 0;
     }
@@ -2519,7 +2522,7 @@ class Junxa
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
      * Junxa cannot represent the specified identifier
      */
-    public static function validateIdentifier($identifier)
+    final public static function validateIdentifier($identifier)
     {
         if ($identifier[0] === 'j' && preg_match('/^junxaInternal/', $identifier)) {
             throw new JunxaInvalidIdentifier($identifier);

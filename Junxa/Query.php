@@ -14,7 +14,7 @@ use Thaumatic\Junxa\Row;
  * fluent interface methods supported by the query builder.  All
  * public methods are static factory methods.
  */
-class Query
+final class Query
 {
 
     private static function processArgs(array $args)

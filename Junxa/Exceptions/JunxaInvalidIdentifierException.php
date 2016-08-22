@@ -11,7 +11,7 @@ class JunxaInvalidIdentifierException extends JunxaException
 
     private $identifier;
 
-    public function __construct($identifier)
+    final public function __construct($identifier)
     {
         $this->identifier = $identifier;
         if (preg_match('/^junxaInternal/', $this->identifier)) {
@@ -25,7 +25,7 @@ class JunxaInvalidIdentifierException extends JunxaException
         parent::__construct($msg);
     }
 
-    public function getIdentifier()
+    final public function getIdentifier()
     {
         return $this->identifier;
     }

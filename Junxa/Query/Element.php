@@ -16,7 +16,7 @@ use Thaumatic\Junxa\Table;
  * application developers should not normally need to interact with it
  * explicitly.
  */
-class Element
+final class Element
 {
 
     private $style;

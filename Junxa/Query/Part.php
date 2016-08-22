@@ -11,7 +11,7 @@ use Thaumatic\Junxa\Query\Element;
  * Used internally by part of the fluent interface to
  * Thaumatic\Junxa\Query\Builder to provide contextualized interaction.
  */
-class Part
+final class Part
 {
 
     private $query;

@@ -10,13 +10,13 @@ class JunxaNoSuchColumnException extends JunxaException
 
     private $columnName;
 
-    public function __construct($columnName)
+    final public function __construct($columnName)
     {
         $this->columnName = $columnName;
         parent::__construct('no such column: ' . $columnName);
     }
 
-    public function getColumnName()
+    final public function getColumnName()
     {
         return $this->columnName;
     }

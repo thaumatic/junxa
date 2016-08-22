@@ -5,7 +5,7 @@ namespace Thaumatic\Junxa;
 /**
  * Models a column-linked portion of a database key.
  */
-class KeyPart
+final class KeyPart
 {
 
     /**

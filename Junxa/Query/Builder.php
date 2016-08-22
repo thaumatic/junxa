@@ -16,7 +16,7 @@ use Thaumatic\Junxa\Table;
  * Models a database query.  Can accept either a full query specification in
  * array form or be configured via fluent interface.
  */
-class Builder
+final class Builder
 {
 
     /**

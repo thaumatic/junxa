@@ -17,7 +17,7 @@ class JunxaReferentialIntegrityException extends JunxaException
     private $foreignColumn;
     private $missingValue;
 
-    public function __construct(
+    final public function __construct(
         Table $localTable,
         Column $localColumn,
         Table $foreignTable,
@@ -43,27 +43,27 @@ class JunxaReferentialIntegrityException extends JunxaException
         );
     }
 
-    public function getLocalTable()
+    final public function getLocalTable()
     {
         return $this->localTable;
     }
 
-    public function getLocalColumn()
+    final public function getLocalColumn()
     {
         return $this->localColumn;
     }
 
-    public function getForeignTable()
+    final public function getForeignTable()
     {
         return $this->foreignTable;
     }
 
-    public function getForeignColumn()
+    final public function getForeignColumn()
     {
         return $this->foreignColumn;
     }
 
-    public function getMissingValue()
+    final public function getMissingValue()
     {
         return $this->missingValue;
     }

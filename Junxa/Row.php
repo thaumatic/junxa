@@ -145,7 +145,7 @@ class Row
      * @param array<string:mixed> data mapping for this row; null for a new,
      * empty row model without a corresponding database row yet
      */
-    public function __construct(Table $table, array $data = null)
+    final public function __construct(Table $table, array $data = null)
     {
         $this->junxaInternalTable = $table;
         $this->junxaInternalData = $data;
@@ -173,7 +173,7 @@ class Row
      * @param string field name
      * @return ix
      */
-    public function setField($name, $value)
+    final public function setField($name, $value)
     {
         if (property_exists($this, $name)) {
             $this->$name = $value;
@@ -201,7 +201,7 @@ class Row
      * demand-loaded column is requested and this row cannot be identified by
      * primary key such that values can be retrieved for it
      */
-    public function getField($name)
+    final public function getField($name)
     {
         if (property_exists($this, $name)) {
             return $this->$name;
@@ -228,7 +228,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified field does not exist
      */
-    public function __set($name, $value)
+    final public function __set($name, $value)
     {
         if ($this->junxaInternalTable->hasColumn($name)) {
             if ($this->junxaInternalTable->$name->isDynamic()) {
@@ -254,7 +254,7 @@ class Row
      * demand-loaded column is requested and this row cannot be identified by
      * primary key such that values can be retrieved for it
      */
-    public function __get($name)
+    final public function __get($name)
     {
         if (!$this->junxaInternalTable->hasColumn($name)) {
             $db = $this->junxaInternalTable->getDatabase();
@@ -290,7 +290,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaConfigurationException if the
      * table we are attached to has no primary key
      */
-    public function getCacheKey()
+    final public function getCacheKey()
     {
         switch (count($this->junxaInternalTable->primary)) {
             case 0:
@@ -314,7 +314,7 @@ class Row
     /**
      * @return Thaumatic\Junxa the database model this row is attached to
      */
-    public function getDatabase()
+    final public function getDatabase()
     {
         return $this->junxaInternalTable->getDatabase();
     }
@@ -322,7 +322,7 @@ class Row
     /**
      * @return Thaumatic\Junxa\Table the table model this row is attached to
      */
-    public function getTable()
+    final public function getTable()
     {
         return $this->junxaInternalTable;
     }
@@ -336,7 +336,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumn($column)
+    final public function getColumn($column)
     {
         return $this->junxaInternalTable->$column;
     }
@@ -344,7 +344,7 @@ class Row
     /**
      * @return array<string> the list of column names for this row's table
      */
-    public function getColumns()
+    final public function getColumns()
     {
         return $this->junxaInternalTable->getColumns();
     }
@@ -355,7 +355,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnType($column)
+    final public function getColumnType($column)
     {
         return $this->getColumn($column)->getType();
     }
@@ -366,7 +366,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnFullType($column)
+    final public function getColumnFullType($column)
     {
         return $this->getColumn($column)->getFullType();
     }
@@ -377,7 +377,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnTypeClass($column)
+    final public function getColumnTypeClass($column)
     {
         return $this->getColumn($column)->getTypeClass();
     }
@@ -388,7 +388,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnLength($column)
+    final public function getColumnLength($column)
     {
         return $this->getColumn($column)->getLength();
     }
@@ -399,7 +399,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnPrecision($column)
+    final public function getColumnPrecision($column)
     {
         return $this->getColumn($column)->getPrecision();
     }
@@ -411,7 +411,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnFlags($column)
+    final public function getColumnFlags($column)
     {
         return $this->getColumn($column)->getFlags();
     }
@@ -422,7 +422,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnFlagNames($column)
+    final public function getColumnFlagNames($column)
     {
         return $this->getColumn($column)->getFlagNames();
     }
@@ -436,7 +436,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnFlag($column, $flag)
+    final public function getColumnFlag($column, $flag)
     {
         return $this->getColumn($column)->getFlag($flag);
     }
@@ -449,7 +449,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnEachFlag($column, $flags)
+    final public function getColumnEachFlag($column, $flags)
     {
         return $this->getColumn($column)->getEachFlag($flags);
     }
@@ -461,7 +461,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnValues($column)
+    final public function getColumnValues($column)
     {
         return $this->getColumn($column)->getValues();
     }
@@ -473,7 +473,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnOptions($column)
+    final public function getColumnOptions($column)
     {
         return $this->getColumn($column)->getOptions();
     }
@@ -487,7 +487,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnOption($column, $option)
+    final public function getColumnOption($column, $option)
     {
         return $this->getColumn($column)->getOption($option);
     }
@@ -500,7 +500,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchColumnException if the
      * specified column does not exist
      */
-    public function getColumnEachOption($column, $options)
+    final public function getColumnEachOption($column, $options)
     {
         return $this->getColumn($column)->getEachOption($options);
     }
@@ -517,7 +517,7 @@ class Row
      * row cannot be identified by primary key such that values can be
      * retrieved for it
      */
-    public function getStoredValue($column)
+    final public function getStoredValue($column)
     {
         $cond = $this->getMatchCondition();
         if (!$cond) {
@@ -551,7 +551,7 @@ class Row
      * if the column name cannot be found in the table's list of demand-loaded
      * columns
      */
-    public function loadStoredValue($column)
+    final public function loadStoredValue($column)
     {
         if (!$this->junxaInternalTable->getColumnDemandLoad($column)) {
             $columnModel = $this->getColumn($column);
@@ -583,7 +583,7 @@ class Row
      * demand-loaded column is requested and this row cannot be identified by
      * primary key such that values can be retrieved for it
      */
-    public function getValue($column)
+    final public function getValue($column)
     {
         if (!property_exists($this, $column)) {
             if (!$this->junxaInternalTable->hasColumn($name)) {
@@ -605,7 +605,7 @@ class Row
      *
      * @return $this
      */
-    public function demandAll()
+    final public function demandAll()
     {
         foreach ($this->junxaInternalTable->getDemandLoadColumns() as $column) {
             $this->loadStoredValue($column);
@@ -624,7 +624,7 @@ class Row
      * the previously cached row if one was present in the cache and should
      * be referenced instead
      */
-    public function checkCaching($uncache = false)
+    final public function checkCaching($uncache = false)
     {
         $out = $this;
         if ($this->junxaInternalTable->getDatabase()->getOption(Junxa::DB_CACHE_TABLE_ROWS)
@@ -654,7 +654,7 @@ class Row
      * @return Thaumatic\Junxa\Query\Element|null the match condition, or null
      * if one cannot be constructed
      */
-    public function getMatchCondition()
+    final public function getMatchCondition()
     {
         $key = $this->junxaInternalTable->getPrimaryKey();
         if (!$key) {
@@ -692,7 +692,7 @@ class Row
      * rows are found; Thaumatic\Junxa::RESULT_FIND_EXCESS if multiple
      * matching rows are found and the first one is loaded
      */
-    public function find($queryDef = [])
+    final public function find($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -773,7 +773,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function refresh($needCurrent = false)
+    final public function refresh($needCurrent = false)
     {
         $cond = $this->getMatchCondition();
         if (!$cond) {
@@ -839,7 +839,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function update($queryDef = [])
+    final public function update($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -922,7 +922,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function insert($queryDef = [])
+    final public function insert($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -1019,7 +1019,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function merge($queryDef = [])
+    final public function merge($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -1111,7 +1111,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if the
      * refresh query executes but returns no data
      */
-    public function replace($queryDef = [])
+    final public function replace($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -1175,7 +1175,7 @@ class Row
      * method
      * @return int Thaumatic\Junxa::RESULT_* value for operation
      */
-    public function save($queryDef = [])
+    final public function save($queryDef = [])
     {
         return $this->junxaInternalData ? $this->update($queryDef) : $this->insert($queryDef);
     }
@@ -1191,7 +1191,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException if the
      * return value from save() isn't okay according to {see Junxa::OK()}.
      */
-    public function performSave($queryDef = [])
+    final public function performSave($queryDef = [])
     {
         $result = $this->save($queryDef);
         if (!Junxa::OK($result)) {
@@ -1212,7 +1212,7 @@ class Row
      * in the database; a new row model with no corresponding database row
      * is always considered changed
      */
-    public function hasChanged()
+    final public function hasChanged()
     {
         if (!$this->junxaInternalData) {
             return true;
@@ -1234,7 +1234,7 @@ class Row
      * @return array<string> the names of fields that have been changed in
      * this row model
      */
-    public function getChangedFields()
+    final public function getChangedFields()
     {
         $out = [];
         if ($this->junxaInternalData) {
@@ -1282,7 +1282,7 @@ class Row
      * row is already marked deleted and the working query definition does
      * not have Thaumatic\Junxa\Query\Builder::OPTION_REDELETE_OKAY enabled
      */
-    public function delete($queryDef = [])
+    final public function delete($queryDef = [])
     {
         if ($queryDef) {
             if (is_array($queryDef)) {
@@ -1333,7 +1333,7 @@ class Row
      * @return bool whether this row has been deleted via the delete() call on
      * itself
      */
-    public function getDeleted()
+    final public function getDeleted()
     {
         return $this->junxaInternalDeleted;
     }
@@ -1342,7 +1342,7 @@ class Row
      * @return array<string> the column names of of this row's table's primary
      * key
      */
-    public function getPrimaryKey()
+    final public function getPrimaryKey()
     {
         return $this->junxaInternalTable->getPrimaryKey();
     }
@@ -1351,7 +1351,7 @@ class Row
      * @return bool whether any of the primary key columns for this row's table
      * are not set on this row
      */
-    public function getPrimaryKeyUnset()
+    final public function getPrimaryKeyUnset()
     {
         foreach ($this->junxaInternalTable->getPrimaryKey() as $column) {
             if (!isset($this->$column)) {
@@ -1379,7 +1379,7 @@ class Row
      * if there is no row in the foreign table corresponding to a non-null
      * value in the local field
      */
-    public function getParentRow($columnName)
+    final public function getParentRow($columnName)
     {
         $column = $this->junxaInternalTable->$columnName;
         $localValue = $this->$columnName;
@@ -1483,7 +1483,7 @@ class Row
      * specified table has no relationships with this table such that its rows
      * would be child rows of this table's rows
      */
-    public function getChildRows(Table $childTable, $queryDef = [])
+    final public function getChildRows(Table $childTable, $queryDef = [])
     {
         $field = $this->junxaInternalTable->getAutoIncrementPrimary();
         if (!$field) {
@@ -1564,7 +1564,7 @@ class Row
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException if the
      * named table does not exist
      */
-    public function getChildRowsByTableName($tableName, $queryDef = [])
+    final public function getChildRowsByTableName($tableName, $queryDef = [])
     {
         return $this->getChildRows($this->getDatabase()->$tableName, $queryDef);
     }
