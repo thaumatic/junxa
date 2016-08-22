@@ -389,37 +389,44 @@ class Junxa
     private $autoTableClassNamespace;
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
-     * for columns by name
+     * @var array<string:string> map of table names to the columns that, in
+     * combination with an autoRowClassNamespace, class names for individual
+     * rows can be sourced from
+     */
+    private $individualRowClassColumns = [];
+
+    /**
+     * @var array<string:string> map of classes to use as models for columns
+     * by name
      */
     private $columnClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
-     * for tables by name
+     * @var array<string:string> map of classes to use as models for tables
+     * by name
      */
     private $tableClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
-     * for rows by name
+     * @var array<string:string> map of classes to use as models for rows by
+     * name
      */
     private $rowClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
-     * for columns by regexp pattern
+     * @var array<string:string> map of classes to use as models for columns
+     * by regexp pattern
      */
     private $regexpColumnClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
-     * for rows by regexp pattern
+     * @var array<string:string> map of classes to use as models for rows by
+     * regexp pattern
      */
     private $regexpRowClasses = [];
 
     /**
-     * @var array<string:string> tracking array for classes to use as models
+     * @var array<string:string> map of for classes to use as models
      * for tables by regexp pattern
      */
     private $regexpTableClasses = [];
@@ -592,6 +599,10 @@ class Junxa
             if (array_key_exists('autoRowClassNamespace', $def)) {
                 $this->setAutoRowClassNamespace($def['autoRowClassNamespace']);
                 unset($def['autoRowClassNamespace']);
+            }
+            if (array_key_exists('individualRowClassColumns', $def)) {
+                $this->setIndividualRowClassColumns($def['individualRowClassColumns']);
+                unset($def['individualRowClassColumns']);
             }
             if (array_key_exists('regexpTableClasses', $def)) {
                 $this->setRegexpTableClasses($def['regexpTableClasses']);
@@ -1008,6 +1019,62 @@ class Junxa
     public function getAutoRowClassNamespace($val)
     {
         return $this->autoRowClassNamespace;
+    }
+
+    /**
+     * @param array<string:string> map of table names to the columns that, in
+     * combination with an autoRowClassNamespace, class names for individual
+     * rows can be sourced from; for example, if the auto row class namespace
+     * is App\Row, the individual row class for the table 'thing' is 'name',
+     * and a 'thing' row has 'widget' in the name field, the individual row
+     * class (that will be used if it exists) for that row would be
+     * App\Row\Thing\Widget
+     * @return $this
+     */
+    public function setIndividualRowClassColumns(array $val)
+    {
+        $this->individualRowClassColumns = $val;
+        return $this;
+    }
+
+    /**
+     * @param array<string:string> map of table names to the columns that, in
+     * combination with an autoRowClassNamespace, class names for individual
+     * rows can be sourced from
+     */
+    public function getIndividualRowClassColumns()
+    {
+        return $this->individualRowClassColumns;
+    }
+
+    /**
+     * Sets the column that, in combination with an autoRowClassNamespace,
+     * class names for individual rows can be sourced from for the specified
+     * table.  This is equivalent to one key-value pair in the mapping sent to
+     * {@see setIndividualRowClassColumns}.
+     *
+     * @param string table name
+     * @param string column name
+     * @return $this
+     */
+    public function setIndividualRowClassColumn($table, $column)
+    {
+        $this->individualRowClassColumns[$table] = $column;
+        return $this;
+    }
+
+    /**
+     * @param string table name
+     * @return string|null the individual row class column defined for the
+     * specified table by {@see setIndividualRowClassColumns} and/or
+     * {@see setIndividualRowClassColumn}, if any
+     */
+    public function getIndividualRowClassColumn($table)
+    {
+        return
+            isset($this->individualRowClassColumns[$table])
+            ? $this->individualRowClassColumns[$table]
+            : null;
     }
 
     /**
@@ -1652,12 +1719,15 @@ class Junxa
     }
 
     /**
-     * Retrieves the class to use as the row model for a given table.
+     * Retrieves the class to use as the row model for a given table
+     * and, optionally, row data.
      *
      * @param string the table name
+     * @param array<string:mixed> the row data for the row to be modeled, if
+     * available
      * @return string
      */
-    public function rowClass($table)
+    public function rowClass($table, array $rowData = null)
     {
         if (!empty($this->rowClasses[$table])) {
             return $this->rowClasses[$table];
@@ -1668,9 +1738,18 @@ class Junxa
             }
         }
         if (!empty($this->autoRowClassNamespace)) {
-            $name = $this->autoRowClassNamespace . '\\' . self::toNamespaceElement($table);
-            if (class_exists($name)) {
-                return $name;
+            $mainName = $this->autoRowClassNamespace . '\\' . self::toNamespaceElement($table);
+            if ($rowData !== null) {
+                $src = $this->getIndividualRowClassColumn($table);
+                if ($src !== null && isset($rowData[$src])) {
+                    $rowName = $mainName . '\\' . self::toNamespaceElement($rowData[$src]);
+                    if (class_exists($rowName)) {
+                        return $rowName;
+                    }
+                }
+            }
+            if (class_exists($mainName)) {
+                return $mainName;
             }
         }
         if (!empty($this->defaultRowClass)) {

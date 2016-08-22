@@ -54,6 +54,9 @@ class JunxaTest extends DatabaseTestAbstract
             'autoTableClassNamespace'   => 'FakeTableNamespace',
             'autoColumnClassNamespace'  => 'FakeColumnNamespace',
             'autoRowClassNamespace'     => 'FakeRowNamespace',
+            'individualRowClassColumns' => [
+                'fakeTable'             => 'fakeColumn',
+            ],
             'foreignKeySuffix'          => '_id',
             'inflectionLocale'          => 'fr',
             'pluralToSingularMap'       => [
@@ -97,6 +100,7 @@ class JunxaTest extends DatabaseTestAbstract
             ->setAutoTableClassNamespace('FakeTableNamespace')
             ->setAutoColumnClassNamespace('FakeColumnNamespace')
             ->setAutoRowClassNamespace('FakeRowNamespace')
+            ->setIndividualRowClassColumn('fakeTable', 'fakeColumn')
             ->setForeignKeySuffix('_id')
             ->setInflectionLocale('fr')
             ->setPluralToSingularMapping('boxen', 'box')
@@ -1162,6 +1166,92 @@ class JunxaTest extends DatabaseTestAbstract
         $item->price = 5.00;
         $item->save();
         $this->assertGreaterThan(time() - 1, strtotime($item->createdAt));
+    }
+
+    public function testSetIndividualRowClassColumn()
+    {
+        $db = $this->minimalDb()
+            ->setAutoRowClassNamespace('Thaumatic\Junxa\Tests\Row')
+            ->setIndividualRowClassColumn('category', 'name')
+            ->ready();
+        //
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Category\Uncategorized', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertFalse(method_exists($row, 'isTestUncategorizedCategoryRow'));
+        $this->assertTrue($row->isTestCategoryRow());
+        $row->name = 'Uncategorized';
+        $row->save();
+        //
+        $altRow = $db->category->row($row->id);
+        $this->assertSame($row->id, $altRow->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\Uncategorized', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTestUncategorizedCategoryRow());
+        $this->assertTrue($altRow->isTestCategoryRow());
+        //
+        $row->delete();
+        //
+        $row = $db->category->newRow([
+            'name'  => 'Uncategorized',
+        ]);
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\Uncategorized', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTestUncategorizedCategoryRow());
+        $this->assertTrue($row->isTestCategoryRow());
+        $row->save();
+        //
+        $altRow = $db->category->row($row->id);
+        $this->assertSame($row->id, $altRow->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\Uncategorized', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTestUncategorizedCategoryRow());
+        $this->assertTrue($altRow->isTestCategoryRow());
+        //
+        $row = $db->category->newRow();
+        $this->addGeneratedRow($row);
+        $this->assertNotInstanceOf('Thaumatic\Junxa\Tests\Row\Category\_2ndCategory', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertFalse(method_exists($row, 'isTest_2ndCategoryCategoryRow'));
+        $this->assertTrue($row->isTestCategoryRow());
+        $row->name = '2nd Category';
+        $row->save();
+        //
+        $altRow = $db->category->row($row->id);
+        $this->assertSame($row->id, $altRow->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\_2ndCategory', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTest_2ndCategoryCategoryRow());
+        $this->assertTrue($altRow->isTestCategoryRow());
+        //
+        $row->delete();
+        //
+        $row = $db->category->newRow([
+            'name'  => '2nd Category',
+        ]);
+        $this->addGeneratedRow($row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\_2ndCategory', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $row);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $row);
+        $this->assertTrue($row->isTest_2ndCategoryCategoryRow());
+        $this->assertTrue($row->isTestCategoryRow());
+        $row->save();
+        //
+        $altRow = $db->category->row($row->id);
+        $this->assertSame($row->id, $altRow->id);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category\_2ndCategory', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Tests\Row\Category', $altRow);
+        $this->assertInstanceOf('Thaumatic\Junxa\Row', $altRow);
+        $this->assertTrue($altRow->isTest_2ndCategoryCategoryRow());
+        $this->assertTrue($altRow->isTestCategoryRow());
     }
 
     public function testGetSingularFromPlural()

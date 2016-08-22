@@ -597,15 +597,22 @@ class Table
     }
 
     /**
-     * Generates and returns a new, empty row model for the table.
+     * Generates and returns a new row model for the table.
      *
+     * @param array<string:mixed> array of data to populate row with
      * @return Thaumatic\Junxa\Row row result, actual class will be as defined
      * by Junxa::rowClass()
      */
-    public function newRow()
+    public function newRow(array $data = null)
     {
-        $class = $this->database->rowClass($this->name);
-        return new $class($this, null);
+        $class = $this->database->rowClass($this->name, $data);
+        $out = new $class($this, null);
+        if ($data !== null) {
+            foreach ($data as $field => $value) {
+                $out->$field = $value;
+            }
+        }
+        return $out;
     }
 
     /**
@@ -684,7 +691,7 @@ class Table
         if (!$rowData) {
             return null;
         }
-        $class = $this->database->rowClass($this->name);
+        $class = $this->database->rowClass($this->name, $rowData);
         $row = new $class($this, $rowData);
         if ($query->getOption(QueryBuilder::OPTION_SUPPRESS_CACHING)) {
             return $row;
