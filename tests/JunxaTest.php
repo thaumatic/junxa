@@ -1227,6 +1227,7 @@ class JunxaTest extends DatabaseTestAbstract
         $this->assertSame('_4Name', Junxa::toNamespaceElement('4 name'));
         $this->assertSame('_4OtherName', Junxa::toNamespaceElement('4 other name'));
         $this->assertSame('_4name', Junxa::toNamespaceElement('4name'));
+        $this->assertSame('X4Name', Junxa::toNamespaceElement('x 4 name'));
         $this->assertSame('NonsenseName', Junxa::toNamespaceElement('nonsense!^@!@#*name'));
     }
 

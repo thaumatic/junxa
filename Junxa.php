@@ -2368,6 +2368,7 @@ class Junxa
      *   some_name  => SomeName
      *   some name  => SomeName
      *   4 name     => _4Name
+     *   x 4 name   => X4Name
      *
      * @param string text to convert
      * @return string
