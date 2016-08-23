@@ -1154,7 +1154,7 @@ final class Builder
         }
         foreach (['join', 'where', 'group', 'having', 'order'] as $item) {
             $value = $this->$item;
-            if (!empty($value)) {
+            if ($value !== null) {
                 if (is_array($value)) {
                     for ($i = 0; $i < count($value); $i++) {
                         if (is_object($value[$i]) && method_exists($value[$i], 'tableScan')) {

@@ -1619,8 +1619,11 @@ class Junxa
                 throw new JunxaConfigurationException('invalid change handler');
             } else {
                 $def = $this->changeHandler;
-                $class = empty($def['class']) ? 'Thaumatic\Junxa' : $def['class'];
-                $this->changeHandlerObject = new $class($def);
+                if (isset($def['class'])) {
+                    $this->changeHandlerObject = new $def['class']($def);
+                } else {
+                    $this->changeHandlerObject = new self($def);
+                }
             }
         }
         return $this->changeHandlerObject;
@@ -1660,7 +1663,7 @@ class Junxa
      */
     final public function tableClass($table)
     {
-        if (!empty($this->tableClasses[$table])) {
+        if (isset($this->tableClasses[$table])) {
             return $this->tableClasses[$table];
         }
         foreach ($this->regexpTableClasses as $name => $class) {
@@ -1668,13 +1671,13 @@ class Junxa
                 return $class;
             }
         }
-        if (!empty($this->autoTableClassNamespace)) {
+        if ($this->autoTableClassNamespace !== null) {
             $name = $this->autoTableClassNamespace . '\\' . self::toNamespaceElement($table);
             if (class_exists($name)) {
                 return $name;
             }
         }
-        if (!empty($this->defaultTableClass)) {
+        if ($this->defaultTableClass !== null) {
             return $this->defaultTableClass;
         }
         return 'Thaumatic\Junxa\Table';
@@ -1688,7 +1691,7 @@ class Junxa
      */
     final public function columnClass($column)
     {
-        if (!empty($this->columnClasses[$column])) {
+        if (isset($this->columnClasses[$column])) {
             return $this->columnClasses[$column];
         }
         foreach ($this->regexpColumnClasses as $name => $class) {
@@ -1696,13 +1699,13 @@ class Junxa
                 return $class;
             }
         }
-        if (!empty($this->autoColumnClassNamespace)) {
+        if ($this->autoColumnClassNamespace !== null) {
             $name = $this->autoColumnClassNamespace . '\\' . self::toNamespaceElement($column);
             if (class_exists($name)) {
                 return $name;
             }
         }
-        if (!empty($this->defaultColumnClass)) {
+        if ($this->defaultColumnClass !== null) {
             return $this->defaultColumnClass;
         }
         return 'Thaumatic\Junxa\Column';
@@ -1719,7 +1722,7 @@ class Junxa
      */
     final public function rowClass($table, array $rowData = null)
     {
-        if (!empty($this->rowClasses[$table])) {
+        if (isset($this->rowClasses[$table])) {
             return $this->rowClasses[$table];
         }
         foreach ($this->regexpRowClasses as $name => $class) {
@@ -1727,7 +1730,7 @@ class Junxa
                 return $class;
             }
         }
-        if (!empty($this->autoRowClassNamespace)) {
+        if ($this->autoRowClassNamespace !== null) {
             $mainName = $this->autoRowClassNamespace . '\\' . self::toNamespaceElement($table);
             if ($rowData !== null) {
                 $src = $this->getIndividualRowClassColumn($table);
@@ -1742,7 +1745,7 @@ class Junxa
                 return $mainName;
             }
         }
-        if (!empty($this->defaultRowClass)) {
+        if ($this->defaultRowClass !== null) {
             return $this->defaultRowClass;
         }
         return 'Thaumatic\Junxa\Row';
@@ -1778,7 +1781,7 @@ class Junxa
      */
     final public function table($name)
     {
-        if (empty($this->tableModels[$name])) {
+        if (!isset($this->tableModels[$name])) {
             if (!in_array($name, $this->tables)) {
                 $this->determineTables();
                 if (!in_array($name, $this->tables)) {
@@ -1815,7 +1818,7 @@ class Junxa
         }
         $tables = [];
         foreach ($baseTables as $baseTable) {
-            if (empty($this->tableModels[$baseTable])) {
+            if (!isset($this->tableModels[$baseTable])) {
                 $tables[] = $baseTable;
             }
         }

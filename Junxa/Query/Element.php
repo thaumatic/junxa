@@ -219,14 +219,14 @@ final class Element
             case 'alias':
                 if ($context != 'join' && $base[0] instanceof Table) {
                     $out = $values[0];
-                } elseif (!empty($query->expressed[$this->id])
+                } elseif (isset($query->expressed[$this->id])
                     && $context !== 'select' && $context !== 'where'
                     && $context !== 'join'
                 ) {
                     $out = '`' . $base[1] . '`';
                 } else {
                     $out = $values[0];
-                    if (empty($query->expressed[$this->id])
+                    if (!isset($query->expressed[$this->id])
                         && $parent instanceof Query
                         && ($context === 'select' || $context === 'join')
                     ) {
