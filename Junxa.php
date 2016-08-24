@@ -2530,7 +2530,7 @@ class Junxa
         if ($identifier[0] === 'j' && preg_match('/^junxaInternal/', $identifier)) {
             throw new JunxaInvalidIdentifier($identifier);
         }
-        if (in_array($identifier, self::PHP_KEYWORDS)) {
+        if (in_array(strtolower($identifier), self::PHP_KEYWORDS)) {
             throw new JunxaInvalidIdentifier($identifier);
         }
     }
