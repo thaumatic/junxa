@@ -204,6 +204,12 @@ class Column
     private $name;
 
     /**
+     * @var string the title of this column; a display-oriented version of
+     * the name, usually automatically generated
+     */
+    private $title;
+
+    /**
      * @var int self::OPTION_* values, bitmasked, defining this columns'
      * behavior
      */
@@ -370,6 +376,27 @@ class Column
     final public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @param string the title to use for the column
+     * @return $this
+     */
+    final public function setTitle($val)
+    {
+        $this->title = $val;
+        return $this;
+    }
+
+    /**
+     * @return string the title to use for the column
+     */
+    final public function getTitle()
+    {
+        if (!$this->title) {
+            $this->title = self::columnNameToTitle($this->name);
+        }
+        return $this->title;
     }
 
     /**
@@ -982,6 +1009,110 @@ class Column
             return false;
         }
         return $this->getTable()->isSame($column->getTable());
+    }
+
+    /**
+     * Coerce a word into the case pattern appropriate for its usage
+     * in a title.
+     *
+     * @param string the word
+     * @param bool whether the word is the first word in the title
+     * @param bool whether the word is known to already be in lower case
+     * @return string
+     */
+    private static function titleifyWord($word, $first = false, $alreadyLowerCase = false)
+    {
+        if (!$alreadyLowerCase) {
+            $word = strtolower($word);
+        }
+        switch ($word) {
+        case 'acl':
+        case 'ansi':
+        case 'atm':
+        case 'bgp':
+        case 'cli':
+        case 'cpu':
+        case 'dhcp';
+        case 'dns':
+        case 'ftp':
+        case 'id':
+        case 'ieee':
+        case 'ietf':
+        case 'ip':
+        case 'iso':
+        case 'lan':
+        case 'mac':
+        case 'nat':
+        case 'osi':
+        case 'sdlc':
+        case 'ssh':
+        case 'smtp':
+        case 'tcp':
+        case 'tftp':
+        case 'udp':
+        case 'www':
+            return strtoupper($word);
+        }
+        if ($first) {
+            return ucfirst($word);
+        }
+        switch ($word) {
+            case 'a':
+            case 'an':
+            case 'the':
+            case 'at':
+            case 'by':
+            case 'for':
+            case 'in':
+            case 'of':
+            case 'on':
+            case 'to':
+            case 'up':
+            case 'and':
+            case 'as':
+            case 'but':
+            case 'or':
+            case 'nor':
+                return $word;
+            default:
+                return ucfirst($word);
+        }
+    }
+
+    /**
+     * Convert a list of words to a title.
+     *
+     * @param array<string> the words
+     * @return string
+     */
+    private static function wordsToTitle(array $words)
+    {
+        $useWords = [self::titleifyWord(array_shift($words), true)];
+        foreach ($words as $word) {
+            $useWords[] = self::titleifyWord($word);
+        }
+        return implode(' ', $useWords);
+    }
+
+    /**
+     * Derive a column title from a column name.
+     *
+     * @param string the column name
+     * @return string
+     */
+    private static function columnNameToTitle($name)
+    {
+        if (strpos($name, '_') !== false) {
+            $words = explode('_', $name);
+            return self::wordsToTitle($words);
+        } elseif (ctype_upper($name)) {
+            return self::titleifyWord($name, true);
+        } elseif (!ctype_lower($name)) {
+            $words = preg_split('/(?=[A-Z])(?<![A-Z])(?<!^)/', $name);
+            return self::wordsToTitle($words);
+        } else {
+            return self::titleifyWord($name, false, true);
+        }
     }
 
 }

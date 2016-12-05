@@ -40,6 +40,23 @@ class ColumnTest extends DatabaseTestAbstract
         $this->assertNull($categoryNameColumn->getDefaultValue());
     }
 
+    public function testTitles()
+    {
+        $this->assertSame('ID', $this->db->category->id->getTitle());
+        $this->assertSame('Name', $this->db->category->name->getTitle());
+        $this->assertSame('Type', $this->db->category->type->getTitle());
+        $this->assertSame('Active', $this->db->category->active->getTitle());
+        $this->assertSame('Created at', $this->db->category->createdAt->getTitle());
+        $this->assertSame('Changed at', $this->db->category->changedAt->getTitle());
+        $this->assertSame('ID', $this->db->item->id->getTitle());
+        $this->assertSame('Category ID', $this->db->item->categoryId->getTitle());
+        $this->assertSame('Name', $this->db->item->name->getTitle());
+        $this->assertSame('Price', $this->db->item->price->getTitle());
+        $this->assertSame('Active', $this->db->item->active->getTitle());
+        $this->assertSame('Created at', $this->db->item->createdAt->getTitle());
+        $this->assertSame('Changed at', $this->db->item->changedAt->getTitle());
+    }
+
     public function testSetOptionsAndGetOptions()
     {
         try {
