@@ -347,17 +347,10 @@ class RowTest extends DatabaseTestAbstract
             ],
             $category->getColumnFlagNames('createdAt')
         );
-        $this->assertSame(
-            [
-                'NOT_NULL',
-                'UNSIGNED',
-                'ZEROFILL',
-                'BINARY',
-                'TIMESTAMP',
-                'ON_UPDATE_NOW',
-            ],
-            $category->getColumnFlagNames('changedAt')
-        );
+        $this->assertContains('NOT_NULL', $category->getColumnFlagNames('changedAt'));
+        $this->assertContains('BINARY', $category->getColumnFlagNames('changedAt'));
+        $this->assertContains('TIMESTAMP', $category->getColumnFlagNames('changedAt'));
+        $this->assertContains('ON_UPDATE_NOW', $category->getColumnFlagNames('changedAt'));
         $item = $this->db->item->newRow();
         $this->assertSame(
             [
@@ -410,17 +403,10 @@ class RowTest extends DatabaseTestAbstract
             ],
             $item->getColumnFlagNames('createdAt')
         );
-        $this->assertSame(
-            [
-                'NOT_NULL',
-                'UNSIGNED',
-                'ZEROFILL',
-                'BINARY',
-                'TIMESTAMP',
-                'ON_UPDATE_NOW',
-            ],
-            $item->getColumnFlagNames('changedAt')
-        );
+        $this->assertContains('NOT_NULL', $item->getColumnFlagNames('changedAt'));
+        $this->assertContains('BINARY', $item->getColumnFlagNames('changedAt'));
+        $this->assertContains('TIMESTAMP', $item->getColumnFlagNames('changedAt'));
+        $this->assertContains('ON_UPDATE_NOW', $item->getColumnFlagNames('changedAt'));
     }
 
     public function testGetColumnFlag()
@@ -517,8 +503,6 @@ class RowTest extends DatabaseTestAbstract
         );
         $this->assertFalse($category->getColumnFlag('createdAt', Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
         $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_NOT_NULL));
-        $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_UNSIGNED));
-        $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_ZEROFILL));
         $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_BINARY));
         $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_TIMESTAMP));
         $this->assertTrue($category->getColumnFlag('changedAt', Column::MYSQL_FLAG_ON_UPDATE_NOW));
@@ -644,8 +628,6 @@ class RowTest extends DatabaseTestAbstract
         );
         $this->assertFalse($item->getColumnFlag('createdAt', Column::MYSQL_FLAG_FIELD_IN_PART_FUNC));
         $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_NOT_NULL));
-        $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_UNSIGNED));
-        $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_ZEROFILL));
         $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_BINARY));
         $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_TIMESTAMP));
         $this->assertTrue($item->getColumnFlag('changedAt', Column::MYSQL_FLAG_ON_UPDATE_NOW));
@@ -752,8 +734,6 @@ class RowTest extends DatabaseTestAbstract
             $category->getColumnEachFlag(
                 'changedAt',
                 Column::MYSQL_FLAG_NOT_NULL
-                | Column::MYSQL_FLAG_UNSIGNED
-                | Column::MYSQL_FLAG_ZEROFILL
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_TIMESTAMP
                 | Column::MYSQL_FLAG_ON_UPDATE_NOW
@@ -866,8 +846,6 @@ class RowTest extends DatabaseTestAbstract
             $item->getColumnEachFlag(
                 'changedAt',
                 Column::MYSQL_FLAG_NOT_NULL
-                | Column::MYSQL_FLAG_UNSIGNED
-                | Column::MYSQL_FLAG_ZEROFILL
                 | Column::MYSQL_FLAG_BINARY
                 | Column::MYSQL_FLAG_TIMESTAMP
                 | Column::MYSQL_FLAG_ON_UPDATE_NOW
