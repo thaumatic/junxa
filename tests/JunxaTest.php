@@ -974,7 +974,6 @@ class JunxaTest extends DatabaseTestAbstract
                 throw $e;
             }
         }
-        $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
         $item = $db->item->newRow();
         $this->addGeneratedRow($item);
         $item->categoryId = $category->id;
