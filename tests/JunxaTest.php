@@ -5,6 +5,7 @@ namespace Thaumatic\Junxa\Tests;
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Events\JunxaQueryEvent;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
+use Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException;
 use Thaumatic\Junxa\Query as Q;
 use Thaumatic\Junxa\Tests\DatabaseTestAbstract;
 
@@ -490,15 +491,27 @@ class JunxaTest extends DatabaseTestAbstract
         $category = $db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
-        $category->save();
-        $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
+        try {
+            $category->save();
+            $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
+        } catch (JunxaQueryExecutionException $e) {
+            if (!preg_match('/doesn\'t have a default value from INSERT/', $e->getMessage())) {
+                throw $e;
+            }
+        }
         $item = $db->item->newRow();
         $this->addGeneratedRow($item);
         $item->categoryId = $category->id;
         $item->name = 'Widget';
         $item->price = 5.00;
-        $item->save();
-        $this->assertSame('0000-00-00 00:00:00', $item->createdAt);
+        try {
+            $item->save();
+            $this->assertSame('0000-00-00 00:00:00', $item->createdAt);
+        } catch (JunxaQueryExecutionException $e) {
+            if (!preg_match('/doesn\'t have a default value from INSERT/', $e->getMessage())) {
+                throw $e;
+            }
+        }
     }
 
     public function testSetColumnClassNoCrosstalk()
@@ -953,15 +966,28 @@ class JunxaTest extends DatabaseTestAbstract
         $category = $db->category->newRow();
         $this->addGeneratedRow($category);
         $category->name = 'Uncategorized';
-        $category->save();
+        try {
+            $category->save();
+            $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
+        } catch (JunxaQueryExecutionException $e) {
+            if (!preg_match('/doesn\'t have a default value from INSERT/', $e->getMessage())) {
+                throw $e;
+            }
+        }
         $this->assertSame('0000-00-00 00:00:00', $category->createdAt);
         $item = $db->item->newRow();
         $this->addGeneratedRow($item);
         $item->categoryId = $category->id;
         $item->name = 'Widget';
         $item->price = 5.00;
-        $item->save();
-        $this->assertSame('0000-00-00 00:00:00', $item->createdAt);
+        try {
+            $item->save();
+            $this->assertSame('0000-00-00 00:00:00', $item->createdAt);
+        } catch (JunxaQueryExecutionException $e) {
+            if (!preg_match('/doesn\'t have a default value from INSERT/', $e->getMessage())) {
+                throw $e;
+            }
+        }
     }
 
     public function testSetRegexpColumnClassNoCrosstalk()
@@ -1171,6 +1197,7 @@ class JunxaTest extends DatabaseTestAbstract
     public function testSetIndividualRowClassColumn()
     {
         $db = $this->minimalDb()
+            ->setAutoColumnClassNamespace('Thaumatic\Junxa\Tests\Column')
             ->setAutoRowClassNamespace('Thaumatic\Junxa\Tests\Row')
             ->setIndividualRowClassColumn('category', 'name')
             ->ready();
