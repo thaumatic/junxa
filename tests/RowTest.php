@@ -299,15 +299,6 @@ class RowTest extends DatabaseTestAbstract
             | Column::MYSQL_FLAG_NO_DEFAULT_VALUE,
             $item->getColumnFlags('createdAt')
         );
-        $this->assertSame(
-            Column::MYSQL_FLAG_NOT_NULL
-            | Column::MYSQL_FLAG_UNSIGNED
-            | Column::MYSQL_FLAG_ZEROFILL
-            | Column::MYSQL_FLAG_BINARY
-            | Column::MYSQL_FLAG_TIMESTAMP
-            | Column::MYSQL_FLAG_ON_UPDATE_NOW,
-            $item->getColumnFlags('changedAt')
-        );
     }
 
     public function testGetColumnFlagNames()
