@@ -58,7 +58,7 @@ class JunxaTest extends DatabaseTestAbstract
             'individualRowClassColumns' => [
                 'fakeTable'             => 'fakeColumn',
             ],
-            'foreignKeySuffix'          => '_id',
+            'foreignKeySuffix'          => 'Id',
             'inflectionLocale'          => 'fr',
             'pluralToSingularMap'       => [
                 'boxen'                 => 'box',
@@ -106,7 +106,7 @@ class JunxaTest extends DatabaseTestAbstract
             ->setAutoColumnClassNamespace('FakeColumnNamespace')
             ->setAutoRowClassNamespace('FakeRowNamespace')
             ->setIndividualRowClassColumn('fakeTable', 'fakeColumn')
-            ->setForeignKeySuffix('_id')
+            ->setForeignKeySuffix('Id')
             ->setInflectionLocale('fr')
             ->setPluralToSingularMapping('boxen', 'box')
             ->setPluralToSingularMapping('h4x0rz', 'h4x0r')
