@@ -64,6 +64,10 @@ class JunxaTest extends DatabaseTestAbstract
                 'boxen'                 => 'box',
                 'h4x0rz'                => 'h4x0r',
             ],
+            'singularToPluralMap'       => [
+                'box'                   => 'boxen',
+                'h4x0r'                 => 'h4x0rz',
+            ],
             'changeHandler'             => [
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
@@ -106,6 +110,8 @@ class JunxaTest extends DatabaseTestAbstract
             ->setInflectionLocale('fr')
             ->setPluralToSingularMapping('boxen', 'box')
             ->setPluralToSingularMapping('h4x0rz', 'h4x0r')
+            ->setSingularToPluralMapping('box', 'boxen')
+            ->setSingularToPluralMapping('h4x0r', 'h4x0rz')
             ->setChangeHandler([
                 'hostname'              => 'localhost',
                 'databaseName'          => DatabaseTestAbstract::TEST_DATABASE_NAME . '_alt',
@@ -1300,6 +1306,29 @@ class JunxaTest extends DatabaseTestAbstract
             $this->assertSame('category', $this->db->getSingularFromPlural('categories'));
         } finally {
             $this->db->setPluralToSingularMap($originalMap);
+        }
+    }
+
+    public function testGetPluralFromSingular()
+    {
+        $originalMap = $this->db->getSingularToPluralMap();
+        try {
+            $this->assertSame('categories', $this->db->getPluralFromSingular('category'));
+            $this->assertSame('items', $this->db->getPluralFromSingular('item'));
+            $this->assertSame('children', $this->db->getPluralFromSingular('child'));
+            $this->assertSame('indices', $this->db->getPluralFromSingular('index'));
+            $this->assertSame('media', $this->db->getPluralFromSingular('medium'));
+            $this->assertSame('matrices', $this->db->getPluralFromSingular('matrix'));
+            $this->assertSame('foos', $this->db->getPluralFromSingular('foo'));
+            $this->db->setSingularToPluralMapping('foo', 'bar');
+            $this->assertSame('bar', $this->db->getPluralFromSingular('foo'));
+            $this->db->setSingularToPluralMapping('categories', 'categoron');
+            $this->assertSame('categoron', $this->db->getPluralFromSingular('categories'));
+            $this->db->setSingularToPluralMap($originalMap);
+            $this->assertSame('foos', $this->db->getPluralFromSingular('foo'));
+            $this->assertSame('categories', $this->db->getPluralFromSingular('category'));
+        } finally {
+            $this->db->setSingularToPluralMap($originalMap);
         }
     }
 

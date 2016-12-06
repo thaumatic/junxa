@@ -470,6 +470,12 @@ class Junxa
     private $pluralToSingularMap = [];
 
     /**
+     * @var array<string:string> mapping of singular nouns to plural, used to
+     * allow specified overrides of the default inflection behavior
+     */
+    private $singularToPluralMap = [];
+
+    /**
      * @var string locale to use for grammatical inflection (see
      * {@link https://github.com/ICanBoogie/Inflector} for supported locales)
      */
@@ -635,6 +641,10 @@ class Junxa
             if (array_key_exists('pluralToSingularMap', $def)) {
                 $this->setPluralToSingularMap($def['pluralToSingularMap']);
                 unset($def['pluralToSingularMap']);
+            }
+            if (array_key_exists('singularToPluralMap', $def)) {
+                $this->setSingularToPluralMap($def['singularToPluralMap']);
+                unset($def['singularToPluralMap']);
             }
             if (array_key_exists('inflectionLocale', $def)) {
                 $this->setInflectionLocale($def['inflectionLocale']);
@@ -1497,6 +1507,59 @@ class Junxa
     }
 
     /**
+     * Sets the singular to plural map to use for overriding the default
+     * grammatical inflection behavior.
+     *
+     * @param array<string:string> singular to plural map
+     * @return $this
+     */
+    final public function setSingularToPluralMap(array $val)
+    {
+        $this->singularToPluralMap = $val;
+        return $this;
+    }
+
+    /**
+     * Retrieves the singular to plural map used for overriding the default
+     * grammatical inflection behavior.
+     *
+     * @return array<string:string> singular to plural map
+     */
+    final public function getSingularToPluralMap()
+    {
+        return $this->singularToPluralMap;
+    }
+
+    /**
+     * Sets the plural for a given singular in the singular to plural map.
+     *
+     * @param string singular
+     * @param string plural
+     * @return $this
+     */
+    final public function setSingularToPluralMapping($singular, $plural)
+    {
+        $this->singularToPluralMap[$singular] = $plural;
+        return $this;
+    }
+
+    /**
+     * Retrieves the specifically-mapped plural for the given singular,
+     * if any.  (Does *not* perform non-mapped grammatical inflection.)
+     *
+     * @param string plural
+     * @return string|null
+     */
+    final public function getSingularToPluralMapping($singular)
+    {
+        return
+            isset($this->singularToPluralMap[$singular])
+            ? $this->singularToPluralMap[$singular]
+            : null
+        ;
+    }
+
+    /**
      * Sets the locale to use for grammatical inflection (see
      * {@link https://github.com/ICanBoogie/Inflector} for supported locales).
      *
@@ -1548,6 +1611,22 @@ class Junxa
             return $singular;
         }
         return $this->getInflector()->singularize($plural);
+    }
+
+    /**
+     * Retrieves the plural version of a given singular noun, as best we cna
+     * determine.
+     *
+     * @param string singular noun
+     * @return string plural noun
+     */
+    final public function getPluralFromSingular($singular)
+    {
+        $plural = $this->getSingularToPluralMapping($singular);
+        if ($plural !== null) {
+            return $plural;
+        }
+        return $this->getInflector()->pluralize($singular);
     }
 
     /**
