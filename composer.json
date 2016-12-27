@@ -37,5 +37,9 @@
         "psr-4": {
             "Thaumatic\\Junxa\\Tests\\": "tests"
         }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "lint": "phpcs"
     }
 }
