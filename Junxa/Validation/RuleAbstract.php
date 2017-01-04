@@ -168,7 +168,7 @@ abstract class RuleAbstract
                     }
                     if ($paramNum > $this->getParameterCount()) {
                         throw new JunxaConfigurationException(
-                            'rule has parameter count ' 
+                            'rule has parameter count '
                             . $this->getParameterCount()
                             . ', parameter '
                             . $paramNum

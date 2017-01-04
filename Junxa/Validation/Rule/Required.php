@@ -32,6 +32,6 @@ class Required extends RuleAbstract
         return [
             $refer . '.value == \'\'',
         ];
-    } 
+    }
 
 }
