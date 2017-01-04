@@ -25,7 +25,8 @@
     },
     "require-dev": {
         "ext-dom": "^20031129",
-        "phpunit\/phpunit": "*"
+        "phpunit\/phpunit": "*",
+        "squizlabs/php_codesniffer": "2.0.*"
     },
     "autoload": {
         "classmap": ["Junxa.php"],
