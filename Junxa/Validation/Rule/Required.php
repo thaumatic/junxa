@@ -27,6 +27,9 @@ class Required extends RuleAbstract
         return $value != '';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getJavascriptFailureConditions(Column $column, $refer, $args = [])
     {
         return [

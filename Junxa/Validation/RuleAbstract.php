@@ -87,26 +87,57 @@ abstract class RuleAbstract
     }
 
     /**
-     * @return bool
+     * Performs validation of a given field value against this rule.  Besides
+     * returning true or false according to whether the value is valid, this
+     * function may mutate the value (this being considered a "coerce into
+     * validity" case of the concept of validation).
+     *
+     * @param Thaumatic\Junxa\Column the column with respect to which the rule
+     * is being evaluated
+     * @param mixed the value being provided for the field
+     * @param array<string:mixed> all data values being provided for fields in the
+     * current event
+     * @param string any prefix being applied to field names for lookup in the
+     * data array within this validation's immediate context
+     * @param string any suffix being applied to field names for lookup in the
+     * data array within this validation's immediate context
+     * @return bool whether the value is valid for the column
      */
     abstract public function validate(Column $column, &$value, $data, $prefix, $suffix);
 
     /**
-     * Should be overridden by inheritor classes as appropriate.
+     * This function is expected to be overridden by inheritor classes and
+     * to return an array of JavaScript snippets, each of which is a
+     * conditional statement which, if false, will cause validation against
+     * the rule to fail.
      *
-     * @return array<string>
+     * @param Thaumatic\Junxa\Column the column with respect to which the rule
+     * is being evaluated
+     * @param string a JavaScript identifier that can be used to refer to the
+     * DOM element defining a value for the field
+     * @param array<string:mixed> for passing arbitrary processing options
+     * @return array<string> JavaScript condition snippets
      */
-    public function getJavascriptFailureConditions(Column $column, $refer, $args = [])
+    public function getJavascriptFailureConditions(Column $column, $refer, $options = [])
     {
         return [];
     }
 
     /**
-     * Should be overridden by inheritor classes as appropriate.
+     * This function is expected to be overridden by inheritor classes and
+     * to return an array of lines of JavaScript code which will be executed
+     * when validation of the rule is being performed; generally this is
+     * expected to be code that mutates the value of the field (this being
+     * considered a "coerce into validity" case of the concept of validation).
      *
-     * @return array<string>
+     * @param Thaumatic\Junxa\Column the column with respect to which the rule
+     * is being evaluated
+     * @param string a JavaScript identifier that can be used to refer to the
+     * DOM element defining a value for the field
+     * @param array<string:mixed> for passing arbitrary processing options
+     * @return array<string> lines of JavaScript code
      */
-    public function getJavascriptProcessing(Column $column, $refer, $args = [])
+    public function getJavascriptProcessing(Column $column, $refer, $options = [])
     {
         return [];
     }
