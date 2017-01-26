@@ -33,7 +33,7 @@ class Integer extends RuleAbstract
     public function getJavascriptFailureConditions(Column $column, $refer, $args = [])
     {
         return [
-            'Number.parseInt(' . $refer . '.value) == ' . $refer . '.value',
+            'Number.parseInt(' . $refer . '.value) !== ' . $refer . '.value',
         ];
     }
 

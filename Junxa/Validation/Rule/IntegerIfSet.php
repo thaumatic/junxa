@@ -33,7 +33,7 @@ class IntegerIfSet extends RuleAbstract
     public function getJavascriptFailureConditions(Column $column, $refer, $args = [])
     {
         return [
-            $refer . '.value !== \'\' && Number.parseInt(' . $refer . '.value) == ' . $refer . '.value',
+            $refer . '.value !== \'\' && Number.parseInt(' . $refer . '.value) !== ' . $refer . '.value',
         ];
     }
 
