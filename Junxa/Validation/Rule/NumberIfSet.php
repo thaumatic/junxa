@@ -24,7 +24,7 @@ class Number extends RuleAbstract
      */
     public function validate(Column $column, &$value, $data, $prefix, $suffix)
     {
-        return $value === '' || $value === null || filter_var($value, FILTER_VALIDATE_FLOAT);
+        return $value === '' || $value === null || filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
     }
 
     /**
