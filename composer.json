@@ -41,6 +41,6 @@
     },
     "scripts": {
         "test": "phpunit",
-        "lint": "phpcs"
+        "lint": "phpcs --standard=phpcs.xml Junxa.php Junxa"
     }
 }
