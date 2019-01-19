@@ -280,6 +280,23 @@ class Row
     }
 
     /**
+     * If the named transient data is present, returns it, otherwise
+     * generates it by calling the provided callback, stores it, and
+     * returns it.
+     *
+     * @param string transient data entry name
+     * @param callable callback to generate data
+     * @return mixed
+     */
+    final public function requireTransientData(string $name, callable $generate)
+    {
+        if (!array_key_exists($name, $this->junxaInternalTransientData)) {
+            $this->junxaInternalTransientData[$name] = $generate();
+        }
+        return $this->junxaInternalTransientData[$name];
+    }
+
+    /**
      * Property-mode accessor that can retrieve 1) a field value 2) a parent
      * row 3) an array of child rows.
      *

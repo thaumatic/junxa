@@ -1546,6 +1546,9 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame($category, $category->setTransientData('info', 'test'));
         $this->assertSame('test', $category->getTransientData('info'));
         $this->assertNull($category->getTransientData('arbitrary'));
+        $this->assertSame(posix_getpid(), $category->requireTransientData('pid', 'posix_getpid'));
+        $this->assertSame(posix_getpid(), $category->getTransientData('pid'));
+        $this->assertSame(2, $category->requireTransientData('number', function() { return 2; }));
         //
         $category->save();
         $this->assertSame('test', $category->getTransientData('info'));
@@ -1555,9 +1558,13 @@ class RowTest extends DatabaseTestAbstract
         $this->assertNotSame($category, $categoryAlt);
         $this->assertSame($category->name, $categoryAlt->name);
         $this->assertSame('test', $category->getTransientData('info'));
+        $this->assertSame(posix_getpid(), $category->getTransientData('pid'));
+        $this->assertSame(2, $category->getTransientData('number'));
         $this->assertNull($category->getTransientData('arbitrary'));
         $this->assertNull($categoryAlt->getTransientData('info'));
         $this->assertNull($categoryAlt->getTransientData('arbitrary'));
+        $this->assertNull($categoryAlt->getTransientData('pid'));
+        $this->assertNull($categoryAlt->getTransientData('number'));
     }
 
 }
