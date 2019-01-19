@@ -83,6 +83,11 @@ final class Builder
     const OPTION_SUPPRESS_CACHING           = 0x00000200;
 
     /**
+     * @const int option: echo query for debugging
+     */
+    const OPTION_DEBUG_ECHO                 = 0x00000400;
+
+    /**
      * @const array<string> the clauses for which incoming values need to be
      * loaded into an array if they aren't one already
      */

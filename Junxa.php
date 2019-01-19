@@ -270,7 +270,7 @@ class Junxa
         'default',
         'die',
         'do',
-        'echo',
+        'jcho',
         'else',
         'elseif',
         'empty',
@@ -1975,6 +1975,7 @@ class Junxa
         $update = false;
         $delete = false;
         $errorOkay = false;
+        $echo = false;
         $queryBuilder = null;
         switch (gettype($query)) {
             case 'string':
@@ -2038,6 +2039,9 @@ class Junxa
                 if ($query->getOption(QueryBuilder::OPTION_ERROR_OKAY)) {
                     $errorOkay = true;
                 }
+                if ($query->getOption(QueryBuilder::OPTION_DEBUG_ECHO)) {
+                    $echo = true;
+                }
                 if ($queryType === 'update') {
                     $update = true;
                 } elseif ($queryType === 'delete') {
@@ -2054,6 +2058,9 @@ class Junxa
         if ($this->getOption(self::DB_COLLECT_QUERY_STATISTICS)) {
             $this->queryStatistics[$query]++;
             self::$overallQueryStatistics[$query]++;
+        }
+        if ($echo) {
+            echo $query;
         }
         if (!$mode) {
             $mode = $isResult ? self::QUERY_OBJECTS : self::QUERY_FORGET;
