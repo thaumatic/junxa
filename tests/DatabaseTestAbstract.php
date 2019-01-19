@@ -2,10 +2,11 @@
 
 namespace Thaumatic\Junxa\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException;
 
-abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
+abstract class DatabaseTestAbstract extends TestCase
 {
 
     const TEST_DATABASE_NAME = 'test_junxa';
@@ -31,21 +32,21 @@ abstract class DatabaseTestAbstract extends \PHPUnit_Framework_TestCase
     /**
      * @var Thaumatic\Junxa Junxa model of the test database, object reference
      */
-    protected static $db;
+    protected $db;
 
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
         self::$rawLink = new \mysqli('localhost');
         if (self::$rawLink->connect_error) {
-            throw new Exception(
+            throw new \Exception(
                 'need anonymous access to mysql on localhost to '
                 . 'run database-based tests'
             );
         }
         $filename = __DIR__ . DIRECTORY_SEPARATOR . self::TEST_DATABASE_SETUP_FILE_NAME;
         if (!is_readable($filename)) {
-            throw new Exception($filename . ' missing');
+            throw new \Exception($filename . ' missing');
         }
         $res = self::$rawLink->query('CREATE DATABASE `' . self::TEST_DATABASE_NAME . '`');
         self::$rawLink->select_db(self::TEST_DATABASE_NAME);

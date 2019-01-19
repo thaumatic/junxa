@@ -2,9 +2,10 @@
 
 namespace Thaumatic\Junxa\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Thaumatic\Junxa\Query as Q;
 
-class QueryTest extends \PHPUnit_Framework_TestCase
+class QueryTest extends TestCase
 {
 
     public function testGenerateEq()
