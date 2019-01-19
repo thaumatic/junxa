@@ -292,15 +292,16 @@ class Row
      */
     final public function getCacheKey()
     {
-        switch (count($this->junxaInternalTable->primary)) {
+        $pk = $this->junxaInternalTable->getPrimaryKey();
+        switch (count($pk)) {
             case 0:
                 throw new JunxaConfigurationException('cannot generate cache key without primary key');
             case 1:
-                $key = $this->junxaInternalTable->primary[0];
+                $key = $pk[0];
                 $val = $this->$key;
                 return $val === null ? $val : strval($val);
             default:
-                foreach ($this->junxaInternalTable->primary as $key) {
+                foreach ($pk as $key) {
                     $val = $this->$key;
                     if ($val === null) {
                         return null;
