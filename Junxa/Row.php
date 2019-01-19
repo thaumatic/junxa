@@ -858,6 +858,7 @@ class Row
         }
         $this->init();
         $this->checkCaching();
+        $this->junxaInternalTransientData = [];
         return Junxa::RESULT_SUCCESS;
     }
 
