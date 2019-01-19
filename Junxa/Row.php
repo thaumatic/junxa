@@ -1325,8 +1325,17 @@ class Row
         if (Junxa::OK($res)) {
             $this->junxaInternalDeleted = true;
             $this->checkCaching(true);
+            $this->afterDelete();
         }
         return $res;
+    }
+
+    /**
+     * Called after a successful delete() call on this row.  Can be overridden
+     * by child classes to handle this event.
+     */
+    public function afterDelete()
+    {
     }
 
     /**
