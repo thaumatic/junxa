@@ -1536,4 +1536,28 @@ class RowTest extends DatabaseTestAbstract
         }
     }
 
+    public function testTransientData()
+    {
+        $category = $this->db->category->newRow();
+        $this->addGeneratedRow($category);
+        $category->name = 'Uncategorized';
+        $category->createdAt = Q::func('NOW');
+        $this->assertNull($category->getTransientData('arbitrary'));
+        $this->assertSame($category, $category->setTransientData('info', 'test'));
+        $this->assertSame('test', $category->getTransientData('info'));
+        $this->assertNull($category->getTransientData('arbitrary'));
+        //
+        $category->save();
+        $this->assertSame('test', $category->getTransientData('info'));
+        $this->assertNull($category->getTransientData('arbitrary'));
+        //
+        $categoryAlt = $this->db->category->row($category->id);
+        $this->assertNotSame($category, $categoryAlt);
+        $this->assertSame($category->name, $categoryAlt->name);
+        $this->assertSame('test', $category->getTransientData('info'));
+        $this->assertNull($category->getTransientData('arbitrary'));
+        $this->assertNull($categoryAlt->getTransientData('info'));
+        $this->assertNull($categoryAlt->getTransientData('arbitrary'));
+    }
+
 }

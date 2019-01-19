@@ -130,6 +130,15 @@ class Row
     private $junxaInternalData;
 
     /**
+     * An array of arbitrary data that can be attached to this model but which
+     * will not be persisted to the database.  Applications can use this to
+     * attach application-defined data to row models.
+     *
+     * @var array<string:mixed>
+     */
+    private $junxaInternalTransientData = [];
+
+    /**
      * @var bool whether this row has been deleted via the delete() method
      * being called on it
      */
@@ -171,7 +180,7 @@ class Row
      * Accessor for field values.
      *
      * @param string field name
-     * @return ix
+     * @return $this
      */
     final public function setField($name, $value)
     {
@@ -240,6 +249,34 @@ class Row
         } else {
             throw new JunxaNoSuchColumnException($name);
         }
+    }
+
+    /**
+     * Accessor for transient data.
+     *
+     * @param string transient data entry name
+     * @return mixed
+     */
+    final public function getTransientData(string $name)
+    {
+        return $this->junxaInternalTransientData[$name] ?? null;
+    }
+
+    /**
+     * Mutator for transient data.
+     *
+     * @param string transient data entry name
+     * @param mixed transient data entry value
+     * @return $this
+     */
+    final public function setTransientData(string $name, $value)
+    {
+        if ($value === null) {
+            unset($this->junxaInternalTransientData[$name]);
+        } else {
+            $this->junxaInternalTransientData[$name] = $value;
+        }
+        return $this;
     }
 
     /**
