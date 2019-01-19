@@ -217,23 +217,26 @@ final class Element
                 $out = "\n\t" . $type . ' JOIN ' . $values[0];
                 break;
             case 'alias':
-                if ($context != 'join' && $base[0] instanceof Table) {
+                if ($context !== 'join' && $base[0] instanceof Table) {
                     $out = $values[0];
-                } elseif (isset($query->expressed[$this->id])
-                    && $context !== 'select' && $context !== 'where'
+                } elseif (
+                    isset($query->expressed[$this->id])
+                    && $context !== 'select'
+                    && $context !== 'where'
                     && $context !== 'join'
                 ) {
                     $out = '`' . $base[1] . '`';
                 } else {
                     $out = $values[0];
-                    if (!isset($query->expressed[$this->id])
-                        && $parent instanceof Query
+                    if (
+                        !isset($query->expressed[$this->id])
+                        && $parent instanceof QueryBuilder
                         && ($context === 'select' || $context === 'join')
                     ) {
                         $out .= ' ' . $type . ' `' . $base[1] . '`';
                     }
                 }
-                    $query->expressed[$this->id] = true;
+                $query->expressed[$this->id] = true;
                 break;
             case 'interval':
                 $out = 'INTERVAL ' . $values[0] . ' ' . $type;

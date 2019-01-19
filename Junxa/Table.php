@@ -879,7 +879,7 @@ class Table
             ->setMode(Junxa::QUERY_SINGLE_CELL)
             ->validate()
         ;
-        return $this->database->query($query);
+        return intval($this->database->query($query));
     }
 
     final public function tableScan(array &$tables, array &$null)
