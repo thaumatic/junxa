@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Thaumatic\Junxa;
 
 use Thaumatic\Junxa;
@@ -101,7 +103,7 @@ class Table
      * @param array<stdClass> if available, field info objects for the table's
      * columns, as returned by mysqli::fetch_field()
      */
-    final public function __construct(Junxa $database, $name, $columnCount = null, array $fields = [])
+    final public function __construct(Junxa $database, string $name, int $columnCount = null, array $fields = [])
     {
         $this->database = $database;
         $this->name = $name;
@@ -123,11 +125,12 @@ class Table
      *
      * @param int the number of columns in the table
      * @param array field information on the table's columns
+     * @return $this
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException if
      * a column name fails validation via
      * {@see Thaumatic\Junxa::validateIdentifier()}
      */
-    private function determineColumns($columnCount = null, $fields = [])
+    private function determineColumns(int $columnCount = null, array $fields = []) : self
     {
         $index = 0;
         foreach ($this->database->query('SHOW COLUMNS FROM ' . $this->getName()) as $row) {
@@ -163,16 +166,18 @@ class Table
         if ($autoIncPrimary && count($this->primary) === 1) {
             $this->autoIncrementPrimary = $this->primary[0];
         }
+        return $this;
     }
 
     /**
      * Processes raw information about the table's key configuration into key
      * models.
      *
+     * @return $this
      * @throws Thaumatic\Junxa\JunxaDatabaseModelingException if unexpected
      * data is encountered in retrieving key information
      */
-    private function determineKeys()
+    private function determineKeys() : self
     {
         $this->keys = [];
         foreach ($this->database->query('SHOW KEYS FROM ' . $this->getName()) as $row) {
@@ -239,23 +244,27 @@ class Table
             $seq = intval($row->Seq_in_index);
             $key->addKeyPart($seq, $keyPart);
         }
+        return $this;
     }
 
     /**
      * Ensures that key information for the table is loaded.
+     *
+     * @return $this
      */
-    private function verifyKeys()
+    private function verifyKeys() : self
     {
         if ($this->keys === null) {
             $this->determineKeys();
         }
+        return $this;
     }
 
     /**
      * @return array<string:Thaumatic\Junxa\Key> map of the names of the keys
      * in the table to the key models for them
      */
-    final public function getKeys()
+    final public function getKeys() : array
     {
         $this->verifyKeys();
         return $this->keys;
@@ -269,7 +278,7 @@ class Table
      * @throws Thaumatic\Junxa\Exceptions\JunxaNoSuchKeyException if the
      * specified key does not exist
      */
-    final public function getKey($keyName)
+    final public function getKey(string $keyName) : Key
     {
         $this->verifyKeys();
         if (!isset($this->keys[$keyName])) {
@@ -284,7 +293,7 @@ class Table
      * @param string column name
      * @return array<Thaumatic\Junxa\Key> the keys that index the given column
      */
-    final public function getColumnKeys($columnName)
+    final public function getColumnKeys(string $columnName) : array
     {
         $out = [];
         foreach ($this->getKeys() as $keyName => $key) {
@@ -299,16 +308,16 @@ class Table
      * @param bool whether any columns on this table have dynamic defaults
      * @return $this
      */
-    final public function setDynamicDefaultsPresent($val)
+    final public function setDynamicDefaultsPresent(bool $val) : self
     {
-        $this->dynamicDefaultsPresent = (bool) $val;
+        $this->dynamicDefaultsPresent = $val;
         return $this;
     }
 
     /**
      * @return bool whether any columns on this table have dynamic defaults
      */
-    final public function getDynamicDefaultsPresent()
+    final public function getDynamicDefaultsPresent() : bool
     {
         return $this->dynamicDefaultsPresent;
     }
@@ -320,8 +329,9 @@ class Table
      *
      * @param string the name of the virtual column
      * @param mixed any content that can be rendered as SQL by the Junxa query engine
+     * @return $this
      */
-    final public function addDynamicColumn($name, $content)
+    final public function addDynamicColumn(string $name, $content) : self
     {
         if (isset($this->columnModels[$name])) {
             throw new JunxaConfigurationException(
@@ -338,6 +348,7 @@ class Table
         $columnModel = new $class($this, $name, $res->fetch_field(), $res->fetch_field_direct(0), $alias);
         $this->columnModels[$name] = $columnModel;
         $res->free();
+        return $this;
     }
 
     /**
@@ -351,7 +362,7 @@ class Table
      * @throws Thaumatic\Junxa\JunxaNoSuchColumnException if the column
      * specified does not exist
      */
-    final public function setColumnDemandLoad($name, $flag)
+    final public function setColumnDemandLoad(string $name, bool $flag) : self
     {
         $mainPos = array_search($name, $this->columns);
         if ($mainPos === false) {
@@ -387,7 +398,7 @@ class Table
      * @param string column name
      * @return bool whether the specified column is preloaded
      */
-    final public function getColumnPreload($name)
+    final public function getColumnPreload($name) : bool
     {
         return in_array($name, $this->preloadColumns);
     }
@@ -407,7 +418,7 @@ class Table
      * @param string the column name
      * @return Thaumatic\Junxa\Column column result, actual class will be as defined by Junxa::columnClass()
      */
-    final public function __get($property)
+    final public function __get(string $property) : Column
     {
         if (isset($this->columnModels[$property])) {
             return $this->columnModels[$property];
@@ -419,7 +430,7 @@ class Table
     /**
      * @return Thaumatic\Junxa the Junxa database model this table is attached to
      */
-    final public function getDatabase()
+    final public function getDatabase() : Junxa
     {
         return $this->database;
     }
@@ -427,7 +438,7 @@ class Table
     /**
      * @return array<string> the list of column names for this table
      */
-    final public function getColumns()
+    final public function getColumns() : array
     {
         return $this->columns;
     }
@@ -436,7 +447,7 @@ class Table
      * @return array<string:Thaumatic\Junxa\Column> the map (by name) of column
      * models for this table
      */
-    final public function getColumnModels()
+    final public function getColumnModels() : array
     {
         return $this->columnModels;
     }
@@ -445,7 +456,7 @@ class Table
      * @param string column name
      * @return bool whether the table has a column of a given name
      */
-    final public function hasColumn($name)
+    final public function hasColumn(string $name) : bool
     {
         return in_array($name, $this->columns);
     }
@@ -454,7 +465,7 @@ class Table
      * @return array<string> the list of non-dynamic (i.e. referencing an
      * actual database column) column names for this table
      */
-    final public function getStaticColumns()
+    final public function getStaticColumns() : array
     {
         return $this->staticColumns;
     }
@@ -463,7 +474,7 @@ class Table
      * @return array<string> the list of dynamic (i.e. constructed virtually from
      * SQL) column names for this table
      */
-    final public function getDynamicColumns()
+    final public function getDynamicColumns() : array
     {
         return $this->dynamicColumns;
     }
@@ -471,7 +482,7 @@ class Table
     /**
      * @return array<string> the list of preloaded columns for this table
      */
-    final public function getPreloadColumns()
+    final public function getPreloadColumns() : array
     {
         return $this->preloadColumns;
     }
@@ -479,7 +490,7 @@ class Table
     /**
      * @return array<string> the list of demand-loaded columns for this table
      */
-    final public function getDemandLoadColumns()
+    final public function getDemandLoadColumns() : array
     {
         return $this->demandLoadColumns;
     }
@@ -487,7 +498,7 @@ class Table
     /**
      * @return string the table name
      */
-    final public function getName()
+    final public function getName() : string
     {
         return $this->name;
     }
@@ -498,7 +509,7 @@ class Table
      *
      * @return array<string>
      */
-    final public function getPrimaryKey()
+    final public function getPrimaryKey() : array
     {
         return $this->primary;
     }
@@ -536,7 +547,7 @@ class Table
      *
      * @return $this
      */
-    final public function flushCache()
+    final public function flushCache() : self
     {
         $this->cache = [];
         return $this;
@@ -548,9 +559,10 @@ class Table
      * @param string the cache key
      * @return $this
      */
-    final public function removeCacheKey($key)
+    final public function removeCacheKey(string $key) : self
     {
         unset($this->cache[$key]);
+        return $this;
     }
 
     /**
@@ -559,7 +571,7 @@ class Table
      * @param string the cache key
      * @return mixed
      */
-    final public function getCachedValue($key, $value)
+    final public function getCachedValue(string $key)
     {
         return array_key_exists($key, $this->cache) ? $this->cache[$key] : null;
     }
@@ -571,9 +583,10 @@ class Table
      * @param mixed the value
      * @return $this
      */
-    final public function setCachedValue($key, $value)
+    final public function setCachedValue(string $key, $value) : self
     {
         $this->cache[$key] = $value;
+        return $this;
     }
 
     /**
@@ -593,6 +606,7 @@ class Table
         if (!$this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)) {
             throw new JunxaConfigurationException('DB_CACHE_TABLE_ROWS option not enabled');
         }
+        return null;
     }
 
     /**
@@ -602,7 +616,7 @@ class Table
      * @return Thaumatic\Junxa\Row row result, actual class will be as defined
      * by Junxa::rowClass()
      */
-    final public function newRow(array $data = null)
+    final public function newRow(array $data = null) : Row
     {
         $class = $this->database->rowClass($this->name, $data);
         $out = new $class($this, null);
@@ -757,7 +771,7 @@ class Table
      * @return array<Thaumatic\Junxa\Row> row results, actual class will be as
      * defined by Junxa::rowClass()
      */
-    final public function rows($what = [])
+    final public function rows($what = []) : array
     {
         switch (gettype($what)) {
             case 'object':
@@ -777,7 +791,7 @@ class Table
                 }
                 break;
             case 'array':
-                $query = $this->baseQuery($what);
+                $query = $this->query($what, true);
                 break;
             default:
                 throw new JunxaInvalidQueryException('invalid query for table row retrieval');
@@ -820,7 +834,7 @@ class Table
      *
      * @param mixed a Junxa query builder, or a Junxa query element, or an array specification for a query builder
      */
-    final public function rowCount($query = [])
+    final public function rowCount($query = []): int
     {
         if ($query instanceof QueryBuilder) {
             $query = clone($query);
@@ -859,12 +873,12 @@ class Table
         return $this->database->query($query);
     }
 
-    final public function tableScan(&$tables, &$null)
+    final public function tableScan(array &$tables, array &$null)
     {
         $tables[$this->name] = true;
     }
 
-    final public function express($query, $context, $column, $parent)
+    final public function express(QueryBuilder $query, string $context, Column $forColumn = null, $parent = null) : string
     {
         if ($context === 'join') {
             return '`' . $this->name . '`';
@@ -906,7 +920,7 @@ class Table
      * @param bool whether to skip validation of the query builder
      * @return Thaumatic\Junxa\Query\Builder
      */
-    final public function query(array $def = [], $skipValidate = false)
+    final public function query(array $def = [], bool $skipValidate = false) : QueryBuilder
     {
         return new QueryBuilder($this->database, $this, $def, $skipValidate);
     }
@@ -916,7 +930,7 @@ class Table
      *
      * @return Thaumatic\Junxa\Query\Builder
      */
-    final public function baseQuery()
+    final public function baseQuery() : QueryBuilder
     {
         return new QueryBuilder($this->database, $this, [], true);
     }
@@ -928,7 +942,7 @@ class Table
      * @param Thaumatic\Junxa\Table table model to check
      * @return bool
      */
-    final public function isSame(Table $table)
+    final public function isSame(Table $table) : bool
     {
         if ($this === $table) {
             return true;
@@ -944,7 +958,7 @@ class Table
      *
      * @return string
      */
-    final public function serialize()
+    final public function serialize() : string
     {
         return 'table:' . $this->getName();
     }
@@ -955,7 +969,7 @@ class Table
      *
      * @param array<scalar> an array of primary key values
      */
-    private static function argsCacheKey(array $args)
+    private static function argsCacheKey(array $args) : string
     {
         foreach ($args as $arg) {
             if ($arg === null) {
