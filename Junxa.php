@@ -659,7 +659,7 @@ class Junxa
                     'unsupported configuration '
                     . (count($def) === 1 ? 'setting' : 'settings')
                     . ': '
-                    . join(array_keys($def))
+                    . join(', ', array_keys($def))
                 );
             }
             $this->ready();
