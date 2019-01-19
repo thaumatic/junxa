@@ -863,7 +863,7 @@ class Table
             ->clearOrder()
             ->clearOperations()
         ;
-        if ($query->group || $query->having) {
+        if ($query->group() || $query->having()) {
             $query
                 ->select(1)
                 ->validate()
