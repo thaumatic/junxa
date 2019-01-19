@@ -650,9 +650,9 @@ class Table
             if ($what instanceof QueryBuilder) {
                 $query = $what;
             } elseif ($what instanceof Element) {
-                $query = $this->query()->where($what);
+                $query = $this->baseQuery()->where($what);
             } elseif (is_array($what)) {
-                $query = $this->query($what);
+                $query = $this->query($what, true);
             } else {
                 throw new JunxaInvalidQueryException(
                     'condition for table row must be a '
@@ -674,7 +674,7 @@ class Table
                     return $this->cache[$key];
                 }
             }
-            $query = $this->query();
+            $query = $this->baseQuery();
             for ($i = 0; $i < $argc; $i++) {
                 $query->where($this->primary[$i], $args[$i]);
             }
@@ -773,11 +773,11 @@ class Table
                             . get_class($what)
                         );
                     }
-                    $query = $this->query()->where($what);
+                    $query = $this->baseQuery()->where($what);
                 }
                 break;
             case 'array':
-                $query = $this->query($what);
+                $query = $this->baseQuery($what);
                 break;
             default:
                 throw new JunxaInvalidQueryException('invalid query for table row retrieval');
@@ -786,6 +786,7 @@ class Table
             ->clearSelect()
             ->select($this->getSelectTarget())
             ->setMode(Junxa::QUERY_ASSOCS)
+            ->validate()
         ;
         $class = $this->database->rowClass($this->name);
         $rows = $this->database->query($query);
@@ -824,9 +825,9 @@ class Table
         if ($query instanceof QueryBuilder) {
             $query = clone($query);
         } elseif ($query instanceof Element) {
-            $query = $this->query()->where($query);
+            $query = $this->baseQuery()->where($query);
         } elseif (is_array($query)) {
-            $query = $this->query($query);
+            $query = $this->query($query, true);
         } else {
             throw new JunxaInvalidQueryException(
                 'query for rowCount() must be a '
@@ -851,7 +852,10 @@ class Table
         } else {
             $query->select()->func('COUNT', $this);
         }
-        $query->setMode(Junxa::QUERY_SINGLE_CELL);
+        $query
+            ->setMode(Junxa::QUERY_SINGLE_CELL)
+            ->validate()
+        ;
         return $this->database->query($query);
     }
 
@@ -899,11 +903,22 @@ class Table
      * otherwise empty.
      *
      * @param array query definition to provide to the query builder constructor
+     * @param bool whether to skip validation of the query builder
      * @return Thaumatic\Junxa\Query\Builder
      */
-    final public function query(array $def = [])
+    final public function query(array $def = [], $skipValidate = false)
     {
-        return new QueryBuilder($this->database, $this, $def);
+        return new QueryBuilder($this->database, $this, $def, $skipValidate);
+    }
+
+    /**
+     * As {@see query()}, but returning a builder based on an empty query.
+     *
+     * @return Thaumatic\Junxa\Query\Builder
+     */
+    final public function baseQuery()
+    {
+        return new QueryBuilder($this->database, $this, [], true);
     }
 
     /**
