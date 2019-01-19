@@ -97,6 +97,15 @@ class Table
     private $dynamicDefaultsPresent = false;
 
     /**
+     * An array of arbitrary data that can be attached to this model but which
+     * will not be persisted to the database.  Applications can use this to
+     * attach application-defined data to table models.
+     *
+     * @var array<string:mixed>
+     */
+    private $transientData = [];
+
+    /**
      * @param Thaumatic\Junxa the database model this table model is attached to
      * @param string the table name
      * @param int the number of columns in the modeled table, if known
@@ -980,6 +989,51 @@ class Table
             count($args) > 1
             ? join("\0", $args) . '|' . join('', array_map('md5', $args))
             : strval($args[0]);
+    }
+
+    /**
+     * Accessor for transient data.
+     *
+     * @param string transient data entry name
+     * @return mixed
+     */
+    final public function getTransientData(string $name)
+    {
+        return $this->transientData[$name] ?? null;
+    }
+
+    /**
+     * Mutator for transient data.
+     *
+     * @param string transient data entry name
+     * @param mixed transient data entry value
+     * @return $this
+     */
+    final public function setTransientData(string $name, $value)
+    {
+        if ($value === null) {
+            unset($this->transientData[$name]);
+        } else {
+            $this->transientData[$name] = $value;
+        }
+        return $this;
+    }
+
+    /**
+     * If the named transient data is present, returns it, otherwise
+     * generates it by calling the provided callback, stores it, and
+     * returns it.
+     *
+     * @param string transient data entry name
+     * @param callable callback to generate data
+     * @return mixed
+     */
+    final public function requireTransientData(string $name, callable $generate)
+    {
+        if (!array_key_exists($name, $this->transientData)) {
+            $this->transientData[$name] = $generate();
+        }
+        return $this->transientData[$name];
     }
 
 }

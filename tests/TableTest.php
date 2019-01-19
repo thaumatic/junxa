@@ -261,4 +261,16 @@ class TableTest extends DatabaseTestAbstract
         $this->assertEquals('Widget', $itemRowsByCategoryType[0]->name);
     }
 
+    public function testTransientData()
+    {
+        $table = $this->db->category;
+        $this->assertNull($table->getTransientData('arbitrary'));
+        $this->assertSame($table, $table->setTransientData('info', 'test'));
+        $this->assertSame('test', $table->getTransientData('info'));
+        $this->assertNull($table->getTransientData('arbitrary'));
+        $this->assertSame(posix_getpid(), $table->requireTransientData('pid', 'posix_getpid'));
+        $this->assertSame(posix_getpid(), $table->getTransientData('pid'));
+        $this->assertSame(2, $table->requireTransientData('number', function() { return 2; }));
+    }
+
 }
