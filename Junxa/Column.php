@@ -269,16 +269,24 @@ class Column
         $this->name = $name;
         $this->dynamicAlias = $dynamicAlias;
         $this->flags = $info->flags;
-        $this->default = $colinfo->Default;
-        $this->fullType = $colinfo->Type;
-        if ($colinfo->Null === 'YES') {
-            if ($this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
-                throw new JunxaDatabaseModelingException('nullability mismatch');
+        if ($colinfo) {
+            $this->default = $colinfo ? $colinfo->Default : null;
+            $this->fullType = $colinfo->Type;
+            if ($colinfo->Null === 'YES') {
+                if ($this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
+                    throw new JunxaDatabaseModelingException('nullability mismatch');
+                }
+            } else {
+                if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
+                    throw new JunxaDatabaseModelingException('nullability mismatch');
+                }
             }
         } else {
-            if (!$this->getFlag(self::MYSQL_FLAG_NOT_NULL)) {
-                throw new JunxaDatabaseModelingException('nullability mismatch');
-            }
+            $this->fullType = self::getTypeDefFromTypeInfo(
+                $info->type,
+                $info->length,
+                $info->max_length
+            );
         }
         if (preg_match('/^([^\s\(]+)/', $this->fullType, $match)) {
             $this->type = $match[1];
@@ -341,6 +349,77 @@ class Column
             $this->defaultValue = $this->import($this->default);
         }
         $this->init();
+    }
+
+    /**
+     * Retrieves a plausible MySQL type definition from
+     * MySQL column type information.
+     *
+     * @param int the MySQL type code
+     * @param int the length value
+     * @param int the max length value
+     * @return string
+     */
+    private static function getTypeDefFromTypeInfo(int $code, int $length, int $maxLength)
+    {
+        switch ($code) {
+            case 0: // MYSQL_TYPE_DECIMAL
+                return 'decimal';
+            case 1: // MYSQL_TYPE_TINY
+                return 'tinyint';
+            case 2: // MYSQL_TYPE_SHORT
+                return 'smallint';
+            case 3: // MYSQL_TYPE_LONG
+                return 'int';
+            case 4: // MYSQL_TYPE_FLOAT
+                return 'enum';
+            case 5: // MYSQL_TYPE_DOUBLE
+                return 'double';
+            case 6: // MYSQL_TYPE_NULL
+                return 'varchar(' . ($maxLength ?: $length ?: 1024) . ')';
+            case 7: // MYSQL_TYPE_TIMESTAMP
+                return 'timestamp';
+            case 8: // MYSQL_TYPE_LONGLONG
+                return 'bigint';
+            case 9: // MYSQL_TYPE_INT24
+                return 'mediumint';
+            case 10: // MYSQL_TYPE_DATE:
+                return 'date';
+            case 11: // MYSQL_TYPE_TIME
+                return 'time';
+            case 12: // MYSQL_TYPE_DATETIME
+                return 'datetime';
+            case 13: // MYSQL_TYPE_YEAR
+                return 'year';
+            case 14: // MYSQL_TYPE_NEWDATE
+                return 'date';
+            case 15: // MYSQL_TYPE_VARCHAR
+                return 'varchar(' . ($maxLength ?: $length ?: 1024) . ')';
+            case 16: // MYSQL_TYPE_BIT
+                return 'tinyint(1)';
+            case 246: // MYSQL_TYPE_NEWDECIMAL
+                return 'decimal';
+            case 247: // MYSQL_TYPE_ENUM
+                return 'enum';
+            case 248: // MYSQL_TYPE_SET
+                return 'set';
+            case 249: // MYSQL_TYPE_TINY_BLOB
+                return 'tinyblob';
+            case 250: // MYSQL_TYPE_MEDIUM_BLOB
+                return 'mediumblob';
+            case 251: // MYSQL_TYPE_LONG_BLOB
+                return 'longblob';
+            case 252: // MYSQL_TYPE_BLOB
+                return 'blob';
+            case 253: // MYSQL_TYPE_VAR_STRING
+                return 'varchar(' . ($maxLength ?: $length ?: 1024) . ')';
+            case 254: // MYSQL_TYPE_STRING
+                return 'varchar(' . ($maxLength ?: $length ?: 1024) . ')';
+            case 255: // MYSQL_TYPE_GEOMETRY
+                return 'geometry';
+            default:
+                return 'varchar(' . ($maxLength ?: $length ?: 1024) . ')';
+        }
     }
 
     /**
