@@ -4,6 +4,7 @@ namespace Thaumatic\Junxa\Tests;
 
 use Thaumatic\Junxa;
 use Thaumatic\Junxa\Events\JunxaQueryEvent;
+use Thaumatic\Junxa\Exceptions\JunxaInvalidIdentifierException;
 use Thaumatic\Junxa\Exceptions\JunxaNoSuchTableException;
 use Thaumatic\Junxa\Exceptions\JunxaQueryExecutionException;
 use Thaumatic\Junxa\Query as Q;
@@ -1404,6 +1405,21 @@ class JunxaTest extends DatabaseTestAbstract
             $categoryAlt = $this->db->category->row($category->id);
             $this->assertEquals($name, $categoryAlt->name);
         }
+    }
+
+    public function testIdentifierValidation()
+    {
+        try {
+            Junxa::validateIdentifier('junxaInternalTest');
+        } catch (JunxaInvalidIdentifierException $e) {
+            $this->assertSame('junxaInternalTest', $e->getIdentifier());
+        }
+        try {
+            Junxa::validateIdentifier('array');
+        } catch (JunxaInvalidIdentifierException $e) {
+            $this->assertSame('array', $e->getIdentifier());
+        }
+        Junxa::validateIdentifier('arbitraryText');
     }
 
     private static function unichr($code)
