@@ -2684,10 +2684,10 @@ class Junxa
     final public static function validateIdentifier($identifier)
     {
         if ($identifier[0] === 'j' && preg_match('/^junxaInternal/', $identifier)) {
-            throw new JunxaInvalidIdentifier($identifier);
+            throw new JunxaInvalidIdentifierException($identifier);
         }
         if (in_array(strtolower($identifier), self::PHP_KEYWORDS)) {
-            throw new JunxaInvalidIdentifier($identifier);
+            throw new JunxaInvalidIdentifierException($identifier);
         }
     }
 
