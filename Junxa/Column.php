@@ -796,7 +796,7 @@ class Column
      */
     final public function serialize()
     {
-        $table = $this->table();
+        $table = $this->getTable();
         return 'column:' . $table->getName() . "\0" . $this->getName();
     }
 
@@ -809,7 +809,7 @@ class Column
      */
     final public function setDemandOnly($flag)
     {
-        $this->table()->setColumnDemandOnly($this->getName(), $flag);
+        $this->getTable()->setColumnDemandOnly($this->getName(), $flag);
         return $this;
     }
 
@@ -822,7 +822,7 @@ class Column
      */
     final public function queryDemandOnly()
     {
-        return $this->table()->queryColumnDemandOnly($this->getName());
+        return $this->getTable()->queryColumnDemandOnly($this->getName());
     }
 
     /**
