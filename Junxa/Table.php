@@ -706,7 +706,7 @@ class Table
             ->clearSelect()
             ->select($target)
             ->limit(1)
-            ->setOption(QueryBuilder::OPTION_EMPTY_OKAY, true)
+            ->setOption(Junxa::OPTION_EMPTY_OKAY, true)
             ->setMode(Junxa::QUERY_SINGLE_ASSOC)
         ;
         $rowData = $this->database->query($query);
@@ -715,7 +715,7 @@ class Table
         }
         $class = $this->database->rowClass($this->name, $rowData);
         $row = new $class($this, $rowData);
-        if ($query->getOption(QueryBuilder::OPTION_SUPPRESS_CACHING)) {
+        if ($query->getOption(Junxa::OPTION_SUPPRESS_CACHING)) {
             return $row;
         } else {
             return $row->checkCaching();
@@ -816,7 +816,7 @@ class Table
         $out = [];
         if ($this->database->getOption(Junxa::DB_CACHE_TABLE_ROWS)
             && $this->primary
-            && !$query->getOption(QueryBuilder::OPTION_SUPPRESS_CACHING)
+            && !$query->getOption(Junxa::OPTION_SUPPRESS_CACHING)
         ) {
             foreach ($rows as $data) {
                 $row = new $class($this, $data);

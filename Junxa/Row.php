@@ -845,7 +845,7 @@ class Row
             // to sleep for an undeterminable period of time to allow changes
             // to propagate from primary to secondary database servers.
             $query->setOption(
-                QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER,
+                Junxa::OPTION_FORCE_USE_CHANGE_HANDLER,
                 true
             );
         }
@@ -964,8 +964,8 @@ class Row
      *   if no fields on this row have been set nor have dynamic defaults
      * Thaumatic\Junxa::RESULT_INSERT_FAIL
      *   if an INSERT IGNORE query was executed (because of the option
-     *   Thaumatic\Junxa\Query\Builder::OPTION_IGNORE being enabled) and
-     *   no rows were affected
+     *   Thaumatic\Junxa::OPTION_IGNORE being enabled) and no rows were
+     *   affected
      * Thaumatic\Junxa::RESULT_PREVENTED
      *   if either the insert or the refresh was prevented by a listener
      * Thaumatic\Junxa::RESULT_REFRESH_FAIL
@@ -1336,7 +1336,7 @@ class Row
      * Thaumatic\Junxa\Row::DELETE_INVALID_CLAUSES
      * @throws Thaumatic\Junxa\Exceptions\JunxaInvalidQueryException if this
      * row is already marked deleted and the working query definition does
-     * not have Thaumatic\Junxa\Query\Builder::OPTION_REDELETE_OKAY enabled
+     * not have Thaumatic\Junxa::OPTION_REDELETE_OKAY enabled
      */
     final public function delete($queryDef = [])
     {
@@ -1363,7 +1363,7 @@ class Row
         } else {
             $queryDef = $this->junxaInternalTable->query();
         }
-        if ($this->getDeleted() && !$queryDef->getOption(QueryBuilder::OPTION_REDELETE_OKAY)) {
+        if ($this->getDeleted() && !$queryDef->getOption(Junxa::OPTION_REDELETE_OKAY)) {
             throw new JunxaInvalidQueryException('row has already been deleted');
         }
         $cond = $this->getMatchCondition();

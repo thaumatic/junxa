@@ -136,6 +136,76 @@ class Junxa
     const QUERY_COLUMN_OBJECT           = 13;
 
     /**
+     * @const int query option: INSERT and REPLACE clauses generated from this
+     * query should use the DELAYED modifier
+     */
+    const OPTION_DELAYED                    = 0x00000001;
+
+    /**
+     * @const int query option: a SELECT clause generated from this query
+     * should use the DISTINCT modifier
+     */
+    const OPTION_DISTINCT                   = 0x00000002;
+
+    /**
+     * @const int query option: single element result sets should result in a
+     * null return value rather than raising an exception if they find no
+     * results, and don't return {@see Thaumatic\Junxa::RESULT_INSERT_FAIL},
+     * {@see Thaumatic\Junxa::RESULT_UPDATE_FAIL}, or
+     * {@see Thaumatic\Junxa::RESULT_DELETE_FAIL} on their respective
+     * conditions
+     */
+    const OPTION_EMPTY_OKAY                 = 0x00000004;
+
+    /**
+     * @const int query option: don't raise exceptions on query failures
+     */
+    const OPTION_ERROR_OKAY                 = 0x00000008;
+
+    /**
+     * @const int query option: force this query to be sent to the database's
+     * change handler, if any
+     */
+    const OPTION_FORCE_USE_CHANGE_HANDLER   = 0x00000010;
+
+    /**
+     * @const int query option: INSERT and REPLACE clauses used in this query
+     * should use the HIGH_PRIORITY modifier (overrides OPTION_LOW_PRIORITY
+     * and OPTION_DELAYED)
+     */
+    const OPTION_HIGH_PRIORITY              = 0x00000020;
+
+    /**
+     * @const int query option: INSERT and REPLACE clauses used in this query
+     * should use the IGNORE modifier
+     */
+    const OPTION_IGNORE                     = 0x00000040;
+
+    /**
+     * @const int query option: INSERT and REPLACE clauses used in this query
+     * should use the LOW_PRIORITY modifier (overrides OPTION_DELAYED)
+     */
+    const OPTION_LOW_PRIORITY               = 0x00000080;
+
+    /**
+     * @const int query option: don't raise an exception on a delete() of a row
+     * that has already been deleted
+     */
+    const OPTION_REDELETE_OKAY              = 0x00000100;
+
+    /**
+     * @const int query option: don't cache rows retrieved with this query
+     * (only meaningful if {@see DB_CACHE_TABLE_ROWS} is enabled at the
+     * database level)
+     */
+    const OPTION_SUPPRESS_CACHING           = 0x00000200;
+
+    /**
+     * @const int query option: echo query for debugging
+     */
+    const OPTION_DEBUG_ECHO                 = 0x00000400;
+
+    /**
      * @const int query result code: absolutely everything went perfectly with
      * the query
      */
@@ -2019,7 +2089,7 @@ class Junxa
                 $queryType = $query->getType();
                 if ($queryType === 'select' || $queryType === 'show') {
                     $isResult = true;
-                    $useChangeHandler = $query->getOption(QueryBuilder::OPTION_FORCE_USE_CHANGE_HANDLER);
+                    $useChangeHandler = $query->getOption(self::OPTION_FORCE_USE_CHANGE_HANDLER);
                 } else {
                     $useChangeHandler = true;
                 }
@@ -2033,20 +2103,20 @@ class Junxa
                         return $result;
                     }
                 }
-                if ($query->getOption(QueryBuilder::OPTION_EMPTY_OKAY)) {
+                if ($query->getOption(self::OPTION_EMPTY_OKAY)) {
                     $emptyOkay = true;
                 }
-                if ($query->getOption(QueryBuilder::OPTION_ERROR_OKAY)) {
+                if ($query->getOption(self::OPTION_ERROR_OKAY)) {
                     $errorOkay = true;
                 }
-                if ($query->getOption(QueryBuilder::OPTION_DEBUG_ECHO)) {
+                if ($query->getOption(self::OPTION_DEBUG_ECHO)) {
                     $echo = true;
                 }
                 if ($queryType === 'update') {
                     $update = true;
                 } elseif ($queryType === 'delete') {
                     $delete = true;
-                } elseif ($queryType === 'insert' && $query->getOption(QueryBuilder::OPTION_IGNORE)) {
+                } elseif ($queryType === 'insert' && $query->getOption(self::OPTION_IGNORE)) {
                     $insertIgnore = true;
                 }
                 $query = $query->express();

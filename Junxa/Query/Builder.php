@@ -20,74 +20,6 @@ final class Builder
 {
 
     /**
-     * @const int option: INSERT and REPLACE clauses generated from this query
-     * should use the DELAYED modifier
-     */
-    const OPTION_DELAYED                    = 0x00000001;
-
-    /**
-     * @const int option: a SELECT clause generated from this query should
-     * use the DISTINCT modifier
-     */
-    const OPTION_DISTINCT                   = 0x00000002;
-
-    /**
-     * @const int option: single element result sets should result in a null
-     * return value rather than raising an exception if they find no results,
-     * and don't return {@see Thaumatic\Junxa::RESULT_INSERT_FAIL},
-     * {@see Thaumatic\Junxa::RESULT_UPDATE_FAIL}, or
-     * {@see Thaumatic\Junxa::RESULT_DELETE_FAIL} on their respective
-     * conditions
-     */
-    const OPTION_EMPTY_OKAY                 = 0x00000004;
-
-    /**
-     * @const int option: don't raise exceptions on query failures
-     */
-    const OPTION_ERROR_OKAY                 = 0x00000008;
-
-    /**
-     * @const int option: force this query to be sent to the database's
-     * change handler, if any
-     */
-    const OPTION_FORCE_USE_CHANGE_HANDLER   = 0x00000010;
-
-    /**
-     * @const int option: INSERT and REPLACE clauses generated from this query
-     * should use the HIGH_PRIORITY modifier (overrides OPTION_LOW_PRIORITY
-     * and OPTION_DELAYED)
-     */
-    const OPTION_HIGH_PRIORITY              = 0x00000020;
-
-    /**
-     * @const int option: INSERT and REPLACE clauses generated from this query
-     * should use the IGNORE modifier
-     */
-    const OPTION_IGNORE                     = 0x00000040;
-
-    /**
-     * @const int option: INSERT and REPLACE clauses generated from this query
-     * should use the LOW_PRIORITY modifier (overrides OPTION_DELAYED)
-     */
-    const OPTION_LOW_PRIORITY               = 0x00000080;
-
-    /**
-     * @const int option: don't raise an exception on a delete() of a row that
-     * has already been deleted
-     */
-    const OPTION_REDELETE_OKAY              = 0x00000100;
-
-    /**
-     * @const int option: don't cache rows retrieved with this query
-     */
-    const OPTION_SUPPRESS_CACHING           = 0x00000200;
-
-    /**
-     * @const int option: echo query for debugging
-     */
-    const OPTION_DEBUG_ECHO                 = 0x00000400;
-
-    /**
      * @const array<string> the clauses for which incoming values need to be
      * loaded into an array if they aren't one already
      */
@@ -1190,7 +1122,7 @@ final class Builder
         $out = strtoupper($type) . ' ';
         switch ($type) {
             case 'select':
-                if ($this->getOption(self::OPTION_DISTINCT)) {
+                if ($this->getOption(Junxa::OPTION_DISTINCT)) {
                     $out .= 'DISTINCT ';
                 }
                 $out .= $this->database->resolve($main, $this, $type, null, $this);
@@ -1209,14 +1141,14 @@ final class Builder
                     );
                 }
                 if ($this->options) {
-                    if ($this->getOption(self::OPTION_HIGH_PRIORITY)) {
+                    if ($this->getOption(Junxa::OPTION_HIGH_PRIORITY)) {
                         $out .= 'HIGH_PRIORITY ';
-                    } elseif ($this->getOption(self::OPTION_LOW_PRIORITY)) {
+                    } elseif ($this->getOption(Junxa::OPTION_LOW_PRIORITY)) {
                         $out .= 'LOW_PRIORITY ';
-                    } elseif ($this->getOption(self::OPTION_DELAYED)) {
+                    } elseif ($this->getOption(Junxa::OPTION_DELAYED)) {
                         $out .= 'DELAYED ';
                     }
-                    if ($this->getoption(self::OPTION_IGNORE)) {
+                    if ($this->getoption(Junxa::OPTION_IGNORE)) {
                         $out .= 'IGNORE ';
                     }
                 }

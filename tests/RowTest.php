@@ -1214,15 +1214,15 @@ class RowTest extends DatabaseTestAbstract
         //
         $result = $category->delete(
             $category->getTable()->query()
-                ->setOption(QueryBuilder::OPTION_REDELETE_OKAY, true)
+                ->setOption(Junxa::OPTION_REDELETE_OKAY, true)
         );
         $this->assertSame(Junxa::RESULT_DELETE_FAIL, $result);
         $this->assertFalse(Junxa::OK($result));
         //
         $result = $category->delete(
             $category->getTable()->query()
-                ->setOption(QueryBuilder::OPTION_EMPTY_OKAY, true)
-                ->setOption(QueryBuilder::OPTION_REDELETE_OKAY, true)
+                ->setOption(Junxa::OPTION_EMPTY_OKAY, true)
+                ->setOption(Junxa::OPTION_REDELETE_OKAY, true)
         );
         $this->assertSame(Junxa::RESULT_SUCCESS, $result);
         $this->assertTrue(Junxa::OK($result));
@@ -1551,6 +1551,10 @@ class RowTest extends DatabaseTestAbstract
         $this->assertSame(2, $category->requireTransientData('number', function() { return 2; }));
         //
         $category->save();
+        $this->assertNull($category->getTransientData('info'));
+        $this->assertNull($category->getTransientData('pid'));
+        $this->assertNull($category->getTransientData('number'));
+        $this->assertSame($category, $category->setTransientData('info', 'test'));
         $this->assertSame('test', $category->getTransientData('info'));
         $this->assertNull($category->getTransientData('arbitrary'));
         //
@@ -1558,8 +1562,6 @@ class RowTest extends DatabaseTestAbstract
         $this->assertNotSame($category, $categoryAlt);
         $this->assertSame($category->name, $categoryAlt->name);
         $this->assertSame('test', $category->getTransientData('info'));
-        $this->assertSame(posix_getpid(), $category->getTransientData('pid'));
-        $this->assertSame(2, $category->getTransientData('number'));
         $this->assertNull($category->getTransientData('arbitrary'));
         $this->assertNull($categoryAlt->getTransientData('info'));
         $this->assertNull($categoryAlt->getTransientData('arbitrary'));
