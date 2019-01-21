@@ -580,7 +580,7 @@ class Row
                 'cannot generate match condition for ' . $this->junxaInternalTable->getName()
             );
         }
-        $value = $this->getDatabase()->query()
+        $value = $this->getDatabase()->baseQuery()
             ->select($this->getColumn($column))
             ->where($cond)
             ->setMode(Junxa::QUERY_SINGLE_CELL)
@@ -756,7 +756,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for find() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->junxaInternalTable->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef, true);
             } elseif ($queryDef instanceof QueryBuilder) {
                 $clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES);
                 if ($clause) {
@@ -770,7 +770,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->junxaInternalTable->query();
+            $queryDef = $this->junxaInternalTable->baseQuery();
         }
         $queryDef
             ->select($this->junxaInternalTable->getSelectTarget())
@@ -784,6 +784,7 @@ class Row
             }
             $queryDef->where($column, $this->$column);
         }
+        $queryDef->validate();
         $rows = $queryDef->execute();
         switch (count($rows)) {
             case 0:
@@ -834,7 +835,7 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
         }
-        $query = $this->junxaInternalTable->getDatabase()->query()
+        $query = $this->junxaInternalTable->getDatabase()->baseQuery()
             ->select($this->junxaInternalTable->getSelectTarget())
             ->setMode(Junxa::QUERY_SINGLE_ASSOC)
             ->where($cond)
@@ -904,7 +905,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for update() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->junxaInternalTable->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef, true);
             } elseif ($queryDef instanceof QueryBuilder) {
                 $clause = $queryDef->checkClauses(self::UPDATE_INVALID_CLAUSES);
                 if ($clause) {
@@ -918,7 +919,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->junxaInternalTable->query();
+            $queryDef = $this->junxaInternalTable->baseQuery();
         }
         foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
             if (property_exists($this, $column)
@@ -940,6 +941,7 @@ class Row
         $queryDef
             ->where($cond)
             ->setMode(Junxa::QUERY_FORGET)
+            ->validate()
         ;
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
@@ -987,7 +989,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for insert() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->junxaInternalTable->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef, true);
             } elseif ($queryDef instanceof QueryBuilder) {
                 $clause = $queryDef->checkClauses(self::INSERT_INVALID_CLAUSES);
                 if ($clause) {
@@ -1001,7 +1003,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->junxaInternalTable->query($queryDef);
+            $queryDef = $this->junxaInternalTable->baseQuery();
         }
         if ($this->junxaInternalTable->getDynamicDefaultsPresent()) {
             foreach ($this->junxaInternalTable->getStaticColumns() as $column) {
@@ -1024,7 +1026,10 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_INSERT_NOOP;
         }
-        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $queryDef
+            ->setMode(Junxa::QUERY_FORGET)
+            ->validate()
+        ;
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
@@ -1084,7 +1089,7 @@ class Row
                         throw new JunxaInvalidQueryException('query definition for merge() may not define ' . $clause);
                     }
                 }
-                $queryDef = $this->junxaInternalTable->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef, true);
             } elseif ($queryDef instanceof QueryBuilder) {
                 $clause = $queryDef->checkClauses(self::MERGE_INVALID_CLAUSES);
                 if ($clause) {
@@ -1098,7 +1103,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->junxaInternalTable->query();
+            $queryDef = $this->junxaInternalTable->baseQuery();
         }
         $autoInc = $this->junxaInternalTable->getAutoIncrementPrimary();
         if ($autoInc) {
@@ -1124,7 +1129,10 @@ class Row
         if (!$queryDef->getInsert()) {
             return Junxa::RESULT_MERGE_NOOP;
         }
-        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $queryDef
+            ->setMode(Junxa::QUERY_FORGET)
+            ->validate()
+        ;
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
@@ -1179,7 +1187,7 @@ class Row
                         );
                     }
                 }
-                $queryDef = $this->junxaInternalTable->query($queryDef);
+                $queryDef = $this->junxaInternalTable->query($queryDef, true);
             } elseif ($queryDef instanceof QueryBuilder) {
                 $clause = $queryDef->checkClauses(self::REPLACE_INVALID_CLAUSES);
                 if ($clause) {
@@ -1206,7 +1214,10 @@ class Row
         if (!$queryDef->getReplace()) {
             return Junxa::RESULT_REPLACE_NOOP;
         }
-        $queryDef->setMode(Junxa::QUERY_FORGET);
+        $queryDef
+            ->setMode(Junxa::QUERY_FORGET)
+            ->validate()
+        ;
         $this->junxaInternalTable->getDatabase()->query($queryDef);
         $res = $this->junxaInternalTable->getDatabase()->getQueryStatus();
         if (!Junxa::OK($res)) {
@@ -1361,7 +1372,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $this->junxaInternalTable->query();
+            $queryDef = $this->junxaInternalTable->baseQuery();
         }
         if ($this->getDeleted() && !$queryDef->getOption(Junxa::OPTION_REDELETE_OKAY)) {
             throw new JunxaInvalidQueryException('row has already been deleted');
@@ -1501,7 +1512,7 @@ class Row
                     continue;
                 }
                 if (count($key->getParts()) === 1) {
-                    $out = $foreignTable->query()
+                    $out = $foreignTable->baseQuery()
                         ->where($foreignColumn, $localValue)
                         ->row()
                     ;
@@ -1602,7 +1613,7 @@ class Row
                 );
             }
         } else {
-            $queryDef = $childTable->query();
+            $queryDef = $childTable->baseQuery();
         }
         $childField = $childTable->getAutoIncrementPrimary();
         if ($childField) {
