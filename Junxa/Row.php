@@ -580,7 +580,7 @@ class Row
                 'cannot generate match condition for ' . $this->junxaInternalTable->getName()
             );
         }
-        $value = $this->getDatabase()->baseQuery()
+        $value = $this->getDatabase()->query()
             ->select($this->getColumn($column))
             ->where($cond)
             ->setMode(Junxa::QUERY_SINGLE_CELL)
@@ -835,7 +835,7 @@ class Row
         if (!$cond) {
             return Junxa::RESULT_REFRESH_FAIL;
         }
-        $query = $this->junxaInternalTable->getDatabase()->baseQuery()
+        $query = $this->junxaInternalTable->baseQuery()
             ->select($this->junxaInternalTable->getSelectTarget())
             ->setMode(Junxa::QUERY_SINGLE_ASSOC)
             ->where($cond)
