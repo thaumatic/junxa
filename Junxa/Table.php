@@ -866,6 +866,7 @@ class Table
         if ($query->group() || $query->having()) {
             $query
                 ->select(1)
+                ->from($this)
                 ->validate()
             ;
             $query = $this->query()
