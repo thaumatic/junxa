@@ -18,7 +18,7 @@
     ],
     "require": {
         "ext-mysqli": "*",
-        "ICanBoogie/Inflector": "1.4.*",
+        "icanboogie/inflector": "1.4.*",
         "php": "^7.0",
         "symfony/event-dispatcher": "3.1.*",
         "thaumatic/indefinite-article": "1.0.*"
